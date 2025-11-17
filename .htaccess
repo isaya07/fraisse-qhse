@@ -1,0 +1,24 @@
+RewriteEngine On
+RewriteBase /
+
+# Rediriger les requêtes API vers le backend CakePHP
+RewriteRule ^api/(.*)$ backend/webroot/index.php?url=$1 [QSA,L]
+
+# Rediriger les autres requêtes vers le frontend (sauf les dossiers backend et assets)
+RewriteCond %{REQUEST_URI} !^/backend/
+RewriteCond %{REQUEST_URI} !^/assets/
+RewriteCond %{REQUEST_URI} !^/css/
+RewriteCond %{REQUEST_URI} !^/js/
+RewriteCond %{REQUEST_URI} !^/images/
+RewriteCond %{REQUEST_URI} !^/fonts/
+RewriteCond %{REQUEST_URI} !^/favicon\.ico$
+RewriteCond %{REQUEST_URI} !^/robots\.txt$
+RewriteCond %{REQUEST_URI} !^/manifest\.json$
+RewriteRule ^(.*)$ frontend/dist/index.html [QSA,L]
+
+# Autoriser les fichiers statiques du frontend
+RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [QSA,L]
+RewriteRule ^css/(.*)$ frontend/dist/css/$1 [QSA,L]
+RewriteRule ^js/(.*)$ frontend/dist/js/$1 [QSA,L]
+RewriteRule ^images/(.*)$ frontend/dist/images/$1 [QSA,L]
+RewriteRule ^fonts/(.*)$ frontend/dist/fonts/$1 [QSA,L]

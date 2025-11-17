@@ -1,0 +1,56 @@
+# Fichiers de configuration locaux
+**/config/app_local.php
+**/config/app_local.example.php
+.env
+.env.local
+
+# Dossiers et fichiers générés
+node_modules/
+vendor/
+frontend/dist/
+backend/logs/
+backend/tmp/
+backend/webroot/files/
+backend/config/app_local.php
+
+# Fichiers temporaires
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Fichiers d'IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Fichiers système
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers de cache
+.cache/
+coverage/
+.nyc_output/
+
+# Système de documentation
+docs/api/
+
+# Fichiers de test
+coverage/
+junit.xml
+*.lcov
+
+# Fichiers de build
+dist/
+build/
+*.min.js
+*.min.css
+
+# Fichiers sensibles
+config/secrets.json
+config/keys/
+*.key
+*.pem
