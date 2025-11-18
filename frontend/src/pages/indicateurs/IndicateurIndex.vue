@@ -1,102 +1,90 @@
 <template>
-  <div class="indicators-page">
-    <div class="level">
-      <div class="level-left">
-        <h1 class="title">Indicateurs & KPI</h1>
-      </div>
-      <div class="level-right">
-        <Button
-          :icon="['fas', 'plus']"
-          text="Nouvel indicateur"
-          variant="primary"
-          @click="createNewIndicator"
-        />
-      </div>
+  <div class="p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Indicateurs & KPI</h1>
+      <Button
+        icon="pi pi-plus"
+        label="Nouvel indicateur"
+        @click="createNewIndicator"
+        class="p-button-primary"
+      />
     </div>
 
     <!-- Barre de recherche et filtres -->
-    <div class="field has-addons mb-5">
-      <div class="control is-expanded">
-        <input
-          v-model="searchQuery"
-          class="input"
-          type="text"
-          placeholder="Rechercher un indicateur..."
-        />
-      </div>
-      <div class="control">
-        <button class="button is-info">
-          <font-awesome-icon :icon="['fas', 'search']" />
-        </button>
+    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+      <div class="flex-grow">
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            type="text"
+            placeholder="Rechercher un indicateur..."
+          />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <font-awesome-icon :icon="['fas', 'search']" class="text-gray-400" />
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Filtres additionnels -->
-    <div class="columns mb-5">
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Catégorie</label>
-          <div class="select is-fullwidth">
-            <select v-model="categoryFilter">
-              <option value="">Toutes les catégories</option>
-              <option value="safety">Sécurité</option>
-              <option value="quality">Qualité</option>
-              <option value="environment">Environnement</option>
-              <option value="health">Hygiène</option>
-            </select>
-          </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+        <p-dropdown
+          v-model="categoryFilter"
+          :options="categoryOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Toutes les catégories"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Tendance</label>
-          <div class="select is-fullwidth">
-            <select v-model="trendFilter">
-              <option value="">Toutes les tendances</option>
-              <option value="positive">Positive</option>
-              <option value="negative">Négative</option>
-              <option value="neutral">Neutre</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tendance</label>
+        <p-dropdown
+          v-model="trendFilter"
+          :options="trendOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Toutes les tendances"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Statut</label>
-          <div class="select is-fullwidth">
-            <select v-model="statusFilter">
-              <option value="">Tous les statuts</option>
-              <option value="true">Actif</option>
-              <option value="false">Inactif</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+        <p-dropdown
+          v-model="statusFilter"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Tous les statuts"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Tri</label>
-          <div class="select is-fullwidth">
-            <select v-model="sortOrder">
-              <option value="name">Par nom</option>
-              <option value="code">Par code</option>
-              <option value="category">Par catégorie</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tri</label>
+        <p-dropdown
+          v-model="sortOrder"
+          :options="sortOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+        />
       </div>
     </div>
 
     <!-- Liste des indicateurs -->
-    <div v-if="loading" class="has-text-centered py-6">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" />
+    <div v-if="loading" class="flex justify-center items-center py-12">
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="indicators.length === 0" class="has-text-centered py-6">
-      <p class="is-size-5">Aucun indicateur trouvé</p>
+    <div v-else-if="indicators.length === 0" class="flex justify-center items-center py-12">
+      <p class="text-lg text-gray-600">Aucun indicateur trouvé</p>
     </div>
 
     <div v-else>
-      <div class="indicators-list">
+      <div class="mb-8">
         <IndicatorCard
           v-for="indicator in indicators"
           :key="indicator.id"
@@ -108,30 +96,15 @@
       </div>
 
       <!-- Pagination -->
-      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-        <a
-          :class="['pagination-previous', { 'is-disabled': currentPage === 1 }]"
-          @click="changePage(currentPage - 1)"
-        >
-          Précédent
-        </a>
-        <a
-          :class="['pagination-next', { 'is-disabled': currentPage === totalPages }]"
-          @click="changePage(currentPage + 1)"
-        >
-          Suivant
-        </a>
-        <ul class="pagination-list">
-          <li v-for="page in getPagesToShow()" :key="page">
-            <a
-              :class="['pagination-link', { 'is-current': page === currentPage }]"
-              @click="changePage(page)"
-            >
-              {{ page }}
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <div class="flex justify-center mt-8">
+        <p-paginator
+          :rows="itemsPerPage.value"
+          :totalRecords="indicatorStore.pagination.totalItems"
+          :pageLinkSize="3"
+          :currentPageReportTemplate="'Affichage {first} à {last} de {totalRecords}'"
+          @page="onPageChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -139,10 +112,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import Button from '@/components/ui/MyButton.vue'
+import Button from 'primevue/button'
+import PDropdown from 'primevue/dropdown'
+import PPaginator from 'primevue/paginator'
 import IndicatorCard from '@/components/indicators/IndicatorCard.vue'
 import { useIndicatorStore } from '@/stores/indicators'
-// import type { Indicator } from '@/stores/app'
 
 const router = useRouter()
 const indicatorStore = useIndicatorStore()
@@ -155,6 +129,34 @@ const statusFilter = ref('')
 const sortOrder = ref('name')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+
+// Options pour les filtres
+const categoryOptions = [
+  { label: 'Toutes les catégories', value: '' },
+  { label: 'Sécurité', value: 'safety' },
+  { label: 'Qualité', value: 'quality' },
+  { label: 'Environnement', value: 'environment' },
+  { label: 'Hygiène', value: 'health' },
+]
+
+const trendOptions = [
+  { label: 'Toutes les tendances', value: '' },
+  { label: 'Positive', value: 'positive' },
+  { label: 'Négative', value: 'negative' },
+  { label: 'Neutre', value: 'neutral' },
+]
+
+const statusOptions = [
+  { label: 'Tous les statuts', value: '' },
+  { label: 'Actif', value: 'true' },
+  { label: 'Inactif', value: 'false' },
+]
+
+const sortOptions = [
+  { label: 'Par nom', value: 'name' },
+  { label: 'Par code', value: 'code' },
+  { label: 'Par catégorie', value: 'category' },
+]
 
 // Fonction pour charger les indicateurs
 const loadIndicators = async () => {
@@ -185,23 +187,9 @@ const deleteIndicator = async (id: number) => {
   }
 }
 
-const changePage = async (page: number) => {
-  if (page >= 1 && page <= indicatorStore.pagination.totalPages) {
-    currentPage.value = page
-    await loadIndicators()
-  }
-}
-
-const getPagesToShow = () => {
-  const pages = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end = Math.min(indicatorStore.pagination.totalPages, currentPage.value + 2)
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-
-  return pages
+const onPageChange = async (event: { page: number }) => {
+  currentPage.value = event.page + 1
+  await loadIndicators()
 }
 
 // Charger les indicateurs au montage
@@ -212,24 +200,14 @@ onMounted(() => {
 // Accéder aux indicateurs et état de chargement depuis le store
 const indicators = computed(() => indicatorStore.indicators)
 const loading = computed(() => indicatorStore.loading)
-const totalPages = indicatorStore.pagination.totalPages
 </script>
 
 <style scoped>
 .indicators-page {
-  padding: 1rem;
+  @apply p-4;
 }
 
 .indicators-list {
-  margin-bottom: 2rem;
-}
-
-.py-6 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
+  @apply mb-8;
 }
 </style>

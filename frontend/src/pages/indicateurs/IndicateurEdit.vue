@@ -1,26 +1,25 @@
 <template>
-  <div class="indicator-edit-page">
-    <div class="level">
-      <div class="level-left">
-        <h1 class="title">Modifier l'indicateur</h1>
-      </div>
-      <div class="level-right">
-        <router-link to="/indicators" class="button is-light">
-          <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
-          Retour à la liste
-        </router-link>
-      </div>
+  <div class="indicator-edit-page p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Modifier l'indicateur</h1>
+      <router-link
+        to="/indicators"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+      >
+        <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
+        Retour à la liste
+      </router-link>
     </div>
 
-    <div v-if="state.loading" class="has-text-centered py-6">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" />
+    <div v-if="state.loading" class="flex justify-center items-center py-12">
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="!indicator" class="has-text-centered py-6">
-      <p class="is-size-5">Indicateur non trouvé</p>
+    <div v-else-if="!indicator" class="flex justify-center items-center py-12">
+      <p class="text-lg text-gray-600">Indicateur non trouvé</p>
     </div>
 
-    <div v-else class="box">
+    <div v-else class="bg-white p-6 rounded-lg shadow-md">
       <IndicatorForm
         :initialData="form"
         :submitButtonText="'Enregistrer les modifications'"
@@ -45,9 +44,9 @@ interface IndicatorData {
   code: string
   category: string
   unit: string
-  target_value: number | null
-  threshold_min: number | null
-  threshold_max: number | null
+  target_value: number | undefined
+  threshold_min: number | undefined
+  threshold_max: number | undefined
   calculation_method: string
   data_source: string
   frequency: string
@@ -66,9 +65,9 @@ const form = ref<IndicatorData>({
   code: '',
   category: '',
   unit: '',
-  target_value: null,
-  threshold_min: null,
-  threshold_max: null,
+  target_value: undefined,
+  threshold_min: undefined,
+  threshold_max: undefined,
   calculation_method: '',
   data_source: '',
   frequency: 'monthly',
@@ -105,9 +104,9 @@ const loadIndicator = async () => {
         code: indicatorData.code,
         category: indicatorData.category || '',
         unit: indicatorData.unit || '',
-        target_value: indicatorData.target_value || null,
-        threshold_min: indicatorData.threshold_min || null,
-        threshold_max: indicatorData.threshold_max || null,
+        target_value: indicatorData.target_value || undefined,
+        threshold_min: indicatorData.threshold_min || undefined,
+        threshold_max: indicatorData.threshold_max || undefined,
         calculation_method: indicatorData.calculation_method || '',
         data_source: indicatorData.data_source || '',
         frequency: indicatorData.frequency,
@@ -163,23 +162,6 @@ onMounted(() => {
 
 <style scoped>
 .indicator-edit-page {
-  padding: 1rem;
-}
-
-.py-6 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.mt-5 {
-  margin-top: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 0.75rem;
+  @apply p-4;
 }
 </style>

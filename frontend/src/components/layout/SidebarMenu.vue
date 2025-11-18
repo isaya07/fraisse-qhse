@@ -1,70 +1,85 @@
 <template>
-  <aside class="menu is-hidden-mobile is-primary" :class="{ 'is-active': isOpen }">
-    <ul class="menu-list">
-      <li>
-        <router-link to="/" class="menu-item">
-          <font-awesome-icon :icon="['fas', 'home']" class="menu-icon mr-2" />
-          <span>Accueil</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/indicators" class="menu-item">
-          <font-awesome-icon :icon="['fas', 'chart-line']" class="menu-icon mr-2" />
-          <span>Indicateurs</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/actions" class="menu-item">
-          <font-awesome-icon :icon="['fas', 'tasks']" class="menu-icon mr-2" />
-          <span>Actions</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/documents" class="menu-item">
-          <font-awesome-icon :icon="['fas', 'file-alt']" class="menu-icon mr-2" />
-          <span>Documents</span>
-        </router-link>
-      </li>
-      <li>
-        <router-link to="/profile" class="menu-item">
-          <font-awesome-icon :icon="['fas', 'user']" class="menu-icon mr-2" />
-          <span>Profil</span>
-        </router-link>
-      </li>
-    </ul>
-  </aside>
-
-  <div class="sidebar-overlay" :class="{ 'is-active': isOpen }" @click="toggleSidebar"></div>
+  <PanelMenu :model="items" class="w-full border-0 bg-transparent" :pt="customPanelMenuPT" />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
+// import PanelMenu from 'primevue/panelmenu'
 
-const isOpen = ref(false)
+import { useRouter } from 'vue-router'
 
-const toggleSidebar = () => {
-  isOpen.value = !isOpen.value
+// 1. Définir l'objet de configuration PT
+const customPanelMenuPT = {
+  // Cible chaque panneau pour supprimer sa bordure et son ombre
+  panel: {
+    class: 'border-none shadow-none mb-0',
+  },
+  // Cible l'en-tête pour supprimer sa bordure inférieure
+  header: {
+    class: 'border-none',
+  },
+  // Cible le contenu de l'en-tête pour un espacement vertical réduit
+  headerContent: {
+    class: 'py-0', // Padding interne pour l'esthétique
+  },
+  // Cible le conteneur du sous-menu pour supprimer tout espacement
+  toggleableContent: {
+    class: 'p-0', // Supprime tout le padding
+  },
+  // Cible la liste <ul> pour appliquer un espacement entre les éléments
+  root: {
+    class: 'gap-0 p-0', // Utilise flexbox et gap pour l'espacement
+  },
+  // Cible le contenu de chaque élément de menu pour un espacement compact
+  content: {
+    class: 'py-0', // Padding interne pour l'esthétique
+  },
 }
 
-// Fermer le menu quand la fenêtre est redimensionnée (pour les vues mobiles)
-const handleResize = () => {
-  if (window.innerWidth >= 1024) {
-    // Taille de tablette et plus
-    isOpen.value = false
-  }
-}
+const router = useRouter()
 
-onMounted(() => {
-  window.addEventListener('resize', handleResize)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
-})
+const items = ref([
+  {
+    label: 'Accueil',
+    command: () => {
+      router.push('/')
+    },
+  },
+  {
+    label: 'Indicateurs',
+    command: () => {
+      router.push('/indicators')
+    },
+  },
+  {
+    label: 'Actions',
+    command: () => {
+      router.push('/actions')
+    },
+  },
+  {
+    label: 'Documents',
+    command: () => {
+      router.push('/documents')
+    },
+  },
+  {
+    label: 'Profil',
+    command: () => {
+      router.push('/profile')
+    },
+  },
+  {
+    label: 'Utilisateurs',
+    command: () => {
+      router.push('/users')
+    },
+  },
+  {
+    label: 'Paramètres',
+    command: () => {
+      router.push('/settings')
+    },
+  },
+])
 </script>
-
-<style scoped>
-.menu.is-active {
-  transform: translateX(0);
-}
-</style>

@@ -1,92 +1,79 @@
 <template>
-  <div class="documents-page">
-    <div class="level">
-      <div class="level-left">
-        <h1 class="title">Documents QHSE</h1>
-      </div>
-      <div class="level-right">
-        <Button
-          :icon="['fas', 'plus']"
-          text="Nouveau document"
-          variant="primary"
-          @click="createNewDocument"
-        />
-      </div>
+  <div class="p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Documents QHSE</h1>
+      <Button
+        icon="pi pi-plus"
+        label="Nouveau document"
+        @click="createNewDocument"
+        class="p-button-primary"
+      />
     </div>
 
     <!-- Barre de recherche et filtres -->
-    <div class="field has-addons mb-5">
-      <div class="control is-expanded">
-        <input
-          v-model="searchQuery"
-          class="input"
-          type="text"
-          placeholder="Rechercher un document..."
-        />
-      </div>
-      <div class="control">
-        <button class="button is-info">
-          <font-awesome-icon :icon="['fas', 'search']" />
-        </button>
+    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+      <div class="flex-grow">
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            type="text"
+            placeholder="Rechercher un document..."
+          />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <font-awesome-icon :icon="['fas', 'search']" class="text-gray-400" />
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Filtres additionnels -->
-    <div class="columns mb-5">
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Catégorie</label>
-          <div class="select is-fullwidth">
-            <select v-model="categoryFilter">
-              <option value="">Toutes les catégories</option>
-              <option value="procedure">Procédures</option>
-              <option value="form">Formulaires</option>
-              <option value="consigne">Consignes</option>
-              <option value="other">Autres</option>
-            </select>
-          </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+        <p-dropdown
+          v-model="categoryFilter"
+          :options="categoryOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Toutes les catégories"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Statut</label>
-          <div class="select is-fullwidth">
-            <select v-model="statusFilter">
-              <option value="">Tous les statuts</option>
-              <option value="draft">Brouillon</option>
-              <option value="pending_approval">En attente</option>
-              <option value="approved">Approuvé</option>
-              <option value="rejected">Rejeté</option>
-              <option value="archived">Archivé</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+        <p-dropdown
+          v-model="statusFilter"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Tous les statuts"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Tri</label>
-          <div class="select is-fullwidth">
-            <select v-model="sortOrder">
-              <option value="newest">Plus récents</option>
-              <option value="oldest">Plus anciens</option>
-              <option value="title">Par titre</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tri</label>
+        <p-dropdown
+          v-model="sortOrder"
+          :options="sortOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+        />
       </div>
     </div>
 
     <!-- Liste des documents -->
-    <div v-if="loading" class="has-text-centered py-6">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" />
+    <div v-if="loading" class="flex justify-center items-center py-12">
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="documents.length === 0" class="has-text-centered py-6">
-      <p class="is-size-5">Aucun document trouvé</p>
+    <div v-else-if="documents.length === 0" class="flex justify-center items-center py-12">
+      <p class="text-lg text-gray-600">Aucun document trouvé</p>
     </div>
 
     <div v-else>
-      <div class="documents-list">
+      <div class="mb-8">
         <DocumentCard
           v-for="document in documents"
           :key="document.id"
@@ -99,30 +86,15 @@
       </div>
 
       <!-- Pagination -->
-      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-        <a
-          :class="['pagination-previous', { 'is-disabled': currentPage === 1 }]"
-          @click="changePage(currentPage - 1)"
-        >
-          Précédent
-        </a>
-        <a
-          :class="['pagination-next', { 'is-disabled': currentPage === totalPages }]"
-          @click="changePage(currentPage + 1)"
-        >
-          Suivant
-        </a>
-        <ul class="pagination-list">
-          <li v-for="page in getPagesToShow()" :key="page">
-            <a
-              :class="['pagination-link', { 'is-current': page === currentPage }]"
-              @click="changePage(page)"
-            >
-              {{ page }}
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <div class="flex justify-center mt-8">
+        <p-paginator
+          :rows="itemsPerPage.value"
+          :totalRecords="documentStore.pagination.totalItems"
+          :pageLinkSize="3"
+          :currentPageReportTemplate="'Affichage {first} à {last} de {totalRecords}'"
+          @page="onPageChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -130,10 +102,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import Button from '@/components/ui/MyButton.vue'
+import Button from 'primevue/button'
+import PDropdown from 'primevue/dropdown'
+import PPaginator from 'primevue/paginator'
 import DocumentCard from '@/components/documents/DocumentCard.vue'
 import { useDocumentStore } from '@/stores/documents'
-// import type { Document } from '@/stores/app'
 
 const router = useRouter()
 const documentStore = useDocumentStore()
@@ -145,6 +118,30 @@ const statusFilter = ref('')
 const sortOrder = ref('newest')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+
+// Options pour les filtres
+const categoryOptions = [
+  { label: 'Toutes les catégories', value: '' },
+  { label: 'Procédures', value: 'procedure' },
+  { label: 'Formulaires', value: 'form' },
+  { label: 'Consignes', value: 'consigne' },
+  { label: 'Autres', value: 'other' },
+]
+
+const statusOptions = [
+  { label: 'Tous les statuts', value: '' },
+  { label: 'Brouillon', value: 'draft' },
+  { label: 'En attente', value: 'pending_approval' },
+  { label: 'Approuvé', value: 'approved' },
+  { label: 'Rejeté', value: 'rejected' },
+  { label: 'Archivé', value: 'archived' },
+]
+
+const sortOptions = [
+  { label: 'Plus récents', value: 'newest' },
+  { label: 'Plus anciens', value: 'oldest' },
+  { label: 'Par titre', value: 'title' },
+]
 
 // Fonction pour charger les documents
 const loadDocuments = async () => {
@@ -180,23 +177,9 @@ const downloadDocument = (filepath: string) => {
   window.open(filepath, '_blank')
 }
 
-const changePage = async (page: number) => {
-  if (page >= 1 && page <= documentStore.pagination.totalPages) {
-    currentPage.value = page
-    await loadDocuments()
-  }
-}
-
-const getPagesToShow = () => {
-  const pages = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end = Math.min(documentStore.pagination.totalPages, currentPage.value + 2)
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-
-  return pages
+const onPageChange = async (event: { page: number }) => {
+  currentPage.value = event.page + 1
+  await loadDocuments()
 }
 
 // Charger les documents au montage
@@ -207,24 +190,4 @@ onMounted(() => {
 // Accéder aux documents et état de chargement depuis le store
 const documents = computed(() => documentStore.documents)
 const loading = computed(() => documentStore.loading)
-const totalPages = computed(() => documentStore.pagination.totalPages)
 </script>
-
-<style scoped>
-.documents-page {
-  padding: 1rem;
-}
-
-.documents-list {
-  margin-bottom: 2rem;
-}
-
-.py-6 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-</style>

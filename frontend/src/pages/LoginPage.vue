@@ -1,47 +1,53 @@
 <template>
   <div class="login">
-    <section class="section">
-      <div class="container">
-        <div class="columns is-centered">
-          <div class="column is-5-tablet is-4-desktop is-3-widescreen">
-            <div class="box">
-              <h1 class="title is-3 has-text-centered">Connexion</h1>
+    <section class="py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-center">
+          <div class="w-full max-w-md">
+            <div class="bg-white p-8 rounded-lg shadow-md">
+              <h1 class="text-2xl font-bold text-center mb-6">Connexion</h1>
               <form @submit.prevent="handleSubmit">
-                <div class="field">
-                  <label class="label">Nom d'utilisateur</label>
-                  <div class="control has-icons-left">
+                <div class="mb-4">
+                  <label class="block text-gray-700 text-sm font-bold mb-2"
+                    >Nom d'utilisateur</label
+                  >
+                  <div class="relative">
                     <input
                       v-model="username"
-                      class="input"
+                      class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       type="text"
                       placeholder="Votre nom d'utilisateur"
                       required
                     />
-                    <span class="icon is-small is-left">
-                      <font-awesome-icon :icon="['fas', 'user']" />
-                    </span>
+                    <div
+                      class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+                    >
+                      <font-awesome-icon :icon="['fas', 'user']" class="text-gray-400" />
+                    </div>
                   </div>
                 </div>
-                <div class="field">
-                  <label class="label">Mot de passe</label>
-                  <div class="control has-icons-left">
+                <div class="mb-6">
+                  <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
+                  <div class="relative">
                     <input
                       v-model="password"
-                      class="input"
+                      class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       type="password"
                       placeholder="Votre mot de passe"
                       required
                     />
-                    <span class="icon is-small is-left">
-                      <font-awesome-icon :icon="['fas', 'lock']" />
-                    </span>
+                    <div
+                      class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+                    >
+                      <font-awesome-icon :icon="['fas', 'lock']" class="text-gray-400" />
+                    </div>
                   </div>
                 </div>
-                <div class="field">
+                <div class="mb-4">
                   <div class="control">
                     <button
                       :disabled="loading"
-                      class="button is-success is-fullwidth"
+                      class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline disabled:opacity-50"
                       type="submit"
                     >
                       <font-awesome-icon
@@ -57,7 +63,10 @@
                 </div>
 
                 <!-- Affichage des erreurs -->
-                <div v-if="error" class="notification is-danger mt-3">
+                <div
+                  v-if="error"
+                  class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-3"
+                >
                   {{ error }}
                 </div>
               </form>
@@ -103,10 +112,7 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-.mr-2 {
-  margin-right: 0.5rem;
-}
-.mt-3 {
-  margin-top: 0.75rem;
+.login {
+  min-height: 100vh;
 }
 </style>

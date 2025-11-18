@@ -1,18 +1,17 @@
 <template>
-  <div class="document-create-page">
-    <div class="level">
-      <div class="level-left">
-        <h1 class="title">Créer un nouveau document</h1>
-      </div>
-      <div class="level-right">
-        <router-link to="/documents" class="button is-light">
-          <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
-          Retour à la liste
-        </router-link>
-      </div>
+  <div class="document-create-page p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Créer un nouveau document</h1>
+      <router-link
+        to="/documents"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+      >
+        <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
+        Retour à la liste
+      </router-link>
     </div>
 
-    <div class="box">
+    <div class="bg-white p-6 rounded-lg shadow-md">
       <DocumentForm :submitButtonText="'Enregistrer'" @submit="submitForm" @cancel="cancel" />
     </div>
   </div>
@@ -58,14 +57,6 @@ const cancel = () => {
 
 <style scoped>
 .document-create-page {
-  padding: 1rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 0.75rem;
+  @apply p-4;
 }
 </style>

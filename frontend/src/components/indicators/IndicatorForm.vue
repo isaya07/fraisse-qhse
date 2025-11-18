@@ -1,128 +1,170 @@
 <template>
-  <form @submit.prevent="submitForm">
-    <InputField v-model="formData.name" label="Nom" placeholder="Nom de l'indicateur" required />
-    <TextAreaField
-      v-model="formData.description"
-      label="Description"
-      placeholder="Description de l'indicateur"
-      :rows="4"
-    />
+  <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+    <div class="field">
+      <label for="name" class="block text-sm font-medium mb-1">Nom</label>
+      <p-input-text
+        id="name"
+        v-model="formData.name"
+        placeholder="Nom de l'indicateur"
+        required
+        class="w-full"
+      />
+    </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <InputField
+    <div class="field">
+      <label for="description" class="block text-sm font-medium mb-1">Description</label>
+      <p-textarea
+        id="description"
+        v-model="formData.description"
+        placeholder="Description de l'indicateur"
+        :rows="4"
+        class="w-full"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="code" class="block text-sm font-medium mb-1">Code</label>
+        <p-input-text
+          id="code"
           v-model="formData.code"
-          label="Code"
           placeholder="Code de l'indicateur"
           required
+          class="w-full"
         />
       </div>
-      <div class="column is-half">
-        <InputField
+
+      <div class="field">
+        <label for="category" class="block text-sm font-medium mb-1">Catégorie</label>
+        <p-input-text
+          id="category"
           v-model="formData.category"
-          label="Catégorie"
           placeholder="Catégorie de l'indicateur"
+          class="w-full"
         />
       </div>
     </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <InputField v-model="formData.unit" label="Unité" placeholder="Unité de mesure" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="unit" class="block text-sm font-medium mb-1">Unité</label>
+        <p-input-text
+          id="unit"
+          v-model="formData.unit"
+          placeholder="Unité de mesure"
+          class="w-full"
+        />
       </div>
-      <div class="column is-half">
-        <SelectField
+
+      <div class="field">
+        <label for="frequency" class="block text-sm font-medium mb-1">Fréquence</label>
+        <p-dropdown
+          id="frequency"
           v-model="formData.frequency"
-          label="Fréquence"
           :options="frequencyOptions"
+          optionLabel="text"
+          optionValue="value"
           required
+          class="w-full"
         />
       </div>
     </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <NumberField
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="target_value" class="block text-sm font-medium mb-1">Valeur cible</label>
+        <p-input-number
+          id="target_value"
           v-model="formData.target_value"
-          label="Valeur cible"
           placeholder="Valeur cible"
           :min="0"
           :step="0.01"
+          class="w-full"
         />
       </div>
-      <div class="column is-half">
-        <SelectField
+
+      <div class="field">
+        <label for="trend_direction" class="block text-sm font-medium mb-1">Sens de tendance</label>
+        <p-dropdown
+          id="trend_direction"
           v-model="formData.trend_direction"
-          label="Sens de tendance"
           :options="trendDirectionOptions"
+          optionLabel="text"
+          optionValue="value"
           required
+          class="w-full"
         />
       </div>
     </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <NumberField
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="threshold_min" class="block text-sm font-medium mb-1">Seuil minimum</label>
+        <p-input-number
+          id="threshold_min"
           v-model="formData.threshold_min"
-          label="Seuil minimum"
           placeholder="Seuil minimum"
           :min="0"
           :step="0.01"
+          class="w-full"
         />
       </div>
-      <div class="column is-half">
-        <NumberField
+
+      <div class="field">
+        <label for="threshold_max" class="block text-sm font-medium mb-1">Seuil maximum</label>
+        <p-input-number
+          id="threshold_max"
           v-model="formData.threshold_max"
-          label="Seuil maximum"
           placeholder="Seuil maximum"
           :min="0"
           :step="0.01"
+          class="w-full"
         />
       </div>
     </div>
 
     <div class="field">
-      <TextAreaField
+      <label for="calculation_method" class="block text-sm font-medium mb-1"
+        >Méthode de calcul</label
+      >
+      <p-textarea
+        id="calculation_method"
         v-model="formData.calculation_method"
-        label="Méthode de calcul"
         placeholder="Description de la méthode de calcul"
         :rows="4"
+        class="w-full"
       />
     </div>
 
     <div class="field">
-      <InputField
+      <label for="data_source" class="block text-sm font-medium mb-1">Source des données</label>
+      <p-input-text
+        id="data_source"
         v-model="formData.data_source"
-        label="Source des données"
         placeholder="Source des données"
+        class="w-full"
       />
     </div>
 
-    <div class="field">
-      <label class="checkbox">
-        <input v-model="formData.is_active" type="checkbox" />
-        Actif
-      </label>
+    <div class="field flex items-center">
+      <p-checkbox id="is_active" v-model="formData.is_active" :binary="true" inputId="is_active" />
+      <label for="is_active" class="ml-2 block text-sm">Actif</label>
     </div>
 
-    <div class="field is-grouped is-grouped-right mt-5">
-      <div class="control">
-        <MyButton
-          type="submit"
-          text="Enregistrer"
-          variant="primary"
-          :loading="state.loading"
-          :disabled="state.loading"
-          :icon-left="state.loading ? ['fas', 'spinner'] : ['fas', 'save']"
-        />
-      </div>
-      <div class="control">
-        <MyButton type="button" text="Annuler" variant="light" @click="onCancel" />
-      </div>
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button
+        type="submit"
+        label="Enregistrer"
+        icon="pi pi-save"
+        :loading="state.loading"
+        :disabled="state.loading"
+        class="p-button-primary"
+      />
+      <p-button type="button" label="Annuler" @click="onCancel" class="p-button-secondary" />
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="state.error" class="notification is-danger mt-3">
+    <div v-if="state.error" class="p-3 bg-red-100 text-red-700 rounded-md mt-3">
       {{ state.error }}
     </div>
   </form>
@@ -130,11 +172,12 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import InputField from '@/components/form/InputField.vue'
-import NumberField from '@/components/form/NumberField.vue'
-import SelectField from '@/components/form/SelectField.vue'
-import TextAreaField from '@/components/form/TextAreaField.vue'
-import MyButton from '@/components/ui/MyButton.vue'
+import PInputText from 'primevue/inputtext'
+import PInputNumber from 'primevue/inputnumber'
+import PDropdown from 'primevue/dropdown'
+import PTextarea from 'primevue/textarea'
+import PButton from 'primevue/button'
+import PCheckbox from 'primevue/checkbox'
 
 // Définir les types pour les props
 interface Props {
@@ -155,9 +198,9 @@ const props = withDefaults(defineProps<Props>(), {
     code: '',
     category: '',
     unit: '',
-    target_value: null,
-    threshold_min: null,
-    threshold_max: null,
+    target_value: undefined,
+    threshold_min: undefined,
+    threshold_max: undefined,
     calculation_method: '',
     data_source: '',
     frequency: 'monthly',
@@ -175,9 +218,9 @@ interface IndicatorFormData {
   code: string
   category: string
   unit: string
-  target_value: number | null
-  threshold_min: number | null
-  threshold_max: number | null
+  target_value: number | undefined
+  threshold_min: number | undefined
+  threshold_max: number | undefined
   calculation_method: string
   data_source: string
   frequency: string
@@ -222,19 +265,7 @@ const onCancel = () => {
 </script>
 
 <style scoped>
-.mt-5 {
-  margin-top: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 0.75rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
+.field {
+  @apply mb-4;
 }
 </style>

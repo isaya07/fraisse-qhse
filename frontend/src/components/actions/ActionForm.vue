@@ -1,96 +1,140 @@
 <template>
-  <form @submit.prevent="submitForm">
-    <InputField v-model="formData.title" label="Titre" placeholder="Titre de l'action" required />
-    <TextAreaField
-      v-model="formData.description"
-      label="Description"
-      placeholder="Description de l'action"
-      :rows="4"
-    />
+  <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+    <div class="field">
+      <label for="title" class="block text-sm font-medium mb-1">Titre</label>
+      <p-input-text
+        id="title"
+        v-model="formData.title"
+        placeholder="Titre de l'action"
+        required
+        class="w-full"
+      />
+    </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <SelectField v-model="formData.type" label="Type" :options="typeOptions" required />
-      </div>
-      <div class="column is-half">
-        <SelectField
-          v-model="formData.priority"
-          label="Priorité"
-          :options="priorityOptions"
+    <div class="field">
+      <label for="description" class="block text-sm font-medium mb-1">Description</label>
+      <p-textarea
+        id="description"
+        v-model="formData.description"
+        placeholder="Description de l'action"
+        :rows="4"
+        class="w-full"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="type" class="block text-sm font-medium mb-1">Type</label>
+        <p-dropdown
+          id="type"
+          v-model="formData.type"
+          :options="typeOptions"
+          optionLabel="text"
+          optionValue="value"
           required
+          class="w-full"
+        />
+      </div>
+
+      <div class="field">
+        <label for="priority" class="block text-sm font-medium mb-1">Priorité</label>
+        <p-dropdown
+          id="priority"
+          v-model="formData.priority"
+          :options="priorityOptions"
+          optionLabel="text"
+          optionValue="value"
+          required
+          class="w-full"
         />
       </div>
     </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <SelectField v-model="formData.status" label="Statut" :options="statusOptions" required />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="status" class="block text-sm font-medium mb-1">Statut</label>
+        <p-dropdown
+          id="status"
+          v-model="formData.status"
+          :options="statusOptions"
+          optionLabel="text"
+          optionValue="value"
+          required
+          class="w-full"
+        />
       </div>
-      <div class="column is-half">
-        <SelectField
+
+      <div class="field">
+        <label for="assigned_to" class="block text-sm font-medium mb-1">Assigné à</label>
+        <p-dropdown
+          id="assigned_to"
           v-model="formData.assigned_to"
-          label="Assigné à"
-          :options="userOptions"
-          :has-default-option="true"
-          default-option-text="Personne non assignée"
+          :options="userOptionsWithDefault"
+          optionLabel="text"
+          optionValue="value"
+          class="w-full"
         />
       </div>
     </div>
 
-    <div class="columns">
-      <div class="column is-half">
-        <InputField v-model="formData.due_date" label="Date d'échéance" type="date" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="field">
+        <label for="due_date" class="block text-sm font-medium mb-1">Date d'échéance</label>
+        <p-input-text id="due_date" v-model="formData.due_date" type="date" class="w-full" />
       </div>
-      <div class="column is-half">
-        <NumberField
+
+      <div class="field">
+        <label for="progress" class="block text-sm font-medium mb-1">Progression</label>
+        <p-input-number
+          id="progress"
           v-model="formData.progress"
-          label="Progression"
           placeholder="Progression en %"
           :min="0"
           :max="100"
           :step="1"
+          class="w-full"
         />
-        <p class="help">Valeur entre 0 et 100</p>
+        <small class="text-sm text-gray-500">Valeur entre 0 et 100</small>
       </div>
     </div>
 
     <div class="field">
-      <SelectField
+      <label for="related_to" class="block text-sm font-medium mb-1">Lié à</label>
+      <p-dropdown
+        id="related_to"
         v-model="formData.related_to"
-        label="Lié à"
-        :options="relatedToOptions"
-        :has-default-option="true"
-        default-option-text="Aucune relation"
+        :options="relatedToOptionsWithDefault"
+        optionLabel="text"
+        optionValue="value"
+        class="w-full"
       />
     </div>
 
     <div v-if="formData.related_to" class="field">
-      <NumberField
+      <label for="related_id" class="block text-sm font-medium mb-1">ID de l'élément lié</label>
+      <p-input-number
+        id="related_id"
         v-model="formData.related_id"
-        label="ID de l'élément lié"
         placeholder="ID de l'élément lié"
         :min="1"
+        class="w-full"
       />
     </div>
 
-    <div class="field is-grouped is-grouped-right mt-5">
-      <div class="control">
-        <MyButton
-          type="submit"
-          :text="submitButtonText"
-          variant="primary"
-          :loading="state.loading"
-          :disabled="state.loading"
-          :icon-left="state.loading ? ['fas', 'spinner'] : ['fas', 'save']"
-        />
-      </div>
-      <div class="control">
-        <MyButton type="button" text="Annuler" variant="light" @click="onCancel" />
-      </div>
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button
+        type="submit"
+        :label="submitButtonText"
+        icon="pi pi-save"
+        :loading="state.loading"
+        :disabled="state.loading"
+        class="p-button-primary"
+      />
+      <p-button type="button" label="Annuler" @click="onCancel" class="p-button-secondary" />
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="state.error" class="notification is-danger mt-3">
+    <div v-if="state.error" class="p-3 bg-red-100 text-red-700 rounded-md mt-3">
       {{ state.error }}
     </div>
   </form>
@@ -98,11 +142,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import InputField from '@/components/form/InputField.vue'
-import NumberField from '@/components/form/NumberField.vue'
-import SelectField from '@/components/form/SelectField.vue'
-import TextAreaField from '@/components/form/TextAreaField.vue'
-import MyButton from '@/components/ui/MyButton.vue'
+import PInputText from 'primevue/inputtext'
+import PInputNumber from 'primevue/inputnumber'
+import PDropdown from 'primevue/dropdown'
+import PTextarea from 'primevue/textarea'
+import PButton from 'primevue/button'
 import type { User } from '@/stores/app'
 
 // Définir les types pour les props
@@ -126,11 +170,11 @@ const props = withDefaults(defineProps<Props>(), {
     type: '',
     priority: '',
     status: 'open',
-    assigned_to: null,
+    assigned_to: undefined,
     due_date: '',
     progress: 0,
     related_to: '',
-    related_id: null,
+    related_id: undefined,
   }),
   users: () => [],
   submitButtonText: 'Enregistrer',
@@ -145,11 +189,11 @@ interface ActionFormData {
   type: string
   priority: string
   status: string
-  assigned_to: number | null
+  assigned_to: number | undefined
   due_date: string
   progress: number
   related_to: string
-  related_id: number | null
+  related_id: number | undefined
 }
 
 // Données du formulaire
@@ -190,12 +234,20 @@ const relatedToOptions = [
   { value: 'training', text: 'Formation' },
 ]
 
-// Options pour les utilisateurs
-const userOptions = computed(() => {
-  return props.users.map((user) => ({
+// Options pour les utilisateurs avec option par défaut
+const userOptionsWithDefault = computed(() => {
+  const defaultOption = { value: null, text: 'Personne non assignée' }
+  const userOptions = props.users.map((user) => ({
     value: user.id,
     text: `${user.first_name} ${user.last_name} (${user.username})`,
   }))
+  return [defaultOption, ...userOptions]
+})
+
+// Options pour les éléments liés avec option par défaut
+const relatedToOptionsWithDefault = computed(() => {
+  const defaultOption = { value: '', text: 'Aucune relation' }
+  return [defaultOption, ...relatedToOptions]
 })
 
 // Fonction de soumission
@@ -211,19 +263,7 @@ const onCancel = () => {
 </script>
 
 <style scoped>
-.mt-5 {
-  margin-top: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 0.75rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
+.field {
+  @apply mb-4;
 }
 </style>

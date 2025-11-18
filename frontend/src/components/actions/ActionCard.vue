@@ -1,15 +1,15 @@
 <template>
-  <div class="action-card card">
-    <div class="card-content">
-      <div class="media">
-        <div class="media-left">
-          <span :class="`icon is-large ${getPriorityColorClass(action.priority)}`">
+  <div class="action-card bg-white rounded-lg shadow-md overflow-hidden mb-4">
+    <div class="p-6">
+      <div class="flex items-start">
+        <div class="mr-4">
+          <span :class="`text-3xl ${getPriorityColorClass(action.priority)}`">
             <font-awesome-icon :icon="getIconForActionType(action.type)" size="2x" />
           </span>
         </div>
-        <div class="media-content">
-          <p class="title is-4">{{ action.title }}</p>
-          <p class="subtitle is-6">
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ action.title }}</h3>
+          <p class="text-sm text-gray-600 mb-3">
             <span :class="getStatusColorClass(action.status)">
               {{ getStatusText(action.status) }}
             </span>
@@ -21,65 +21,64 @@
         </div>
       </div>
 
-      <div class="content">
-        <p v-if="action.description">{{ action.description }}</p>
+      <div class="mb-4">
+        <p v-if="action.description" class="text-gray-700 mb-4">{{ action.description }}</p>
 
-        <div class="columns is-mobile">
-          <div class="column is-narrow">
-            <p><strong>Progression:</strong></p>
-            <progress
-              class="progress"
-              :class="getProgressColorClass(action.progress)"
-              :value="action.progress"
-              max="100"
-            >
-              {{ action.progress }}%
-            </progress>
-            <p class="has-text-centered">{{ action.progress }}%</p>
+        <div class="flex flex-col sm:flex-row">
+          <div class="w-full sm:w-1/3 mb-4 sm:mb-0 sm:mr-4">
+            <p class="font-semibold mb-1">Progression:</p>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+              <div
+                class="h-2.5 rounded-full"
+                :class="getProgressColorClass(action.progress)"
+                :style="{ width: action.progress + '%' }"
+              ></div>
+            </div>
+            <p class="text-center text-sm">{{ action.progress }}%</p>
           </div>
 
-          <div class="column">
-            <p v-if="action.due_date">
-              <strong>Échéance:</strong> {{ formatDate(action.due_date) }}
+          <div class="w-full sm:w-2/3">
+            <p v-if="action.due_date" class="mb-1">
+              <span class="font-semibold">Échéance:</span> {{ formatDate(action.due_date) }}
             </p>
-            <p v-if="action.assigned_to">
-              <strong>Assigné à:</strong> {{ getAssignedUserName(action.assigned_to) }}
+            <p v-if="action.assigned_to" class="mb-1">
+              <span class="font-semibold">Assigné à:</span>
+              {{ getAssignedUserName(action.assigned_to) }}
             </p>
-            <p><strong>Type:</strong> {{ getTypeText(action.type) }}</p>
+            <p class="mb-1">
+              <span class="font-semibold">Type:</span> {{ getTypeText(action.type) }}
+            </p>
           </div>
         </div>
       </div>
 
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'eye']"
-              text="Voir"
-              variant="info"
-              @click="$emit('view', action.id)"
-            />
-          </div>
+      <div class="flex justify-between items-center">
+        <div>
+          <p-button
+            :icon="['fas', 'eye']"
+            label="Voir"
+            severity="info"
+            size="small"
+            @click="$emit('view', action.id)"
+          />
         </div>
-        <div class="level-right">
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'edit']"
-              text="Éditer"
-              variant="warning"
-              @click="$emit('edit', action.id)"
-            />
-          </div>
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'trash']"
-              text="Supprimer"
-              variant="danger"
-              @click="$emit('delete', action.id)"
-            />
-          </div>
+        <div class="flex space-x-2">
+          <p-button
+            :icon="['fas', 'edit']"
+            label="Éditer"
+            severity="warning"
+            size="small"
+            @click="$emit('edit', action.id)"
+          />
+          <p-button
+            :icon="['fas', 'trash']"
+            label="Supprimer"
+            severity="danger"
+            size="small"
+            @click="$emit('delete', action.id)"
+          />
         </div>
-      </nav>
+      </div>
     </div>
   </div>
 </template>
@@ -87,7 +86,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { Action, User } from '../../stores/app'
-import Button from '../ui/MyButton.vue'
+import PButton from 'primevue/button'
 
 const props = defineProps({
   action: {
@@ -118,15 +117,15 @@ const getIconForActionType = (type: string) => {
 const getStatusColorClass = (status: string) => {
   switch (status) {
     case 'open':
-      return 'has-text-info'
+      return 'text-blue-500'
     case 'in_progress':
-      return 'has-text-info'
+      return 'text-blue-500'
     case 'completed':
-      return 'has-text-success'
+      return 'text-green-500'
     case 'cancelled':
-      return 'has-text-danger'
+      return 'text-red-500'
     default:
-      return 'has-text-light'
+      return 'text-gray-500'
   }
 }
 
@@ -148,15 +147,15 @@ const getStatusText = (status: string) => {
 const getPriorityColorClass = (priority: string) => {
   switch (priority) {
     case 'low':
-      return 'has-text-success'
+      return 'text-green-500'
     case 'medium':
-      return 'has-text-warning'
+      return 'text-yellow-500'
     case 'high':
-      return 'has-text-danger'
+      return 'text-red-500'
     case 'critical':
-      return 'has-text-danger'
+      return 'text-red-600'
     default:
-      return 'has-text-light'
+      return 'text-gray-500'
   }
 }
 
@@ -189,10 +188,10 @@ const getTypeText = (type: string) => {
 }
 
 const getProgressColorClass = (progress: number) => {
-  if (progress < 30) return 'is-danger'
-  if (progress < 70) return 'is-warning'
-  if (progress < 100) return 'is-info'
-  return 'is-success'
+  if (progress < 30) return 'bg-red-500'
+  if (progress < 70) return 'bg-yellow-500'
+  if (progress < 100) return 'bg-blue-500'
+  return 'bg-green-500'
 }
 
 const formatDate = (dateString: string | undefined) => {

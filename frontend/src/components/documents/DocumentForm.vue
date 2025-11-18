@@ -1,71 +1,100 @@
 <template>
-  <form @submit.prevent="submitForm">
-    <InputField v-model="formData.title" label="Titre *" placeholder="Titre du document" required />
-    <TextAreaField
-      v-model="formData.description"
-      label="Description"
-      placeholder="Description du document"
-      :rows="4"
-    />
-    <SelectField
-      v-model="formData.category"
-      label="Catégorie"
-      :options="categoryOptions"
-      :has-default-option="true"
-      default-option-text="Sélectionnez une catégorie"
-    />
-    <InputField v-model="formData.version" label="Version" placeholder="Version du document" />
-    <SelectField v-model="formData.status" label="Statut" :options="statusOptions" />
-
+  <form @submit.prevent="submitForm" class="flex flex-col gap-4">
     <div class="field">
-      <label class="label">Fichier</label>
-      <div class="control">
-        <div class="file">
-          <label class="file-label">
-            <input class="file-input" type="file" @change="handleFileUpload" />
-            <span class="file-cta">
-              <span class="file-icon">
-                <font-awesome-icon :icon="['fas', 'upload']" />
-              </span>
-              <span class="file-label"> Choisissez un fichier… </span>
-            </span>
-          </label>
-        </div>
-        <p v-if="selectedFile" class="help">
-          Fichier sélectionné: {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
-        </p>
-      </div>
+      <label for="title" class="block text-sm font-medium mb-1">Titre *</label>
+      <p-input-text
+        id="title"
+        v-model="formData.title"
+        placeholder="Titre du document"
+        required
+        class="w-full"
+      />
     </div>
 
-    <div class="field is-grouped is-grouped-right mt-5">
-      <div class="control">
-        <MyButton
-          type="submit"
-          :text="submitButtonText"
-          variant="primary"
-          :loading="state.loading"
-          :disabled="state.loading"
-          :icon-left="state.loading ? ['fas', 'spinner'] : ['fas', 'save']"
+    <div class="field">
+      <label for="description" class="block text-sm font-medium mb-1">Description</label>
+      <p-textarea
+        id="description"
+        v-model="formData.description"
+        placeholder="Description du document"
+        :rows="4"
+        class="w-full"
+      />
+    </div>
+
+    <div class="field">
+      <label for="category" class="block text-sm font-medium mb-1">Catégorie</label>
+      <p-dropdown
+        id="category"
+        v-model="formData.category"
+        :options="categoryOptionsWithDefault"
+        optionLabel="text"
+        optionValue="value"
+        class="w-full"
+      />
+    </div>
+
+    <div class="field">
+      <label for="version" class="block text-sm font-medium mb-1">Version</label>
+      <p-input-text
+        id="version"
+        v-model="formData.version"
+        placeholder="Version du document"
+        class="w-full"
+      />
+    </div>
+
+    <div class="field">
+      <label for="status" class="block text-sm font-medium mb-1">Statut</label>
+      <p-dropdown
+        id="status"
+        v-model="formData.status"
+        :options="statusOptions"
+        optionLabel="text"
+        optionValue="value"
+        class="w-full"
+      />
+    </div>
+
+    <div class="field">
+      <label class="block text-sm font-medium mb-1">Fichier</label>
+      <div class="relative">
+        <input
+          type="file"
+          @change="onFileSelect"
+          class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         />
       </div>
-      <div class="control">
-        <MyButton type="button" text="Annuler" variant="light" @click="onCancel" />
-      </div>
+      <p v-if="selectedFile" class="text-sm text-gray-600 mt-1">
+        Fichier sélectionné: {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
+      </p>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button
+        type="submit"
+        :label="submitButtonText"
+        icon="pi pi-save"
+        :loading="state.loading"
+        :disabled="state.loading"
+        class="p-button-primary"
+      />
+      <p-button type="button" label="Annuler" @click="onCancel" class="p-button-secondary" />
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="state.error" class="notification is-danger mt-3">
+    <div v-if="state.error" class="p-3 bg-red-100 text-red-700 rounded-md mt-3">
       {{ state.error }}
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import InputField from '@/components/form/InputField.vue'
-import SelectField from '@/components/form/SelectField.vue'
-import TextAreaField from '@/components/form/TextAreaField.vue'
-import MyButton from '@/components/ui/MyButton.vue'
+import { ref, reactive, computed } from 'vue'
+import PInputText from 'primevue/inputtext'
+import PDropdown from 'primevue/dropdown'
+import PTextarea from 'primevue/textarea'
+import PButton from 'primevue/button'
 
 // Définir les types pour les props
 interface Props {
@@ -106,7 +135,7 @@ interface DocumentFormData {
 const formData = ref<Partial<DocumentFormData>>({ ...props.initialData })
 
 // Fichier sélectionné
-const selectedFile = ref<File | null>(null)
+const selectedFile = ref<File | undefined>(undefined)
 
 // États
 const state = reactive({
@@ -114,7 +143,12 @@ const state = reactive({
   error: '',
 })
 
-// Options pour les sélections
+// Options pour les sélections avec option par défaut
+const categoryOptionsWithDefault = computed(() => {
+  const defaultOption = { value: '', text: 'Sélectionnez une catégorie' }
+  return [defaultOption, ...categoryOptions]
+})
+
 const categoryOptions = [
   { value: 'procedure', text: 'Procédure' },
   { value: 'form', text: 'Formulaire' },
@@ -130,11 +164,13 @@ const statusOptions = [
   { value: 'archived', text: 'Archivé' },
 ]
 
-// Fonction de gestion du téléchargement de fichier
-const handleFileUpload = (event: Event) => {
+// Fonction pour gérer la sélection de fichier
+const onFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
+  if (target.files && target.files.length > 0 && target.files[0]) {
     selectedFile.value = target.files[0]
+  } else {
+    selectedFile.value = undefined
   }
 }
 
@@ -165,19 +201,7 @@ const onCancel = () => {
 </script>
 
 <style scoped>
-.mt-5 {
-  margin-top: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 0.75rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
+.field {
+  @apply mb-4;
 }
 </style>

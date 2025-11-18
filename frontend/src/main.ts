@@ -5,22 +5,13 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import App from './App.vue'
 import router from './router'
-import './assets/styles/main.scss'
+import PrimeVue from 'primevue/config'
+import Aura from '@primeuix/themes/aura'
+
+import './assets/css/main.css'
 
 // Import des icônes Font Awesome
 library.add(fas)
-
-// Fonction pour appliquer le thème au démarrage
-function applyThemeOnStart() {
-  // Récupérer le thème depuis le localStorage ou utiliser 'light' par défaut
-  const theme = localStorage.getItem('theme') || 'light'
-
-  // Appliquer le thème au document en utilisant l'attribut data-theme (approche Bulma)
-  document.documentElement.setAttribute('data-theme', theme)
-}
-
-// Appliquer le thème avant de créer l'application
-applyThemeOnStart()
 
 const app = createApp(App)
 
@@ -28,5 +19,13 @@ app.component('font-awesome-icon', FontAwesomeIcon)
 
 app.use(createPinia())
 app.use(router)
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: '.dark',
+    },
+  },
+})
 
 app.mount('#app')

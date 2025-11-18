@@ -1,105 +1,90 @@
 <template>
-  <div class="actions-page">
-    <div class="level">
-      <div class="level-left">
-        <h1 class="title">Plans d'Action</h1>
-      </div>
-      <div class="level-right">
-        <Button
-          :icon="['fas', 'plus']"
-          text="Nouvelle action"
-          variant="primary"
-          @click="createNewAction"
-        />
-      </div>
+  <div class="actions-page p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Plans d'Action</h1>
+      <Button
+        icon="pi pi-plus"
+        label="Nouvelle action"
+        @click="createNewAction"
+        class="p-button-primary"
+      />
     </div>
 
     <!-- Barre de recherche et filtres -->
-    <div class="field has-addons mb-5">
-      <div class="control is-expanded">
-        <input
-          v-model="searchQuery"
-          class="input"
-          type="text"
-          placeholder="Rechercher une action..."
-        />
-      </div>
-      <div class="control">
-        <button class="button is-info">
-          <font-awesome-icon :icon="['fas', 'search']" />
-        </button>
+    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+      <div class="flex-grow">
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            type="text"
+            placeholder="Rechercher une action..."
+          />
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <font-awesome-icon :icon="['fas', 'search']" class="text-gray-400" />
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Filtres additionnels -->
-    <div class="columns mb-5">
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Type</label>
-          <div class="select is-fullwidth">
-            <select v-model="typeFilter">
-              <option value="">Tous les types</option>
-              <option value="corrective">Corrective</option>
-              <option value="preventive">Préventive</option>
-              <option value="improvement">Amélioration</option>
-            </select>
-          </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+        <p-dropdown
+          v-model="typeFilter"
+          :options="typeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Tous les types"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Priorité</label>
-          <div class="select is-fullwidth">
-            <select v-model="priorityFilter">
-              <option value="">Toutes les priorités</option>
-              <option value="low">Basse</option>
-              <option value="medium">Moyenne</option>
-              <option value="high">Haute</option>
-              <option value="critical">Critique</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
+        <p-dropdown
+          v-model="priorityFilter"
+          :options="priorityOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Toutes les priorités"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Statut</label>
-          <div class="select is-fullwidth">
-            <select v-model="statusFilter">
-              <option value="">Tous les statuts</option>
-              <option value="open">Ouvert</option>
-              <option value="in_progress">En cours</option>
-              <option value="completed">Terminé</option>
-              <option value="cancelled">Annulé</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+        <p-dropdown
+          v-model="statusFilter"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Tous les statuts"
+          class="w-full"
+        />
       </div>
-      <div class="column is-3">
-        <div class="field">
-          <label class="label">Tri</label>
-          <div class="select is-fullwidth">
-            <select v-model="sortOrder">
-              <option value="newest">Plus récents</option>
-              <option value="oldest">Plus anciens</option>
-              <option value="progress">Par progression</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tri</label>
+        <p-dropdown
+          v-model="sortOrder"
+          :options="sortOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+        />
       </div>
     </div>
 
     <!-- Liste des actions -->
-    <div v-if="loading" class="has-text-centered py-6">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" />
+    <div v-if="loading" class="flex justify-center items-center py-12">
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="actions.length === 0" class="has-text-centered py-6">
-      <p class="is-size-5">Aucune action trouvée</p>
+    <div v-else-if="actions.length === 0" class="flex justify-center items-center py-12">
+      <p class="text-lg text-gray-600">Aucune action trouvée</p>
     </div>
 
     <div v-else>
       <div class="actions-list">
-        <!-- Supposant que nous aurons une liste d'utilisateurs -->
         <ActionCard
           v-for="action in actions"
           :key="action.id"
@@ -112,30 +97,15 @@
       </div>
 
       <!-- Pagination -->
-      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-        <a
-          :class="['pagination-previous', { 'is-disabled': currentPage === 1 }]"
-          @click="changePage(currentPage - 1)"
-        >
-          Précédent
-        </a>
-        <a
-          :class="['pagination-next', { 'is-disabled': currentPage === totalPages }]"
-          @click="changePage(currentPage + 1)"
-        >
-          Suivant
-        </a>
-        <ul class="pagination-list">
-          <li v-for="page in getPagesToShow()" :key="page">
-            <a
-              :class="['pagination-link', { 'is-current': page === currentPage }]"
-              @click="changePage(page)"
-            >
-              {{ page }}
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <div class="flex justify-center mt-8">
+        <p-paginator
+          :rows="itemsPerPage.value"
+          :totalRecords="actionStore.pagination.totalItems"
+          :pageLinkSize="3"
+          :currentPageReportTemplate="'Affichage {first} à {last} de {totalRecords}'"
+          @page="onPageChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -143,7 +113,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import Button from '@/components/ui/MyButton.vue'
+import Button from 'primevue/button'
+import PDropdown from 'primevue/dropdown'
 import ActionCard from '@/components/actions/ActionCard.vue'
 import { useActionStore } from '@/stores/actions'
 import type { User } from '@/stores/app'
@@ -159,6 +130,36 @@ const statusFilter = ref('')
 const sortOrder = ref('newest')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+
+// Options pour les filtres
+const typeOptions = [
+  { label: 'Tous les types', value: '' },
+  { label: 'Corrective', value: 'corrective' },
+  { label: 'Préventive', value: 'preventive' },
+  { label: 'Amélioration', value: 'improvement' },
+]
+
+const priorityOptions = [
+  { label: 'Toutes les priorités', value: '' },
+  { label: 'Basse', value: 'low' },
+  { label: 'Moyenne', value: 'medium' },
+  { label: 'Haute', value: 'high' },
+  { label: 'Critique', value: 'critical' },
+]
+
+const statusOptions = [
+  { label: 'Tous les statuts', value: '' },
+  { label: 'Ouvert', value: 'open' },
+  { label: 'En cours', value: 'in_progress' },
+  { label: 'Terminé', value: 'completed' },
+  { label: 'Annulé', value: 'cancelled' },
+]
+
+const sortOptions = [
+  { label: 'Plus récents', value: 'newest' },
+  { label: 'Plus anciens', value: 'oldest' },
+  { label: 'Par progression', value: 'progress' },
+]
 
 // Données factices pour les utilisateurs (à remplacer par des données réelles)
 const users = ref<User[]>([
@@ -217,23 +218,9 @@ const deleteAction = async (id: number) => {
   }
 }
 
-const changePage = async (page: number) => {
-  if (page >= 1 && page <= actionStore.pagination.totalPages) {
-    currentPage.value = page
-    await loadActions()
-  }
-}
-
-const getPagesToShow = () => {
-  const pages = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end = Math.min(actionStore.pagination.totalPages, currentPage.value + 2)
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i)
-  }
-
-  return pages
+const onPageChange = async (event: { page: number }) => {
+  currentPage.value = event.page + 1
+  await loadActions()
 }
 
 // Charger les actions au montage
@@ -244,24 +231,14 @@ onMounted(() => {
 // Accéder aux actions et état de chargement depuis le store
 const actions = computed(() => actionStore.actions)
 const loading = computed(() => actionStore.loading)
-const totalPages = actionStore.pagination.totalPages
 </script>
 
 <style scoped>
 .actions-page {
-  padding: 1rem;
+  @apply p-4;
 }
 
 .actions-list {
-  margin-bottom: 2rem;
-}
-
-.py-6 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.mr-2 {
-  margin-right: 0.5rem;
+  @apply mb-8;
 }
 </style>

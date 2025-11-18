@@ -1,16 +1,20 @@
 <template>
-  <div class="indicator-card card">
-    <div class="card-content">
-      <div class="media">
-        <div class="media-left">
-          <span :class="`icon is-large ${getTrendColorClass(indicator.trend_direction)}`">
+  <div class="indicator-card bg-white rounded-lg shadow-md overflow-hidden mb-4">
+    <div class="p-6">
+      <div class="flex items-start">
+        <div class="mr-4">
+          <span :class="`text-3xl ${getTrendColorClass(indicator.trend_direction)}`">
             <font-awesome-icon :icon="getIconForIndicator(indicator)" size="2x" />
           </span>
         </div>
-        <div class="media-content">
-          <p class="title is-4">{{ indicator.name }}</p>
-          <p class="subtitle is-6">
-            <span class="tag is-info">{{ indicator.code }}</span>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ indicator.name }}</h3>
+          <p class="text-sm text-gray-600 mb-3">
+            <span
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mr-2"
+            >
+              {{ indicator.code }}
+            </span>
             •
             <span :class="getTrendColorClass(indicator.trend_direction)">
               {{ getTrendText(indicator.trend_direction) }}
@@ -19,20 +23,26 @@
         </div>
       </div>
 
-      <div class="content">
-        <p v-if="indicator.description">{{ indicator.description }}</p>
+      <div class="mb-4">
+        <p v-if="indicator.description" class="text-gray-700 mb-4">{{ indicator.description }}</p>
 
-        <div class="columns is-mobile">
-          <div class="column">
-            <p><strong>Catégorie:</strong> {{ indicator.category || 'Non catégorisé' }}</p>
-            <p><strong>Unité:</strong> {{ indicator.unit || 'N/A' }}</p>
-            <p><strong>Fréquence:</strong> {{ getFrequencyText(indicator.frequency) }}</p>
+        <div class="flex flex-col sm:flex-row">
+          <div class="w-full sm:w-2/3">
+            <p>
+              <span class="font-semibold">Catégorie:</span>
+              {{ indicator.category || 'Non catégorisé' }}
+            </p>
+            <p><span class="font-semibold">Unité:</span> {{ indicator.unit || 'N/A' }}</p>
+            <p>
+              <span class="font-semibold">Fréquence:</span>
+              {{ getFrequencyText(indicator.frequency) }}
+            </p>
           </div>
 
-          <div class="column is-narrow">
-            <div class="has-text-centered">
-              <p><strong>Cible:</strong></p>
-              <p class="is-size-5 has-text-weight-bold">
+          <div class="w-full sm:w-1/3 mt-4 sm:mt-0 sm:ml-auto">
+            <div class="text-center">
+              <p class="font-semibold">Cible:</p>
+              <p class="text-lg font-bold">
                 {{ formatValue(indicator.target_value) }}
               </p>
             </div>
@@ -40,36 +50,33 @@
         </div>
       </div>
 
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'eye']"
-              text="Voir"
-              variant="info"
-              @click="$emit('view', indicator.id)"
-            />
-          </div>
+      <div class="flex flex-col sm:flex-row justify-between items-center">
+        <div class="mb-4 sm:mb-0">
+          <p-button
+            :icon="['fas', 'eye']"
+            label="Voir"
+            severity="info"
+            size="small"
+            @click="$emit('view', indicator.id)"
+          />
         </div>
-        <div class="level-right">
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'edit']"
-              text="Éditer"
-              variant="warning"
-              @click="$emit('edit', indicator.id)"
-            />
-          </div>
-          <div class="level-item">
-            <Button
-              :icon="['fas', 'trash']"
-              text="Supprimer"
-              variant="danger"
-              @click="$emit('delete', indicator.id)"
-            />
-          </div>
+        <div class="flex space-x-2">
+          <p-button
+            :icon="['fas', 'edit']"
+            label="Éditer"
+            severity="warning"
+            size="small"
+            @click="$emit('edit', indicator.id)"
+          />
+          <p-button
+            :icon="['fas', 'trash']"
+            label="Supprimer"
+            severity="danger"
+            size="small"
+            @click="$emit('delete', indicator.id)"
+          />
         </div>
-      </nav>
+      </div>
     </div>
   </div>
 </template>
@@ -77,7 +84,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import type { Indicator } from '../../stores/app'
-import Button from '../ui/MyButton.vue'
+import PButton from 'primevue/button'
 
 defineProps({
   indicator: {
@@ -106,13 +113,13 @@ const getIconForIndicator = (indicator: Indicator) => {
 const getTrendColorClass = (trendDirection: string) => {
   switch (trendDirection) {
     case 'positive':
-      return 'has-text-success'
+      return 'text-green-500'
     case 'negative':
-      return 'has-text-danger'
+      return 'text-red-500'
     case 'neutral':
-      return 'has-text-info'
+      return 'text-blue-500'
     default:
-      return 'has-text-light'
+      return 'text-gray-500'
   }
 }
 
