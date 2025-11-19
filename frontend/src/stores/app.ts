@@ -129,6 +129,7 @@ export const useAppStore = defineStore('app', {
       localStorage.setItem('theme', theme)
       // Appliquer le thème au document en utilisant l'attribut data-theme (approche Bulma)
       document.documentElement.setAttribute('data-theme', theme)
+      document.documentElement.classList.toggle('app-dark')
     },
 
     toggleTheme() {

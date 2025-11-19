@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ActionCard: typeof import('./src/components/actions/ActionCard.vue')['default']
     ActionForm: typeof import('./src/components/actions/ActionForm.vue')['default']
+    Button: typeof import('primevue/button')['default']
     DocumentCard: typeof import('./src/components/documents/DocumentCard.vue')['default']
     DocumentForm: typeof import('./src/components/documents/DocumentForm.vue')['default']
     HeaderLayout: typeof import('./src/components/layout/HeaderLayout.vue')['default']
@@ -22,10 +23,15 @@ declare module 'vue' {
     MyButton: typeof import('./src/components/ui/MyButton.vue')['default']
     NumberField: typeof import('./src/components/form/NumberField.vue')['default']
     PanelMenu: typeof import('primevue/panelmenu')['default']
+    Popover: typeof import('primevue/popover')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectField: typeof import('./src/components/form/SelectField.vue')['default']
     SidebarMenu: typeof import('./src/components/layout/SidebarMenu.vue')['default']
     TextAreaField: typeof import('./src/components/form/TextAreaField.vue')['default']
+    Toast: typeof import('primevue/toast')['default']
+  }
+  export interface GlobalDirectives {
+    StyleClass: typeof import('primevue/styleclass')['default']
   }
 }
