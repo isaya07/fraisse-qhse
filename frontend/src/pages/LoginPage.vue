@@ -1,118 +1,157 @@
 <template>
-  <div class="login">
-    <section class="py-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-center">
-          <div class="w-full max-w-md">
-            <div class="bg-white p-8 rounded-lg shadow-md">
-              <h1 class="text-2xl font-bold text-center mb-6">Connexion</h1>
-              <form @submit.prevent="handleSubmit">
-                <div class="mb-4">
-                  <label class="block text-gray-700 text-sm font-bold mb-2"
-                    >Nom d'utilisateur</label
-                  >
-                  <div class="relative">
-                    <input
-                      v-model="username"
-                      class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      type="text"
-                      placeholder="Votre nom d'utilisateur"
-                      required
-                    />
-                    <div
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-                    >
-                      <font-awesome-icon :icon="['fas', 'user']" class="text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-                <div class="mb-6">
-                  <label class="block text-gray-700 text-sm font-bold mb-2">Mot de passe</label>
-                  <div class="relative">
-                    <input
-                      v-model="password"
-                      class="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                      type="password"
-                      placeholder="Votre mot de passe"
-                      required
-                    />
-                    <div
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-                    >
-                      <font-awesome-icon :icon="['fas', 'lock']" class="text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-                <div class="mb-4">
-                  <div class="control">
-                    <button
-                      :disabled="loading"
-                      class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline disabled:opacity-50"
-                      type="submit"
-                    >
-                      <font-awesome-icon
-                        v-if="loading"
-                        :icon="['fas', 'spinner']"
-                        spin
-                        class="mr-2"
-                      />
-                      <font-awesome-icon v-else :icon="['fas', 'sign-in-alt']" class="mr-2" />
-                      Se connecter
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Affichage des erreurs -->
-                <div
-                  v-if="error"
-                  class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-3"
-                >
-                  {{ error }}
-                </div>
-              </form>
-            </div>
+  <div class="bg-surface-50 dark:bg-surface-950 px-6 py-20 md:px-20 lg:px-80">
+    <div
+      class="bg-surface-0 dark:bg-surface-900 p-8 md:p-12 shadow-sm rounded-2xl w-full max-w-sm mx-auto flex flex-col gap-8"
+    >
+      <div class="flex flex-col items-center gap-4">
+        <div class="flex items-center gap-4">
+          <font-awesome-icon :icon="['fas', 'shield-alt']" size="3x" class="mr-2" />
+          <span class="text-3xl font-bold">QHSE Manager</span>
+        </div>
+        <div class="flex flex-col items-center gap-2 w-full">
+          <div
+            class="text-surface-900 dark:text-surface-0 text-2xl font-semibold leading-tight text-center w-full"
+          >
+            Bonjours
           </div>
         </div>
       </div>
-    </section>
+      <Form v-slot="$form" :resolver="resolver" @submit="onFormSubmit">
+        <div class="flex flex-col gap-6 w-full">
+          <div class="flex flex-col gap-2 w-full">
+            <FloatLabel variant="on">
+              <InputText
+                name="username"
+                id="username"
+                type="text"
+                size="large"
+                class="w-full px-3 py-2 shadow-sm rounded-lg"
+                fluid
+              />
+              <label for="username">Nom d'utilisateur</label>
+            </FloatLabel>
+            <Message
+              v-if="$form.username?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+              >{{ $form.username.error.message }}</Message
+            >
+          </div>
+          <div class="flex flex-col gap-2 w-full">
+            <FloatLabel variant="on">
+              <Password
+                id="password"
+                name="password"
+                size="large"
+                :toggleMask="true"
+                :feedback="false"
+                input-class="w-full px-3 py-2 shadow-sm rounded-lg"
+                fluid
+              />
+              <label for="password">Mot de passe</label>
+            </FloatLabel>
+            <Message
+              v-if="$form.password?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+              >{{ $form.password.error.message }}</Message
+            >
+          </div>
+          <div class="flex flex-col gap-2 w-full">
+            <Button
+              label="Connexion"
+              type="submit"
+              size="large"
+              fluid
+              class="w-full py-2 rounded-lg flex justify-center items-center gap-2"
+            >
+              <template #icon>
+                <font-awesome-icon v-if="loading" :icon="['fas', 'spinner']" spin class="mr-2" />
+                <font-awesome-icon v-else :icon="['fas', 'sign-in-alt']" class="mr-2" />
+              </template>
+            </Button>
+          </div>
+        </div>
+      </Form>
+    </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/app'
+import Form from '@primevue/forms/form'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import { z } from 'zod'
+import { Password } from 'primevue'
 
 const router = useRouter()
 const store = useAppStore()
 
-const username = ref('')
-const password = ref('')
+// const username = ref('')
+// const password = ref('')
 const loading = ref(false)
 const error = ref('')
 
-const handleSubmit = async () => {
-  loading.value = true
-  error.value = ''
+// Définir les types pour les fonctions
+interface FormValues {
+  username?: string
+  password?: string
+}
 
-  const result = await store.login({
-    username: username.value,
-    password: password.value,
-  })
+/* interface FormErrors {
+  username?: Array<{ message: string }>
+  password?: Array<{ message: string }>
+} */
 
-  loading.value = false
+const resolver = zodResolver(
+  z.object({
+    username: z
+      .string("Le nom d'utilisateur est requis.")
+      .min(5, { message: "Le nom d'utilisateur est trop court." }),
+    password: z
+      .string('Le mot de passe est requis.')
+      .min(1, { message: 'Le mot de passe est requis.' }),
+  }),
+)
 
-  if (result.success) {
-    // Redirection après connexion réussie
-    router.push('/')
-  } else {
-    error.value = result.message || 'Identifiants incorrects'
+/* const formResolver = (params: { values: FormValues }) => {
+  const errors: FormErrors = {}
+
+  if (!params.values.username) {
+    errors.username = [{ message: "Le nom d'utilisateur est requis." }]
+  }
+
+  if (!params.values.password) {
+    errors.password = [{ message: 'Le mot de passe est requis.' }]
+  }
+
+  return {
+    values: params.values,
+    errors,
+  }
+} */
+
+const onFormSubmit = async (params: { valid: boolean; values: FormValues }) => {
+  if (params.valid) {
+    loading.value = true
+    error.value = ''
+
+    const result = await store.login({
+      username: params.values.username || '',
+      password: params.values.password || '',
+    })
+
+    loading.value = false
+
+    if (result.success) {
+      // Redirection après connexion réussie
+      router.push('/')
+    } else {
+      error.value = result.message || 'Identifiants incorrects'
+    }
   }
 }
 </script>
-
-<style scoped>
-.login {
-  min-height: 100vh;
-}
-</style>

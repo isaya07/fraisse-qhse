@@ -234,6 +234,8 @@ const loading = computed(() => actionStore.loading)
 </script>
 
 <style scoped>
+@reference "@/assets/css/tailwind.css";
+
 .actions-page {
   @apply p-4;
 }

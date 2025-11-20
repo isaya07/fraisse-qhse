@@ -24,14 +24,14 @@ export const useApi = () => {
         },
       })
 
+      const data = await response.json()
+
       if (response.status === 401) {
         // Token expiré ou invalide
         store.clearToken()
         window.location.href = '/login'
-        return { success: false, error: 'Unauthorized' }
+        return { success: false, error: data.message || 'Unauthorized' }
       }
-
-      const data = await response.json()
 
       if (response.ok) {
         return { success: true, data }

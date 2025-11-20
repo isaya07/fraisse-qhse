@@ -203,6 +203,8 @@ const loading = computed(() => indicatorStore.loading)
 </script>
 
 <style scoped>
+@reference "@/assets/css/tailwind.css";
+
 .indicators-page {
   @apply p-4;
 }

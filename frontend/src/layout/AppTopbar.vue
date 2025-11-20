@@ -51,21 +51,23 @@
       </button>
 
       <!-- Menu mobile utilisateur -->
-      <div v-if="currentUser">
-        <Button class="p-button-text" @click="toggleUserMenu" id="user-menu-button">
-          <font-awesome-icon :icon="['fas', 'user']" class="mr-2" />
-          {{ currentUser?.first_name }} {{ currentUser?.last_name }}
-          <font-awesome-icon
-            :icon="['fas', userMenuVisible ? 'caret-up' : 'caret-down']"
-            class="ml-2"
-          />
-        </Button>
-        <Popover
-          id="user-menu-popover"
-          :target="'#user-menu-button'"
-          :visible="userMenuVisible"
-          @hide="userMenuVisible = false"
+      <div v-if="currentUser" class="layout-config-menu">
+        <button
+          class=""
+          v-styleclass="{
+            selector: '@next',
+            enterFromClass: 'hidden',
+            enterActiveClass: 'animate-scalein',
+            leaveToClass: 'hidden',
+            leaveActiveClass: 'animate-fadeout',
+            hideOnOutsideClick: true,
+          }"
+          @click="toggleUserMenu"
         >
+          <font-awesome-icon :icon="['fas', 'user']" class="mr-2" />
+          <span>{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span>
+        </button>
+        <Popover ref="userMenuVisible">
           <div class="user-popover-content">
             <router-link to="/profile" class="user-popover-item" @click="userMenuVisible = false">
               <font-awesome-icon :icon="['fas', 'user-circle']" class="mr-2" />
@@ -78,6 +80,24 @@
           </div>
         </Popover>
       </div>
+      <div v-else class="layout-config-menu">
+        <button
+          class="layout-topbar-action"
+          v-styleclass="{
+            selector: '@next',
+            enterFromClass: 'hidden',
+            enterActiveClass: 'animate-scalein',
+            leaveToClass: 'hidden',
+            leaveActiveClass: 'animate-fadeout',
+            hideOnOutsideClick: true,
+          }"
+        >
+          <router-link to="/login" class="layout-topbar-logo">
+            <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="mr-2" />
+            <span>Connexion</span>
+          </router-link>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -88,18 +108,16 @@ import { useLayout } from '@/layout/composables/layout'
 // import AppConfigurator from './AppConfigurator.vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import Button from 'primevue/button'
-import Popover from 'primevue/popover'
 
 const router = useRouter()
 const appStore = useAppStore()
 
-const userMenuVisible = ref(false)
+const userMenuVisible = ref()
 
 const { toggleMenu } = useLayout()
 
-const toggleUserMenu = () => {
-  userMenuVisible.value = !userMenuVisible.value
+const toggleUserMenu = (event: Event) => {
+  userMenuVisible.value.toggle(event)
 }
 
 const toggleDarkMode = () => {
