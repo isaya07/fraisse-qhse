@@ -1,5 +1,5 @@
 <template>
-  <div class="document-create-page p-4">
+  <div class="p-4 p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Créer un nouveau document</h1>
       <router-link
@@ -12,40 +12,68 @@
     </div>
 
     <div class="bg-white p-6 rounded-lg shadow-md">
-      <DocumentForm :submitButtonText="'Enregistrer'" @submit="submitForm" @cancel="cancel" />
+      <DocumentForm
+        :submitButtonText="'Enregistrer'"
+        :loading="loading"
+        @submit="submitForm"
+        @cancel="cancel"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useDocumentStore } from '@/stores/documents'
+import { useDocumentStore, type DocumentFormData } from '@/stores/documents'
 import DocumentForm from '@/components/documents/DocumentForm.vue'
-
-// Définir le type pour les données du document
-interface DocumentData {
-  title: string
-  description: string
-  category: string
-  version: string
-  status: string
-  file?: File
-}
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
 const documentStore = useDocumentStore()
+const toast = useToast()
+const loading = ref(false)
 
 // Fonction de soumission du formulaire
-const submitForm = async (data: DocumentData) => {
+const submitForm = async (data: DocumentFormData & { file?: File | undefined }) => {
+  loading.value = true
   try {
-    // Créer le document
-    await documentStore.createDocument(data)
+    const formDataToSend = new FormData()
+    formDataToSend.append('title', data.title)
+    formDataToSend.append('description', data.description || '')
+    if (data.document_folder_id) {
+      formDataToSend.append('document_folder_id', data.document_folder_id.toString())
+    }
+    formDataToSend.append('category', data.category)
+    formDataToSend.append('version', data.version)
+    formDataToSend.append('status', data.status)
 
+    if (data.file) {
+      formDataToSend.append('file', data.file)
+    }
+
+    // Créer le document
+    await documentStore.createDocument(formDataToSend)
+    toast.add({
+      severity: 'success',
+      summary: 'Succès',
+      detail: 'Document créé avec succès',
+      life: 3000,
+      icon: 'check',
+    })
     // Rediriger vers la liste des documents
     router.push('/documents')
-  } catch (err) {
-    console.error('Erreur lors de la création du document:', err)
-    // Gestion de l'erreur est faite dans le composant DocumentForm
+  } catch (error) {
+    console.error('Erreur lors de la création du document:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de créer le document',
+      life: 3000,
+      icon: 'times',
+    })
+  } finally {
+    loading.value = false
   }
 }
 
@@ -54,9 +82,3 @@ const cancel = () => {
   router.push('/documents')
 }
 </script>
-
-<style scoped>
-.document-create-page {
-  @apply p-4;
-}
-</style>

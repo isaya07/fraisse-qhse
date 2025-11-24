@@ -37,14 +37,29 @@ export const useActionStore = defineStore('action', {
   },
 
   actions: {
-    async fetchActions(page: number = 1, limit: number = 10) {
+    async fetchActions(
+      page: number = 1,
+      limit: number = 10,
+      filters: Record<string, unknown> = {},
+    ) {
       this.loading = true
       this.error = null
 
       try {
         const { get } = useApi()
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        })
+
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            queryParams.append(key, String(value))
+          }
+        })
+
         const response = await get<Action | PaginatedResponse<Action>>(
-          `/actions?page=${page}&limit=${limit}`,
+          `/actions?${queryParams.toString()}`,
         )
 
         if (response.success && response.data) {
@@ -53,12 +68,10 @@ export const useActionStore = defineStore('action', {
             this.actions = response.data.data || []
             this.pagination = {
               ...this.pagination,
-              page: response.data.page || page,
-              limit: response.data.limit || limit,
+              page: response.data.current_page || page,
+              limit: response.data.per_page || limit,
               total: response.data.total || this.actions.length,
-              totalPages:
-                response.data.totalPages ||
-                Math.ceil((response.data.total || this.actions.length) / limit),
+              totalPages: response.data.last_page || 1,
             }
           } else {
             // Si c'est une réponse simple (pas paginée), response.data est directement le tableau d'actions

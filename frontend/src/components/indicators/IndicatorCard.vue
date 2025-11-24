@@ -1,165 +1,192 @@
 <template>
-  <div class="indicator-card bg-white rounded-lg shadow-md overflow-hidden mb-4">
-    <div class="p-6">
-      <div class="flex items-start">
-        <div class="mr-4">
-          <span :class="`text-3xl ${getTrendColorClass(indicator.trend_direction)}`">
-            <font-awesome-icon :icon="getIconForIndicator(indicator)" size="2x" />
-          </span>
+  <Card
+    class="h-full shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+    @click="$emit('view', indicator.id)"
+  >
+    <template #title>
+      <div class="flex justify-between items-start">
+        <span class="text-lg font-semibold truncate" :title="indicator.name">{{
+          indicator.name
+        }}</span>
+      </div>
+    </template>
+    <template #subtitle>
+      <div class="flex items-center gap-2 mb-2">
+        <div
+          v-if="indicator.indicator_category"
+          class="flex items-center gap-2 px-2 py-1 rounded text-xs font-medium text-white"
+          :style="{ backgroundColor: indicator.indicator_category.color || '#64748B' }"
+        >
+          <font-awesome-icon :icon="indicator.indicator_category.icon || 'folder'" />
+          {{ indicator.indicator_category.name }}
         </div>
-        <div class="flex-1">
-          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ indicator.name }}</h3>
-          <p class="text-sm text-gray-600 mb-3">
-            <span
-              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mr-2"
+      </div>
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-4">
+        <div class="flex justify-between items-end">
+          <div class="flex flex-col">
+            <span class="text-sm text-gray-500">Cible</span>
+            <span class="text-xl font-bold"
+              >{{ indicator.target_value }}
+              <span class="text-sm font-normal">{{ indicator.unit }}</span></span
             >
-              {{ indicator.code }}
-            </span>
-            •
-            <span :class="getTrendColorClass(indicator.trend_direction)">
-              {{ getTrendText(indicator.trend_direction) }}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <div class="mb-4">
-        <p v-if="indicator.description" class="text-gray-700 mb-4">{{ indicator.description }}</p>
-
-        <div class="flex flex-col sm:flex-row">
-          <div class="w-full sm:w-2/3">
-            <p>
-              <span class="font-semibold">Catégorie:</span>
-              {{ indicator.category || 'Non catégorisé' }}
-            </p>
-            <p><span class="font-semibold">Unité:</span> {{ indicator.unit || 'N/A' }}</p>
-            <p>
-              <span class="font-semibold">Fréquence:</span>
-              {{ getFrequencyText(indicator.frequency) }}
-            </p>
           </div>
-
-          <div class="w-full sm:w-1/3 mt-4 sm:mt-0 sm:ml-auto">
-            <div class="text-center">
-              <p class="font-semibold">Cible:</p>
-              <p class="text-lg font-bold">
-                {{ formatValue(indicator.target_value) }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col sm:flex-row justify-between items-center">
-        <div class="mb-4 sm:mb-0">
-          <p-button
-            :icon="['fas', 'eye']"
-            label="Voir"
-            severity="info"
-            size="small"
-            @click="$emit('view', indicator.id)"
+          <Tag
+            :severity="getTrendSeverity(indicator.trend_direction)"
+            :value="getTrendLabel(indicator.trend_direction)"
           />
         </div>
-        <div class="flex space-x-2">
-          <p-button
-            :icon="['fas', 'edit']"
-            label="Éditer"
-            severity="warning"
-            size="small"
-            @click="$emit('edit', indicator.id)"
-          />
-          <p-button
-            :icon="['fas', 'trash']"
-            label="Supprimer"
-            severity="danger"
-            size="small"
-            @click="$emit('delete', indicator.id)"
+
+        <!-- Chart -->
+        <div class="h-32 w-full">
+          <Chart
+            v-if="mounted"
+            type="line"
+            :data="chartData"
+            :options="chartOptions"
+            class="h-full"
           />
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue'
-import type { Indicator } from '../../stores/app'
-import PButton from 'primevue/button'
+import { defineProps, defineEmits, ref, onMounted, computed } from 'vue'
+import Card from 'primevue/card'
+import Tag from 'primevue/tag'
+import Chart from 'primevue/chart'
+import type { Indicator } from '@/stores/app'
 
-defineProps({
-  indicator: {
-    type: Object as PropType<Indicator>,
-    required: true,
-  },
+const props = defineProps<{
+  indicator: Indicator
+}>()
+
+defineEmits<{
+  (e: 'view', id: number): void
+  (e: 'edit', id: number): void
+}>()
+
+const mounted = ref(false)
+
+onMounted(() => {
+  // Small delay to ensure DOM is ready for Chart.js
+  setTimeout(() => {
+    mounted.value = true
+  }, 100)
 })
 
-defineEmits(['view', 'edit', 'delete'])
-
-const getIconForIndicator = (indicator: Indicator) => {
-  if (!indicator.is_active) return ['fas', 'chart-line']
-
-  switch (indicator.trend_direction) {
-    case 'positive':
-      return ['fas', 'arrow-trend-up']
-    case 'negative':
-      return ['fas', 'arrow-trend-down']
-    case 'neutral':
-      return ['fas', 'chart-line']
-    default:
-      return ['fas', 'chart-bar']
+const getTrendLabel = (value: string) => {
+  const map: Record<string, string> = {
+    positive: 'Positive',
+    negative: 'Négative',
+    neutral: 'Neutre',
   }
+  return map[value] || value
 }
 
-const getTrendColorClass = (trendDirection: string) => {
-  switch (trendDirection) {
-    case 'positive':
-      return 'text-green-500'
-    case 'negative':
-      return 'text-red-500'
-    case 'neutral':
-      return 'text-blue-500'
-    default:
-      return 'text-gray-500'
+const getTrendSeverity = (value: string): string => {
+  const map: Record<string, string> = {
+    positive: 'success',
+    negative: 'danger',
+    neutral: 'info',
   }
+  return map[value] || 'info'
 }
 
-const getTrendText = (trendDirection: string) => {
-  switch (trendDirection) {
-    case 'positive':
-      return 'Tendance positive'
-    case 'negative':
-      return 'Tendance négative'
-    case 'neutral':
-      return 'Tendance neutre'
-    default:
-      return trendDirection
+// Chart Data Generator
+const chartData = computed(() => {
+  const indicator = props.indicator
+  if (!indicator.values || indicator.values.length === 0) {
+    // Return empty or placeholder if no data
+    return {
+      labels: [],
+      datasets: [],
+    }
   }
-}
 
-const getFrequencyText = (frequency: string) => {
-  switch (frequency) {
-    case 'daily':
-      return 'Quotidien'
-    case 'weekly':
-      return 'Hebdomadaire'
-    case 'monthly':
-      return 'Mensuel'
-    case 'quarterly':
-      return 'Trimestriel'
-    case 'yearly':
-      return 'Annuel'
-    default:
-      return frequency
+  // Sort values by date ascending
+  const sortedValues = [...indicator.values].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  )
+
+  // Take last 6 values for mini chart
+  const recentValues = sortedValues.slice(-6)
+
+  const labels = recentValues.map((v) =>
+    new Date(v.date).toLocaleDateString(undefined, { month: 'short' }),
+  )
+  const data = recentValues.map((v) => v.value)
+  const target = indicator.target_value
+
+  const datasets = [
+    {
+      label: 'Valeur',
+      data: data,
+      fill: true,
+      borderColor: '#3B82F6',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      tension: 0.4,
+      pointRadius: 2,
+    },
+  ]
+
+  if (target !== undefined && target !== null) {
+    datasets.push({
+      label: 'Cible',
+      data: Array(labels.length).fill(target),
+      fill: false,
+      borderColor: '#10B981', // Green for target
+      borderDash: [5, 5],
+      tension: 0,
+      pointRadius: 0,
+      borderWidth: 1,
+    } as any)
   }
-}
 
-const formatValue = (value: number | undefined) => {
-  return value !== undefined ? value.toFixed(2) : 'N/A'
+  return {
+    labels,
+    datasets,
+  }
+})
+
+const chartOptions = {
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      mode: 'index',
+      intersect: false,
+    },
+  },
+  scales: {
+    x: {
+      display: false, // Hide x axis labels for cleaner mini-chart
+      grid: {
+        display: false,
+      },
+    },
+    y: {
+      display: true,
+      ticks: {
+        count: 3, // Limit ticks
+        font: {
+          size: 10,
+        },
+      },
+      grid: {
+        color: '#f3f4f6',
+      },
+    },
+  },
+  interaction: {
+    mode: 'nearest',
+    axis: 'x',
+    intersect: false,
+  },
 }
 </script>
-
-<style scoped>
-.indicator-card {
-  margin-bottom: 1rem;
-}
-</style>

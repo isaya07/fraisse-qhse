@@ -8,7 +8,17 @@ const layoutConfig = reactive({
   menuMode: 'static',
 })
 
-const layoutState = reactive({
+interface LayoutState {
+  staticMenuDesktopInactive: boolean
+  overlayMenuActive: boolean
+  profileSidebarVisible: boolean
+  configSidebarVisible: boolean
+  staticMenuMobileActive: boolean
+  menuHoverActive: boolean
+  activeMenuItem: unknown
+}
+
+const layoutState = reactive<LayoutState>({
   staticMenuDesktopInactive: false,
   overlayMenuActive: false,
   profileSidebarVisible: false,
@@ -21,8 +31,8 @@ const layoutState = reactive({
 export function useLayout() {
   const appStore = useAppStore()
 
-  const setActiveMenuItem = (item: any) => {
-    layoutState.activeMenuItem = item.value || item
+  const setActiveMenuItem = (item: { value?: unknown } | unknown) => {
+    layoutState.activeMenuItem = (item as { value?: unknown }).value ?? item
   }
 
   const toggleDarkMode = () => {

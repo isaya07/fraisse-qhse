@@ -20,23 +20,58 @@ export const useApi = () => {
         headers: {
           Authorization: `Bearer ${store.token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json',
           ...options.headers,
         },
       })
 
       const data = await response.json()
-
       if (response.status === 401) {
-        // Token expiré ou invalide
+        // Token expiré ou invalide - Afficher une notification avec Toast
+        // Utiliser le message spécifique du backend s'il est disponible
+        const errorMessage =
+          data?.error?.message || 'Votre session a expiré, veuillez vous reconnecter'
+
+        // On émet un événement global pour que l'application affiche le toast
+        window.dispatchEvent(
+          new CustomEvent('api-error', {
+            detail: {
+              severity: 'error',
+              summary: "Erreur d'authentification",
+              detail: errorMessage,
+              life: 5000,
+            },
+          }),
+        )
         store.clearToken()
-        window.location.href = '/login'
-        return { success: false, error: data.message || 'Unauthorized' }
+        return { success: false, error: data?.error?.message || 'Unauthorized' }
+      }
+
+      if (response.status === 403) {
+        // Accès refusé - Afficher une notification avec Toast
+        // Utiliser le message spécifique du backend s'il est disponible
+        const errorMessage = data?.error?.message || 'Accès refusé'
+
+        // On émet un événement global pour que l'application affiche le toast
+        window.dispatchEvent(
+          new CustomEvent('api-error', {
+            detail: {
+              severity: 'error',
+              summary: 'Accès refusé',
+              detail: errorMessage,
+              life: 5000,
+            },
+          }),
+        )
+        return { success: false, error: data?.error?.message || 'Forbidden' }
       }
 
       if (response.ok) {
         return { success: true, data }
       } else {
-        return { success: false, error: data.message || 'Request failed' }
+        // Gérer les autres erreurs (422, etc.) en affichant le message spécifique du backend
+        const errorMessage = data?.error?.message || 'Request failed'
+        return { success: false, error: errorMessage }
       }
     } catch (error) {
       console.error('API request error:', error)

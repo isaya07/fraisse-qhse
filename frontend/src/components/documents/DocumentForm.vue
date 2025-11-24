@@ -1,152 +1,201 @@
 <template>
-  <form @submit.prevent="submitForm" class="flex flex-col gap-4">
-    <div class="field">
-      <label for="title" class="block text-sm font-medium mb-1">Titre *</label>
-      <p-input-text
-        id="title"
-        v-model="formData.title"
-        placeholder="Titre du document"
-        required
-        class="w-full"
-      />
+  <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Titre -->
+      <div class="field">
+        <label for="title" class="block text-sm font-medium mb-2 text-gray-700">Titre *</label>
+        <InputText
+          id="title"
+          v-model="formData.title"
+          placeholder="Titre du document"
+          class="w-full"
+          :class="{ 'p-invalid': errors.title }"
+        />
+        <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
+      </div>
+
+      <!-- Version -->
+      <div class="field">
+        <label for="version" class="block text-sm font-medium mb-2 text-gray-700">Version *</label>
+        <InputText
+          id="version"
+          v-model="formData.version"
+          placeholder="1.0"
+          class="w-full"
+          :class="{ 'p-invalid': errors.version }"
+        />
+        <small v-if="errors.version" class="text-red-500">{{ errors.version }}</small>
+      </div>
+
+      <!-- Dossier -->
+      <div class="field">
+        <label for="folder" class="block text-sm font-medium mb-2 text-gray-700">Dossier</label>
+        <TreeSelect
+          v-model="formData.document_folder_id"
+          :options="folderOptions"
+          placeholder="Sélectionnez un dossier"
+          class="w-full"
+          :class="{ 'p-invalid': errors.document_folder_id }"
+        />
+        <small v-if="errors.document_folder_id" class="text-red-500">{{
+          errors.document_folder_id
+        }}</small>
+      </div>
+
+      <!-- Type de document (Catégorie) -->
+      <div class="field">
+        <label for="category" class="block text-sm font-medium mb-2 text-gray-700"
+          >Type de document *</label
+        >
+        <Dropdown
+          id="category"
+          v-model="formData.category"
+          :options="categoryOptions"
+          optionLabel="text"
+          optionValue="value"
+          placeholder="Sélectionnez un type"
+          class="w-full"
+          :class="{ 'p-invalid': errors.category }"
+        />
+        <small v-if="errors.category" class="text-red-500">{{ errors.category }}</small>
+      </div>
+
+      <!-- Statut -->
+      <div class="field">
+        <label for="status" class="block text-sm font-medium mb-2 text-gray-700">Statut *</label>
+        <Dropdown
+          id="status"
+          v-model="formData.status"
+          :options="statusOptions"
+          optionLabel="text"
+          optionValue="value"
+          placeholder="Sélectionnez un statut"
+          class="w-full"
+          :class="{ 'p-invalid': errors.status }"
+        />
+        <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
+      </div>
     </div>
 
+    <!-- Description -->
     <div class="field">
-      <label for="description" class="block text-sm font-medium mb-1">Description</label>
-      <p-textarea
+      <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
+        >Description</label
+      >
+      <Textarea
         id="description"
         v-model="formData.description"
         placeholder="Description du document"
-        :rows="4"
+        rows="4"
         class="w-full"
       />
     </div>
 
+    <!-- Fichier -->
     <div class="field">
-      <label for="category" class="block text-sm font-medium mb-1">Catégorie</label>
-      <p-dropdown
-        id="category"
-        v-model="formData.category"
-        :options="categoryOptionsWithDefault"
-        optionLabel="text"
-        optionValue="value"
+      <label class="block text-sm font-medium mb-2 text-gray-700">Fichier</label>
+      <FileUpload
+        mode="basic"
+        name="file"
+        :auto="false"
+        chooseLabel="Choisir un fichier"
+        @select="onFileSelect"
+        :maxFileSize="10000000"
         class="w-full"
       />
-    </div>
-
-    <div class="field">
-      <label for="version" class="block text-sm font-medium mb-1">Version</label>
-      <p-input-text
-        id="version"
-        v-model="formData.version"
-        placeholder="Version du document"
-        class="w-full"
-      />
-    </div>
-
-    <div class="field">
-      <label for="status" class="block text-sm font-medium mb-1">Statut</label>
-      <p-dropdown
-        id="status"
-        v-model="formData.status"
-        :options="statusOptions"
-        optionLabel="text"
-        optionValue="value"
-        class="w-full"
-      />
-    </div>
-
-    <div class="field">
-      <label class="block text-sm font-medium mb-1">Fichier</label>
-      <div class="relative">
-        <input
-          type="file"
-          @change="onFileSelect"
-          class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
+      <div
+        v-if="selectedFile"
+        class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded"
+      >
+        <i class="pi pi-file"></i>
+        <span>{{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})</span>
+        <Button icon="pi pi-times" text rounded severity="danger" size="small" @click="clearFile" />
       </div>
-      <p v-if="selectedFile" class="text-sm text-gray-600 mt-1">
-        Fichier sélectionné: {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
-      </p>
+      <small v-if="errors.file" class="text-red-500">{{ errors.file }}</small>
     </div>
 
-    <div class="flex justify-end gap-2 pt-4">
-      <p-button
-        type="submit"
-        :label="submitButtonText"
-        icon="pi pi-save"
-        :loading="state.loading"
-        :disabled="state.loading"
-        class="p-button-primary"
-      />
-      <p-button type="button" label="Annuler" @click="onCancel" class="p-button-secondary" />
-    </div>
-
-    <!-- Message d'erreur -->
-    <div v-if="state.error" class="p-3 bg-red-100 text-red-700 rounded-md mt-3">
-      {{ state.error }}
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+      <Button label="Annuler" icon="pi pi-times" text severity="secondary" @click="onCancel" />
+      <Button type="submit" :label="submitButtonText" icon="pi pi-save" :loading="loading" />
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import PInputText from 'primevue/inputtext'
-import PDropdown from 'primevue/dropdown'
-import PTextarea from 'primevue/textarea'
-import PButton from 'primevue/button'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
+import { z } from 'zod'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
+import Textarea from 'primevue/textarea'
+import Button from 'primevue/button'
+import FileUpload from 'primevue/fileupload'
+import TreeSelect from 'primevue/treeselect'
+import { useDocumentFolderStore } from '@/stores/documentFolders'
+import type { DocumentFormData } from '@/stores/documents'
 
-// Définir les types pour les props
+// Types
+
 interface Props {
   initialData?: Partial<DocumentFormData>
   submitButtonText?: string
+  loading?: boolean
 }
 
-// Définir les types pour les événements
 interface Emits {
   (e: 'submit', data: DocumentFormData & { file?: File }): void
   (e: 'cancel'): void
 }
 
-// Props et émissions
 const props = withDefaults(defineProps<Props>(), {
   initialData: () => ({
     title: '',
     description: '',
+    document_folder_id: null,
     category: '',
     version: '1.0',
     status: 'draft',
   }),
   submitButtonText: 'Enregistrer',
+  loading: false,
 })
 
 const emit = defineEmits<Emits>()
+const folderStore = useDocumentFolderStore()
 
-// Définir le type pour les données de formulaire
-interface DocumentFormData {
-  title: string
-  description: string
-  category: string
-  version: string
-  status: string
-}
-
-// Données du formulaire
-const formData = ref<Partial<DocumentFormData>>({ ...props.initialData })
-
-// Fichier sélectionné
-const selectedFile = ref<File | undefined>(undefined)
-
-// États
-const state = reactive({
-  loading: false,
-  error: '',
+// Données
+const formData = reactive<DocumentFormData>({
+  title: '',
+  description: '',
+  document_folder_id: null,
+  category: '',
+  version: '1.0',
+  status: 'draft',
+  ...props.initialData,
 })
 
-// Options pour les sélections avec option par défaut
-const categoryOptionsWithDefault = computed(() => {
-  const defaultOption = { value: '', text: 'Sélectionnez une catégorie' }
-  return [defaultOption, ...categoryOptions]
+const selectedFile = ref<File | undefined>(undefined)
+const errors = reactive<Record<string, string>>({})
+
+// Validation Schema (Zod)
+const schema = z.object({
+  title: z.string().min(1, 'Le titre est requis').max(255, 'Le titre est trop long'),
+  description: z.string().optional(),
+  document_folder_id: z.number().nullable(),
+  category: z.string().min(1, 'Le type de document est requis'),
+  version: z.string().min(1, 'La version est requise'),
+  status: z.string().min(1, 'Le statut est requis'),
+})
+
+// Options
+const folderOptions = computed(() => {
+  const mapFolderToNode = (folder: any): any => ({
+    key: folder.id,
+    label: folder.name,
+    data: folder.id,
+    children: folder.children ? folder.children.map(mapFolderToNode) : [],
+  })
+  return folderStore.folders.map(mapFolderToNode)
 })
 
 const categoryOptions = [
@@ -164,17 +213,19 @@ const statusOptions = [
   { value: 'archived', text: 'Archivé' },
 ]
 
-// Fonction pour gérer la sélection de fichier
-const onFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0 && target.files[0]) {
-    selectedFile.value = target.files[0]
-  } else {
-    selectedFile.value = undefined
+// Méthodes
+const onFileSelect = (event: any) => {
+  const file = event.files[0]
+  if (file) {
+    selectedFile.value = file
+    delete errors.file
   }
 }
 
-// Fonction pour formater la taille du fichier
+const clearFile = () => {
+  selectedFile.value = undefined
+}
+
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
@@ -183,25 +234,52 @@ const formatFileSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-// Fonction de soumission
-const submitForm = () => {
-  if (!formData.value.title) {
-    state.error = 'Le titre est requis'
-    return
-  }
+const validate = () => {
+  // Reset errors
+  Object.keys(errors).forEach((key) => delete errors[key])
 
-  state.error = ''
-  emit('submit', { ...(formData.value as DocumentFormData), file: selectedFile.value || undefined })
+  try {
+    schema.parse(formData)
+    return true
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      error.issues.forEach((err) => {
+        if (err.path) {
+          errors[err.path[0] as string] = err.message
+        }
+      })
+    }
+    return false
+  }
 }
 
-// Fonction d'annulation
+const onSubmit = () => {
+  if (validate()) {
+    if (!selectedFile.value && !props.initialData.title) {
+      // Simple check if new doc needs file
+      errors.file = 'Le fichier est requis pour un nouveau document'
+      return
+    }
+    emit('submit', { ...formData, file: selectedFile.value })
+  }
+}
+
 const onCancel = () => {
   emit('cancel')
 }
-</script>
 
-<style scoped>
-.field {
-  @apply mb-4;
-}
-</style>
+// Watch initialData changes
+watch(
+  () => props.initialData,
+  (newVal) => {
+    if (newVal) {
+      Object.assign(formData, newVal)
+    }
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  folderStore.fetchFolders()
+})
+</script>

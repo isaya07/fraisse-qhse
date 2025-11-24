@@ -1,5 +1,5 @@
 <template>
-  <div class="action-create-page p-4">
+  <div class="p-4 p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Créer une nouvelle action</h1>
       <router-link
@@ -13,8 +13,8 @@
 
     <div class="bg-white p-6 rounded-lg shadow-md">
       <ActionForm
-        :users="users"
         :submitButtonText="'Créer l\'action'"
+        :loading="loading"
         @submit="submitAction"
         @cancel="cancel"
       />
@@ -27,17 +27,17 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useActionStore } from '@/stores/actions'
 import ActionForm from '@/components/actions/ActionForm.vue'
-import type { User } from '@/stores/app'
+import { useToast } from 'primevue/usetoast'
 
 // Définir le type pour les données de l'action
 interface ActionData {
   title: string
   description: string
-  type: string
+  action_type_id: number | null
   priority: string
   status: string
   assigned_to: number | null
-  due_date: string
+  due_date: string | null
   progress: number
   related_to: string
   related_id: number | null
@@ -45,50 +45,41 @@ interface ActionData {
 
 const router = useRouter()
 const actionStore = useActionStore()
-
-// Données factices pour les utilisateurs (à remplacer par des données réelles)
-const users = ref<User[]>([
-  {
-    id: 1,
-    username: 'admin',
-    email: 'admin@qhse.local',
-    first_name: 'Admin',
-    last_name: 'QHSE',
-    role: 'admin',
-  },
-  {
-    id: 2,
-    username: 'manager',
-    email: 'manager@qhse.local',
-    first_name: 'Manager',
-    last_name: 'QHSE',
-    role: 'manager',
-  },
-  {
-    id: 3,
-    username: 'user1',
-    email: 'user1@qhse.local',
-    first_name: 'User',
-    last_name: 'One',
-    role: 'user',
-  },
-])
+const toast = useToast()
+const loading = ref(false)
 
 // Fonction de soumission du formulaire
 const submitAction = async (data: ActionData) => {
+  loading.value = true
   try {
     // Créer l'action
     await actionStore.createAction({
       ...data,
       assigned_to: data.assigned_to || undefined,
       related_id: data.related_id || undefined,
+      due_date: data.due_date || undefined,
     })
 
+    toast.add({
+      severity: 'success',
+      summary: 'Succès',
+      detail: 'Action créée avec succès',
+      life: 3000,
+      icon: 'check',
+    })
     // Rediriger vers la liste des actions
     router.push('/actions')
   } catch (err) {
     console.error("Erreur lors de la création de l'action:", err)
-    // Gestion de l'erreur est faite dans le composant ActionForm
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "Erreur lors de la création de l'action",
+      life: 3000,
+      icon: 'times',
+    })
+  } finally {
+    loading.value = false
   }
 }
 
@@ -97,9 +88,3 @@ const cancel = () => {
   router.push('/actions')
 }
 </script>
-
-<style scoped>
-.action-create-page {
-  @apply p-4;
-}
-</style>

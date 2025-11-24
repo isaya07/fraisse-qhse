@@ -154,35 +154,43 @@ base_dir/
 │   ├── tests/
 │   └── config/
 └── backend/
-    ├── src/
-    │   ├── Controller/
-    │   │   └── Api/          # Contrôleurs API
-    │   ├── Model/
-    │   │   ├── Entity/       # Entités
-    │   │   └── Table/        # Tables
-    │   └── Application.php
+    ├── app/
+    │   ├── Http/
+    │   │   ├── Controllers/  # Contrôleurs API
+    │   │   └── Middleware/   # Middlewares d'authentification
+    │   ├── Models/           # Modèles Eloquent
+    │   └── Providers/        # Providers de service
     ├── config/
-    │   └── Migrations/       # Migrations de base de données
-    ├── tests/
-    └── webroot/
+    │   ├── app.php          # Configuration principale
+    │   ├── database.php     # Configuration de la base de données
+    │   └── sanctum.php      # Configuration de l'authentification
+    ├── database/
+    │   ├── migrations/      # Migrations de base de données
+    │   ├── seeders/         # Seeders pour les données de test
+    │   └── factories/       # Factories pour les modèles
+    ├── routes/
+    │   └── api.php          # Routes API
+    └── tests/
 ```
 
 ### Frontend
 
 - **[Vue.js 3.5](https://vuejs.org/)** - Framework JavaScript moderne avec Composition API
-- **[Vite 5.4](https://vitejs.dev/)** - Build Tool moderne avec HMR
-- **[Bulma CSS 1.0.4](https://bulma.io/)** - Framework CSS moderne
+- **[Vite 7.2](https://vitejs.dev/)** - Build Tool moderne avec HMR
+- **[PrimeVue 4.4](https://primevue.org/)** - Suite de composants UI complète
+- **[Tailwind CSS 4.1](https://tailwindcss.com/)** - Framework CSS utilitaire
 - **[Font Awesome 7](https://fontawesome.com/)** - Icônes vectorielles et CSS
-- **[TypeScript 5.5](https://www.typescriptlang.org/)** - Typage statique strict
-- **[Pinia 2.2](https://pinia.vuejs.org/)** - Gestion d'état moderne
-- **[Chart.js 4.5.0](https://www.chartjs.org/)** - Visualisation de données avancée
-- **[Vitest 2.0](https://vitest.dev/)** - Framework de test unitaire
+- **[TypeScript 5.9](https://www.typescriptlang.org/)** - Typage statique strict
+- **[Pinia 3.0](https://pinia.vuejs.org/)** - Gestion d'état moderne
+- **[Chart.js 4.5](https://www.chartjs.org/)** - Visualisation de données avancée
+- **[Vitest 4.0](https://vitest.dev/)** - Framework de test unitaire
 
 ### Backend
 
-- **[CakePHP 5.0](https://cakephp.org/)** - Framework PHP moderne avec gestion des dépendances Composer
-- **[PHP 8.4](https://www.php.net/)** - Langage de programmation serveur
-- **[MariaDB 12](https://mariadb.org/)** - Système de gestion de base de données
+- **[Laravel 11.x](https://laravel.com/)** - Framework PHP moderne avec gestion des dépendances Composer
+- **[PHP 8.2+](https://www.php.net/)** - Langage de programmation serveur
+- **[MariaDB 10+](https://mariadb.org/)** - Système de gestion de base de données
+- **[Laravel Sanctum](https://laravel.com/docs/11.x/sanctum)** - Authentification API sécurisée
 
 ### Sécurité & Authentification
 
@@ -195,7 +203,8 @@ base_dir/
 
 - **Suite de tests** complète avec scripts automatisés
 - **Tests unitaires** avec PHPUnit pour le backend et Vitest pour le frontend
-- **API Health Check** (`/api/health`) pour monitoring
+- **Factories et Seeders** pour les données de test
+- **API Health Check** (`/up`) pour monitoring
 
 ### Documentation
 

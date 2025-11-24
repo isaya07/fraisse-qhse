@@ -1,52 +1,58 @@
 <template>
-  <div class="indicator-edit-page p-4">
+  <div class="p-4 p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Modifier l'indicateur</h1>
-      <router-link
-        to="/indicators"
-        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-      >
-        <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
-        Retour à la liste
-      </router-link>
+      <h2>Modifier l'indicateur</h2>
+      <Button label="Retour" @click="goBack" severity="secondary" variant="outlined">
+        <template #icon>
+          <font-awesome-icon icon="arrow-left" class="mr-2" />
+        </template>
+      </Button>
     </div>
 
-    <div v-if="state.loading" class="flex justify-center items-center py-12">
+    <div v-if="isLoading" class="flex justify-center items-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="!indicator" class="flex justify-center items-center py-12">
+    <div v-else-if="!currentIndicator && !error" class="flex justify-center items-center py-12">
       <p class="text-lg text-gray-600">Indicateur non trouvé</p>
     </div>
 
-    <div v-else class="bg-white p-6 rounded-lg shadow-md">
-      <IndicatorForm
-        :initialData="form"
-        :submitButtonText="'Enregistrer les modifications'"
-        @submit="submitIndicator"
-        @cancel="cancel"
-      />
+    <div v-else-if="error" class="flex justify-center items-center py-12">
+      <p class="text-lg text-red-600">{{ error }}</p>
     </div>
+
+    <Card v-else>
+      <template #content>
+        <IndicatorForm
+          :initialData="formData"
+          :submitButtonText="'Enregistrer les modifications'"
+          :loading="isSubmitting"
+          @submit="submitIndicator"
+          @cancel="cancel"
+        />
+      </template>
+    </Card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useIndicatorStore } from '@/stores/indicators'
 import IndicatorForm from '@/components/indicators/IndicatorForm.vue'
-import type { Indicator } from '@/stores/app'
+import { useToast } from 'primevue/usetoast'
 
 // Définir le type pour les données de l'indicateur
 interface IndicatorData {
   name: string
   description: string
   code: string
-  category: string
+
+  indicator_category_id: number | null
   unit: string
-  target_value: number | undefined
-  threshold_min: number | undefined
-  threshold_max: number | undefined
+  target_value: number | null
+  threshold_min: number | null
+  threshold_max: number | null
   calculation_method: string
   data_source: string
   frequency: string
@@ -57,17 +63,19 @@ interface IndicatorData {
 const router = useRouter()
 const route = useRoute()
 const indicatorStore = useIndicatorStore()
+const toast = useToast()
 
 // États du formulaire
-const form = ref<IndicatorData>({
+const formData = ref<IndicatorData>({
   name: '',
   description: '',
   code: '',
-  category: '',
+
+  indicator_category_id: null,
   unit: '',
-  target_value: undefined,
-  threshold_min: undefined,
-  threshold_max: undefined,
+  target_value: null,
+  threshold_min: null,
+  threshold_max: null,
   calculation_method: '',
   data_source: '',
   frequency: 'monthly',
@@ -75,52 +83,51 @@ const form = ref<IndicatorData>({
   is_active: true,
 })
 
-const state = ref({
-  loading: false,
-  error: '',
-})
-
-const indicator = ref<Indicator | null>(null)
+const isLoading = ref(false)
+const isSubmitting = ref(false)
+const error = ref('')
 
 // Charger l'indicateur à modifier
 const loadIndicator = async () => {
   const id = parseInt(route.params.id as string)
   if (isNaN(id)) {
-    state.value.error = "ID d'indicateur invalide"
+    error.value = "ID d'indicateur invalide"
     return
   }
 
-  state.value.loading = true
+  isLoading.value = true
+  error.value = ''
+
   try {
     await indicatorStore.fetchIndicatorById(id)
+    const indicator = indicatorStore.currentIndicator
 
-    if (indicatorStore.currentIndicator) {
+    if (indicator) {
       // Remplir le formulaire avec les données de l'indicateur
-      const indicatorData = indicatorStore.currentIndicator
-      indicator.value = indicatorData
-      form.value = {
-        name: indicatorData.name,
-        description: indicatorData.description || '',
-        code: indicatorData.code,
-        category: indicatorData.category || '',
-        unit: indicatorData.unit || '',
-        target_value: indicatorData.target_value || undefined,
-        threshold_min: indicatorData.threshold_min || undefined,
-        threshold_max: indicatorData.threshold_max || undefined,
-        calculation_method: indicatorData.calculation_method || '',
-        data_source: indicatorData.data_source || '',
-        frequency: indicatorData.frequency,
-        trend_direction: indicatorData.trend_direction,
-        is_active: indicatorData.is_active,
+      formData.value = {
+        name: indicator.name,
+        description: indicator.description || '',
+        code: indicator.code,
+
+        indicator_category_id: indicator.indicator_category_id || null,
+        unit: indicator.unit || '',
+        target_value: indicator.target_value || null,
+        threshold_min: indicator.threshold_min || null,
+        threshold_max: indicator.threshold_max || null,
+        calculation_method: indicator.calculation_method || '',
+        data_source: indicator.data_source || '',
+        frequency: indicator.frequency,
+        trend_direction: indicator.trend_direction,
+        is_active: indicator.is_active,
       }
     } else {
-      state.value.error = 'Indicateur non trouvé'
+      error.value = 'Indicateur non trouvé'
     }
   } catch (err) {
     console.error("Erreur lors du chargement de l'indicateur:", err)
-    state.value.error = "Erreur lors du chargement de l'indicateur"
+    error.value = "Erreur lors du chargement de l'indicateur"
   } finally {
-    state.value.loading = false
+    isLoading.value = false
   }
 }
 
@@ -128,40 +135,51 @@ const loadIndicator = async () => {
 const submitIndicator = async (data: IndicatorData) => {
   const id = parseInt(route.params.id as string)
   if (isNaN(id)) {
-    state.value.error = "ID d'indicateur invalide"
+    error.value = "ID d'indicateur invalide"
     return
   }
 
-  state.value.loading = true
-  state.value.error = ''
+  isSubmitting.value = true
+  error.value = ''
 
   try {
     // Mettre à jour l'indicateur
-    await indicatorStore.updateIndicator(id, data)
+    await indicatorStore.updateIndicator(id, {
+      ...data,
+      target_value: data.target_value || undefined,
+      threshold_min: data.threshold_min || undefined,
+      threshold_max: data.threshold_max || undefined,
+    })
 
+    toast.add({
+      severity: 'success',
+      summary: 'Succès',
+      detail: 'Indicateur mis à jour avec succès',
+      life: 3000,
+    })
     // Rediriger vers la liste des indicateurs
-    router.push('/indicators')
-  } catch (err) {
-    console.error("Erreur lors de la mise à jour de l'indicateur:", err)
-    // Gestion de l'erreur est faite dans le composant IndicatorForm
+    router.push('/indicators/config')
+  } catch (err: unknown) {
+    const errorMessage = (err as Error).message || "Erreur lors de la mise à jour de l'indicateur"
+    toast.add({ severity: 'error', summary: 'Erreur', detail: errorMessage, life: 3000 })
+    console.error(err)
   } finally {
-    state.value.loading = false
+    isSubmitting.value = false
   }
 }
 
 // Fonction d'annulation
 const cancel = () => {
-  router.push('/indicators')
+  router.push('/indicators/config')
 }
+
+const goBack = () => router.back()
 
 // Charger l'indicateur au montage du composant
 onMounted(() => {
   loadIndicator()
 })
-</script>
 
-<style scoped>
-.indicator-edit-page {
-  @apply p-4;
-}
-</style>
+// Récupérer l'indicateur courant depuis le store
+const currentIndicator = computed(() => indicatorStore.currentIndicator)
+</script>

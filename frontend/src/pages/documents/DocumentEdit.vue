@@ -1,5 +1,5 @@
 <template>
-  <div class="document-edit-page p-4">
+  <div class="p-4 p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Modifier le document</h1>
       <router-link
@@ -11,18 +11,23 @@
       </router-link>
     </div>
 
-    <div v-if="loading" class="flex justify-center items-center py-12">
+    <div v-if="isLoading" class="flex justify-center items-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="!currentDocument" class="flex justify-center items-center py-12">
+    <div v-else-if="!currentDocument && !error" class="flex justify-center items-center py-12">
       <p class="text-lg text-gray-600">Document non trouvé</p>
+    </div>
+
+    <div v-else-if="error" class="flex justify-center items-center py-12">
+      <p class="text-lg text-red-600">{{ error }}</p>
     </div>
 
     <div v-else class="bg-white p-6 rounded-lg shadow-md">
       <DocumentForm
         :initialData="formData"
         :submitButtonText="'Enregistrer'"
+        :loading="isSubmitting"
         @submit="submitForm"
         @cancel="cancel"
       />
@@ -33,49 +38,44 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useDocumentStore } from '@/stores/documents'
+import { useDocumentStore, type DocumentFormData } from '@/stores/documents'
 import DocumentForm from '@/components/documents/DocumentForm.vue'
-
-// Définir le type pour les données du document
-interface DocumentData {
-  title: string
-  description: string
-  category: string
-  version: string
-  status: string
-  file?: File
-}
+import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
 const route = useRoute()
 const documentStore = useDocumentStore()
+const toast = useToast()
 
-const formData = ref<DocumentData>({
+const formData = ref<DocumentFormData>({
   title: '',
   description: '',
+  document_folder_id: null,
   category: '',
   version: '',
   status: 'draft',
 })
 
-const loading = ref(false)
+const isLoading = ref(false)
+const isSubmitting = ref(false)
 const error = ref('')
 
 const loadDocument = async () => {
   const id = Number(route.params.id)
-  loading.value = true
+  isLoading.value = true
+  error.value = ''
 
   try {
-    await documentStore.fetchDocumentById(id)
+    await documentStore.fetchDocumentById(parseInt(route.params.id as string))
     if (documentStore.currentDocument) {
-      // Remplir le formulaire avec les données du document
       const doc = documentStore.currentDocument
       formData.value = {
-        title: doc.title || '',
+        title: doc.title,
         description: doc.description || '',
+        document_folder_id: doc.document_folder_id || null,
         category: doc.category || '',
-        version: doc.version || '1.0',
-        status: doc.status || 'draft',
+        version: doc.version,
+        status: doc.status,
       }
     } else {
       error.value = 'Document non trouvé'
@@ -84,23 +84,49 @@ const loadDocument = async () => {
     error.value = 'Erreur lors du chargement du document'
     console.error(err)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
-const submitForm = async (data: DocumentData) => {
-  loading.value = true
+const submitForm = async (data: DocumentFormData & { file?: File }) => {
+  isSubmitting.value = true
   error.value = ''
 
   try {
-    const id = Number(route.params.id)
-    await documentStore.updateDocument(id, data)
+    const formDataToSend = new FormData()
+    formDataToSend.append('_method', 'PUT') // Method spoofing for Laravel
+    formDataToSend.append('title', data.title)
+    formDataToSend.append('description', data.description || '')
+    if (data.document_folder_id) {
+      formDataToSend.append('document_folder_id', data.document_folder_id.toString())
+    }
+    formDataToSend.append('category', data.category)
+    formDataToSend.append('version', data.version)
+    formDataToSend.append('status', data.status)
+
+    if (data.file) {
+      formDataToSend.append('file', data.file)
+    }
+
+    await documentStore.updateDocument(parseInt(route.params.id as string), formDataToSend)
+    toast.add({
+      severity: 'success',
+      summary: 'Succès',
+      detail: 'Document mis à jour avec succès',
+      life: 3000,
+      icon: 'check',
+    })
     router.push('/documents')
-  } catch (err: unknown) {
-    error.value = (err as Error).message || 'Erreur lors de la mise à jour du document'
-    console.error(err)
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de mettre à jour le document',
+      life: 3000,
+    })
+    console.error(error)
   } finally {
-    loading.value = false
+    isSubmitting.value = false
   }
 }
 
@@ -115,9 +141,3 @@ onMounted(() => {
 // Récupérer le document courant depuis le store
 const currentDocument = computed(() => documentStore.currentDocument)
 </script>
-
-<style scoped>
-.document-edit-page {
-  @apply p-4;
-}
-</style>

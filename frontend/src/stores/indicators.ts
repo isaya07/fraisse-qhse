@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Indicator, PaginatedResponse } from './app'
+import type { Indicator, IndicatorValue, PaginatedResponse } from './app'
 import { useApi } from '@/composables/useApi'
 import { isPaginatedResponse } from './app'
 
@@ -37,14 +37,29 @@ export const useIndicatorStore = defineStore('indicator', {
   },
 
   actions: {
-    async fetchIndicators(page: number = 1, limit: number = 10) {
+    async fetchIndicators(
+      page: number = 1,
+      limit: number = 10,
+      filters: Record<string, unknown> = {},
+    ) {
       this.loading = true
       this.error = null
 
       try {
         const { get } = useApi()
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        })
+
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            queryParams.append(key, String(value))
+          }
+        })
+
         const response = await get<Indicator | PaginatedResponse<Indicator>>(
-          `/indicators?page=${page}&limit=${limit}`,
+          `/indicators?${queryParams.toString()}`,
         )
 
         if (response.success && response.data) {
@@ -53,10 +68,10 @@ export const useIndicatorStore = defineStore('indicator', {
             this.indicators = response.data.data || []
             this.pagination = {
               ...this.pagination,
-              page,
-              limit,
+              page: response.data.current_page || page,
+              limit: response.data.per_page || limit,
               total: response.data.total || this.indicators.length,
-              totalPages: Math.ceil((response.data.total || this.indicators.length) / limit),
+              totalPages: response.data.last_page || 1,
             }
           } else {
             // Si c'est une réponse simple (pas paginée), response.data est directement le tableau d'indicateurs
@@ -202,6 +217,30 @@ export const useIndicatorStore = defineStore('indicator', {
         }
       } catch (error) {
         this.error = 'An error occurred while toggling activation'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addIndicatorValue(id: number, data: { value: number; date: string; comment?: string }) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { post } = useApi()
+        const response = await post<IndicatorValue>(`/indicators/${id}/values`, data)
+
+        if (response.success && response.data) {
+          // Refresh the indicator to get updated values
+          await this.fetchIndicatorById(id)
+        } else {
+          this.error = response.error || 'Failed to add indicator value'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while adding indicator value'
         console.error(error)
         throw error
       } finally {

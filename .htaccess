@@ -2,6 +2,8 @@ RewriteEngine On
 RewriteBase /
 
 # Rediriger les requêtes API vers le backend CakePHP
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 RewriteRule ^api/(.*)$ backend/webroot/index.php?url=$1 [QSA,L]
 
 # Rediriger les autres requêtes vers le frontend (sauf les dossiers backend et assets)

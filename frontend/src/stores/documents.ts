@@ -3,6 +3,15 @@ import type { Document, PaginatedResponse } from './app'
 import { useApi } from '@/composables/useApi'
 import { isPaginatedResponse } from './app'
 
+export interface DocumentFormData {
+  title: string
+  description: string
+  document_folder_id: number | null
+  category: string
+  version: string
+  status: string
+}
+
 interface DocumentState {
   documents: Document[]
   currentDocument: Document | null
@@ -37,14 +46,29 @@ export const useDocumentStore = defineStore('document', {
   },
 
   actions: {
-    async fetchDocuments(page: number = 1, limit: number = 10) {
+    async fetchDocuments(
+      page: number = 1,
+      limit: number = 10,
+      filters: Record<string, unknown> = {},
+    ) {
       this.loading = true
       this.error = null
 
       try {
         const { get } = useApi()
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        })
+
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            queryParams.append(key, String(value))
+          }
+        })
+
         const response = await get<Document | PaginatedResponse<Document>>(
-          `/documents?page=${page}&limit=${limit}`,
+          `/documents?${queryParams.toString()}`,
         )
 
         if (response.success && response.data) {
@@ -53,12 +77,10 @@ export const useDocumentStore = defineStore('document', {
             this.documents = response.data.data || []
             this.pagination = {
               ...this.pagination,
-              page: response.data.page || page,
-              limit: response.data.limit || limit,
+              page: response.data.current_page || page,
+              limit: response.data.per_page || limit,
               total: response.data.total || this.documents.length,
-              totalPages:
-                response.data.totalPages ||
-                Math.ceil((response.data.total || this.documents.length) / limit),
+              totalPages: response.data.last_page || 1,
             }
           } else {
             // Si c'est une réponse simple (pas paginée), response.data est directement le tableau de documents
@@ -105,7 +127,7 @@ export const useDocumentStore = defineStore('document', {
       }
     },
 
-    async createDocument(documentData: Partial<Document>) {
+    async createDocument(documentData: Partial<Document> | FormData) {
       this.loading = true
       this.error = null
 
@@ -129,7 +151,7 @@ export const useDocumentStore = defineStore('document', {
       }
     },
 
-    async updateDocument(id: number, documentData: Partial<Document>) {
+    async updateDocument(id: number, documentData: Partial<Document> | FormData) {
       this.loading = true
       this.error = null
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="action-edit-page p-4">
+  <div class="p-4 p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Modifier l'action</h1>
       <router-link
@@ -11,19 +11,23 @@
       </router-link>
     </div>
 
-    <div v-if="loading" class="flex justify-center items-center py-12">
+    <div v-if="isLoading" class="flex justify-center items-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="!action" class="flex justify-center items-center py-12">
+    <div v-else-if="!currentAction && !error" class="flex justify-center items-center py-12">
       <p class="text-lg text-gray-600">Action non trouvée</p>
+    </div>
+
+    <div v-else-if="error" class="flex justify-center items-center py-12">
+      <p class="text-lg text-red-600">{{ error }}</p>
     </div>
 
     <div v-else class="bg-white p-6 rounded-lg shadow-md">
       <ActionForm
-        :initialData="form"
-        :users="users"
+        :initialData="formData"
         :submitButtonText="'Enregistrer les modifications'"
+        :loading="isSubmitting"
         @submit="submitAction"
         @cancel="cancel"
       />
@@ -32,21 +36,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActionStore } from '@/stores/actions'
 import ActionForm from '@/components/actions/ActionForm.vue'
-import type { User, Action } from '@/stores/app'
+import { useToast } from 'primevue/usetoast'
 
 // Définir le type pour les données de l'action
 interface ActionData {
   title: string
   description: string
-  type: string
+  action_type_id: number | null
   priority: string
   status: string
   assigned_to: number | null
-  due_date: string
+  due_date: string | null
   progress: number
   related_to: string
   related_id: number | null
@@ -55,52 +59,25 @@ interface ActionData {
 const router = useRouter()
 const route = useRoute()
 const actionStore = useActionStore()
+const toast = useToast()
 
 // États du formulaire
-const form = ref<ActionData>({
+const formData = ref<ActionData>({
   title: '',
   description: '',
-  type: '',
+  action_type_id: null,
   priority: '',
   status: 'open',
   assigned_to: null,
-  due_date: '',
+  due_date: null,
   progress: 0,
   related_to: '',
   related_id: null,
 })
 
-const loading = ref(false)
+const isLoading = ref(false)
+const isSubmitting = ref(false)
 const error = ref('')
-const action = ref(null as Action | null)
-
-// Données factices pour les utilisateurs (à remplacer par des données réelles)
-const users = ref<User[]>([
-  {
-    id: 1,
-    username: 'admin',
-    email: 'admin@qhse.local',
-    first_name: 'Admin',
-    last_name: 'QHSE',
-    role: 'admin',
-  },
-  {
-    id: 2,
-    username: 'manager',
-    email: 'manager@qhse.local',
-    first_name: 'Manager',
-    last_name: 'QHSE',
-    role: 'manager',
-  },
-  {
-    id: 3,
-    username: 'user1',
-    email: 'user1@qhse.local',
-    first_name: 'User',
-    last_name: 'One',
-    role: 'user',
-  },
-])
 
 // Charger l'action à modifier
 const loadAction = async () => {
@@ -110,24 +87,26 @@ const loadAction = async () => {
     return
   }
 
-  loading.value = true
+  isLoading.value = true
+  error.value = ''
+
   try {
     await actionStore.fetchActionById(id)
-    action.value = actionStore.currentAction
+    const action = actionStore.currentAction
 
-    if (action.value) {
+    if (action) {
       // Remplir le formulaire avec les données de l'action
-      form.value = {
-        title: action.value.title,
-        description: action.value.description || '',
-        type: action.value.type,
-        priority: action.value.priority,
-        status: action.value.status,
-        assigned_to: action.value.assigned_to || null,
-        due_date: action.value.due_date || '',
-        progress: action.value.progress,
-        related_to: action.value.related_to || '',
-        related_id: action.value.related_id || null,
+      formData.value = {
+        title: action.title,
+        description: action.description || '',
+        action_type_id: action.action_type_id || action.action_type?.id || null,
+        priority: action.priority,
+        status: action.status,
+        assigned_to: action.assigned_to || null,
+        due_date: action.due_date || null,
+        progress: action.progress,
+        related_to: action.related_to || '',
+        related_id: action.related_id || null,
       }
     } else {
       error.value = 'Action non trouvée'
@@ -136,7 +115,7 @@ const loadAction = async () => {
     console.error("Erreur lors du chargement de l'action:", err)
     error.value = "Erreur lors du chargement de l'action"
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
@@ -148,7 +127,7 @@ const submitAction = async (data: ActionData) => {
     return
   }
 
-  loading.value = true
+  isSubmitting.value = true
   error.value = ''
 
   try {
@@ -157,15 +136,30 @@ const submitAction = async (data: ActionData) => {
       ...data,
       assigned_to: data.assigned_to || undefined,
       related_id: data.related_id || undefined,
+      due_date: data.due_date || undefined,
     })
 
+    toast.add({
+      severity: 'success',
+      summary: 'Succès',
+      detail: 'Action mise à jour avec succès',
+      life: 3000,
+      icon: 'check',
+    })
     // Rediriger vers la liste des actions
     router.push('/actions')
-  } catch (err) {
-    console.error("Erreur lors de la mise à jour de l'action:", err)
-    // Gestion de l'erreur est faite dans le composant ActionForm
+  } catch (err: unknown) {
+    const errorMessage = (err as Error).message || "Erreur lors de la mise à jour de l'action"
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "Erreur lors de la mise à jour de l'action",
+      life: 3000,
+      icon: 'times',
+    })
+    console.error(err)
   } finally {
-    loading.value = false
+    isSubmitting.value = false
   }
 }
 
@@ -178,10 +172,7 @@ const cancel = () => {
 onMounted(() => {
   loadAction()
 })
-</script>
 
-<style scoped>
-.action-edit-page {
-  @apply p-4;
-}
-</style>
+// Récupérer l'action courante depuis le store
+const currentAction = computed(() => actionStore.currentAction)
+</script>

@@ -1,197 +1,163 @@
 <template>
-  <div class="actions-page p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Plans d'Action</h1>
-      <Button
-        icon="pi pi-plus"
-        label="Nouvelle action"
-        @click="createNewAction"
-        class="p-button-primary"
-      />
+  <div class="p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+      <h2>Tableau de bord Actions</h2>
+      <div class="flex gap-2">
+        <Button label="Gérer les actions" @click="goToConfig" severity="secondary" outlined>
+          <template #icon>
+            <font-awesome-icon icon="cog" class="mr-2" />
+          </template>
+        </Button>
+        <Button label="Nouvelle action" @click="createNewAction" severity="primary">
+          <template #icon>
+            <font-awesome-icon icon="plus" class="mr-2" />
+          </template>
+        </Button>
+      </div>
     </div>
 
-    <!-- Barre de recherche et filtres -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-      <div class="flex-grow">
-        <div class="relative">
-          <input
-            v-model="searchQuery"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            type="text"
-            placeholder="Rechercher une action..."
-          />
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-            <font-awesome-icon :icon="['fas', 'search']" class="text-gray-400" />
+    <!-- Filters -->
+    <Card class="mb-6">
+      <template #content>
+        <div class="flex flex-wrap gap-4">
+          <div class="flex-1 min-w-[200px]">
+            <IconField iconPosition="left">
+              <InputIcon>
+                <font-awesome-icon icon="magnifying-glass" />
+              </InputIcon>
+              <InputText v-model="searchQuery" placeholder="Rechercher..." class="w-full" />
+            </IconField>
           </div>
+          <Select
+            v-model="typeFilter"
+            :options="typeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Type"
+            class="w-full md:w-40"
+            showClear
+          />
+          <Select
+            v-model="statusFilter"
+            :options="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Statut"
+            class="w-full md:w-40"
+            showClear
+          />
         </div>
-      </div>
-    </div>
+      </template>
+    </Card>
 
-    <!-- Filtres additionnels -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-        <p-dropdown
-          v-model="typeFilter"
-          :options="typeOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Tous les types"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
-        <p-dropdown
-          v-model="priorityFilter"
-          :options="priorityOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Toutes les priorités"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-        <p-dropdown
-          v-model="statusFilter"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Tous les statuts"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tri</label>
-        <p-dropdown
-          v-model="sortOrder"
-          :options="sortOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-        />
-      </div>
-    </div>
-
-    <!-- Liste des actions -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
+    <!-- Loading -->
+    <div v-if="loading" class="flex justify-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="actions.length === 0" class="flex justify-center items-center py-12">
-      <p class="text-lg text-gray-600">Aucune action trouvée</p>
+    <!-- Empty State -->
+    <div
+      v-else-if="actions.length === 0"
+      class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+    >
+      <font-awesome-icon icon="tasks" class="text-gray-300 text-5xl mb-4" />
+      <h3 class="text-lg font-medium text-gray-900">Aucune action trouvée</h3>
+      <p class="text-gray-500 mt-1">Commencez par créer une nouvelle action.</p>
+      <Button label="Nouvelle action" @click="createNewAction" severity="primary" class="mt-4">
+        <template #icon>
+          <font-awesome-icon icon="plus" class="mr-2" />
+        </template>
+      </Button>
     </div>
 
-    <div v-else>
-      <div class="actions-list">
-        <ActionCard
-          v-for="action in actions"
-          :key="action.id"
-          :action="action"
-          :users="users"
-          @view="viewAction"
-          @edit="editAction"
-          @delete="deleteAction"
-        />
-      </div>
+    <!-- Grid -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ActionCard v-for="action in actions" :key="action.id" :action="action" @view="viewAction" />
+    </div>
 
-      <!-- Pagination -->
-      <div class="flex justify-center mt-8">
-        <p-paginator
-          :rows="itemsPerPage.value"
-          :totalRecords="actionStore.pagination.totalItems"
-          :pageLinkSize="3"
-          :currentPageReportTemplate="'Affichage {first} à {last} de {totalRecords}'"
-          @page="onPageChange"
-        />
-      </div>
+    <!-- Pagination -->
+    <div v-if="totalRecords > itemsPerPage" class="mt-6">
+      <Paginator
+        :rows="itemsPerPage"
+        :totalRecords="totalRecords"
+        :first="currentPage * itemsPerPage"
+        @page="onPage"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Button from 'primevue/button'
-import PDropdown from 'primevue/dropdown'
-import ActionCard from '@/components/actions/ActionCard.vue'
 import { useActionStore } from '@/stores/actions'
-import type { User } from '@/stores/app'
+import { useActionTypeStore } from '@/stores/actionTypes'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+import ActionCard from '@/components/actions/ActionCard.vue'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import Select from 'primevue/select'
+import Paginator from 'primevue/paginator'
+import type { Action } from '@/stores/app'
 
 const router = useRouter()
 const actionStore = useActionStore()
+const actionTypeStore = useActionTypeStore()
+const confirm = useConfirm()
+const toast = useToast()
 
-// États locaux
+// États
 const searchQuery = ref('')
-const typeFilter = ref('')
-const priorityFilter = ref('')
-const statusFilter = ref('')
-const sortOrder = ref('newest')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const typeFilter = ref(null)
+const statusFilter = ref(null)
+const itemsPerPage = ref(9)
+const currentPage = ref(0)
 
-// Options pour les filtres
-const typeOptions = [
-  { label: 'Tous les types', value: '' },
-  { label: 'Corrective', value: 'corrective' },
-  { label: 'Préventive', value: 'preventive' },
-  { label: 'Amélioration', value: 'improvement' },
-]
+// Accès au store
+const actions = computed(() => actionStore.actions)
+const loading = computed(() => actionStore.loading)
+const totalRecords = computed(() => actionStore.pagination.total)
 
-const priorityOptions = [
-  { label: 'Toutes les priorités', value: '' },
-  { label: 'Basse', value: 'low' },
-  { label: 'Moyenne', value: 'medium' },
-  { label: 'Haute', value: 'high' },
-  { label: 'Critique', value: 'critical' },
-]
+// Options
+const typeOptions = computed(() => {
+  return (actionTypeStore.types || []).map((type) => ({
+    label: type.name,
+    value: type.id,
+  }))
+})
 
 const statusOptions = [
-  { label: 'Tous les statuts', value: '' },
   { label: 'Ouvert', value: 'open' },
   { label: 'En cours', value: 'in_progress' },
   { label: 'Terminé', value: 'completed' },
   { label: 'Annulé', value: 'cancelled' },
 ]
 
-const sortOptions = [
-  { label: 'Plus récents', value: 'newest' },
-  { label: 'Plus anciens', value: 'oldest' },
-  { label: 'Par progression', value: 'progress' },
-]
-
-// Données factices pour les utilisateurs (à remplacer par des données réelles)
-const users = ref<User[]>([
-  {
-    id: 1,
-    username: 'admin',
-    email: 'admin@qhse.local',
-    first_name: 'Admin',
-    last_name: 'QHSE',
-    role: 'admin',
-  },
-  {
-    id: 2,
-    username: 'manager',
-    email: 'manager@qhse.local',
-    first_name: 'Manager',
-    last_name: 'QHSE',
-    role: 'manager',
-  },
-  {
-    id: 3,
-    username: 'user1',
-    email: 'user1@qhse.local',
-    first_name: 'User',
-    last_name: 'One',
-    role: 'user',
-  },
-])
-
-// Fonction pour charger les actions
+// Chargement des données
 const loadActions = async () => {
-  await actionStore.fetchActions(currentPage.value, itemsPerPage.value)
+  const filters = {
+    search: searchQuery.value,
+    action_type_id: typeFilter.value,
+    status: statusFilter.value,
+  }
+  await actionStore.fetchActions(currentPage.value + 1, itemsPerPage.value, filters)
+}
+
+const onPage = (event: { page: number; rows: number }) => {
+  currentPage.value = event.page
+  loadActions()
+}
+
+// Actions
+const createNewAction = () => {
+  router.push('/actions/create')
+}
+
+const goToConfig = () => {
+  router.push('/actions/config')
 }
 
 const viewAction = (id: number) => {
@@ -202,45 +168,50 @@ const editAction = (id: number) => {
   router.push(`/actions/${id}/edit`)
 }
 
-const createNewAction = () => {
-  router.push('/actions/create')
+const confirmDelete = (id: number) => {
+  const action = actions.value.find((a) => a.id === id)
+  if (!action) return
+
+  confirm.require({
+    message: `Voulez-vous vraiment supprimer l'action "${action.title}" ?`,
+    header: 'Confirmation de suppression',
+    icon: 'exclamation-triangle',
+    rejectLabel: 'Annuler',
+    acceptLabel: 'Supprimer',
+    rejectClass: 'p-button-secondary p-button-outlined',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await actionStore.deleteAction(action.id)
+        toast.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Action supprimée',
+          life: 3000,
+          icon: 'check',
+        })
+        loadActions()
+      } catch {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: "Impossible de supprimer l'action",
+          life: 3000,
+          icon: 'times',
+        })
+      }
+    },
+  })
 }
 
-const deleteAction = async (id: number) => {
-  if (confirm('Êtes-vous sûr de vouloir supprimer cette action ?')) {
-    try {
-      await actionStore.deleteAction(id)
-      // Recharger la liste après suppression
-      await loadActions()
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'action:", error)
-    }
-  }
-}
-
-const onPageChange = async (event: { page: number }) => {
-  currentPage.value = event.page + 1
-  await loadActions()
-}
-
-// Charger les actions au montage
-onMounted(() => {
+// Watchers
+watch([searchQuery, typeFilter, statusFilter], () => {
+  currentPage.value = 0
   loadActions()
 })
 
-// Accéder aux actions et état de chargement depuis le store
-const actions = computed(() => actionStore.actions)
-const loading = computed(() => actionStore.loading)
+onMounted(() => {
+  actionTypeStore.fetchTypes()
+  loadActions()
+})
 </script>
-
-<style scoped>
-@reference "@/assets/css/tailwind.css";
-
-.actions-page {
-  @apply p-4;
-}
-
-.actions-list {
-  @apply mb-8;
-}
-</style>

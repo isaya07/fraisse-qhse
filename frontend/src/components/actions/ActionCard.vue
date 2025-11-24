@@ -1,209 +1,167 @@
 <template>
-  <div class="action-card bg-white rounded-lg shadow-md overflow-hidden mb-4">
-    <div class="p-6">
-      <div class="flex items-start">
-        <div class="mr-4">
-          <span :class="`text-3xl ${getPriorityColorClass(action.priority)}`">
-            <font-awesome-icon :icon="getIconForActionType(action.type)" size="2x" />
-          </span>
+  <Card
+    class="hover:shadow-md transition-all duration-200 cursor-pointer h-full flex flex-col relative overflow-hidden group"
+    @click="$emit('view', action.id)"
+  >
+    <!-- Left Border for Priority -->
+    <div
+      :class="`absolute left-0 top-0 bottom-0 w-1.5 ${getPriorityBorderClass(action.priority)}`"
+    ></div>
+    <template #content>
+      <div class="flex-1 flex flex-col gap-4">
+        <!-- Header: Type & Status -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <font-awesome-icon
+              :icon="['fas', action.action_type?.icon || 'tasks']"
+              :style="{ color: action.action_type?.color }"
+              size="xl"
+            />
+            <span class="text-xl font-medium">{{ action.action_type?.name }}</span>
+          </div>
+          <Tag
+            :value="getStatusText(action.status)"
+            :severity="getStatusSeverity(action.status)"
+            class="text-xs px-2 py-0.5"
+          />
         </div>
-        <div class="flex-1">
-          <h3 class="text-xl font-bold text-gray-800 mb-1">{{ action.title }}</h3>
-          <p class="text-sm text-gray-600 mb-3">
-            <span :class="getStatusColorClass(action.status)">
-              {{ getStatusText(action.status) }}
-            </span>
-            •
-            <span :class="getPriorityColorClass(action.priority)">
-              {{ getPriorityText(action.priority) }}
-            </span>
-          </p>
+
+        <!-- Title -->
+        <h3 class="font-bold text-gray-900 text-lg leading-snug">
+          {{ action.title }}
+        </h3>
+
+        <!-- Progress Bar -->
+        <div class="mt-auto">
+          <div class="flex justify-between text-xs text-gray-500 mb-1">
+            <span>Progression</span>
+            <span class="font-medium">{{ action.progress }}%</span>
+          </div>
+          <!-- <ProgressBar
+            :value="action.progress"
+            :showValue="false"
+            :class="getProgressColorClass(action.progress)"
+          />  -->
+          <div class="w-full bg-gray-100 rounded-full h-4">
+            <div
+              class="h-4 rounded-full transition-all duration-300"
+              :class="getProgressColorClass(action.progress)"
+              :style="{ width: `${action.progress}%` }"
+            ></div>
+          </div>
         </div>
-      </div>
 
-      <div class="mb-4">
-        <p v-if="action.description" class="text-gray-700 mb-4">{{ action.description }}</p>
-
-        <div class="flex flex-col sm:flex-row">
-          <div class="w-full sm:w-1/3 mb-4 sm:mb-0 sm:mr-4">
-            <p class="font-semibold mb-1">Progression:</p>
-            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-              <div
-                class="h-2.5 rounded-full"
-                :class="getProgressColorClass(action.progress)"
-                :style="{ width: action.progress + '%' }"
-              ></div>
+        <!-- Footer: Assignee & Date -->
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-2">
+          <div class="flex items-center gap-2">
+            <Avatar
+              v-if="action.assignee"
+              :label="getInitials(action.assignee)"
+              shape="circle"
+              size="small"
+              class="w-8 h-8 text-xs"
+              :style="{ backgroundColor: '#f1f5f9', color: '#475569' }"
+            />
+            <div class="flex flex-col">
+              <span class="text-xs text-gray-500">Responsable</span>
+              <span class="text-sm font-medium text-gray-700 truncate max-w-[120px]">
+                {{
+                  action.assignee
+                    ? `${action.assignee.first_name} ${action.assignee.last_name}`
+                    : 'Non assigné'
+                }}
+              </span>
             </div>
-            <p class="text-center text-sm">{{ action.progress }}%</p>
           </div>
 
-          <div class="w-full sm:w-2/3">
-            <p v-if="action.due_date" class="mb-1">
-              <span class="font-semibold">Échéance:</span> {{ formatDate(action.due_date) }}
-            </p>
-            <p v-if="action.assigned_to" class="mb-1">
-              <span class="font-semibold">Assigné à:</span>
-              {{ getAssignedUserName(action.assigned_to) }}
-            </p>
-            <p class="mb-1">
-              <span class="font-semibold">Type:</span> {{ getTypeText(action.type) }}
-            </p>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-500">Échéance</span>
+            <div
+              class="flex items-center gap-1.5 text-sm font-medium"
+              :class="isOverdue ? 'text-red-600' : 'text-gray-700'"
+            >
+              <font-awesome-icon icon="calendar" class="text-xs" />
+              <span>{{ formatDate(action.due_date) }}</span>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="flex justify-between items-center">
-        <div>
-          <p-button
-            :icon="['fas', 'eye']"
-            label="Voir"
-            severity="info"
-            size="small"
-            @click="$emit('view', action.id)"
-          />
-        </div>
-        <div class="flex space-x-2">
-          <p-button
-            :icon="['fas', 'edit']"
-            label="Éditer"
-            severity="warning"
-            size="small"
-            @click="$emit('edit', action.id)"
-          />
-          <p-button
-            :icon="['fas', 'trash']"
-            label="Supprimer"
-            severity="danger"
-            size="small"
-            @click="$emit('delete', action.id)"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
+import { computed } from 'vue'
 import type { Action, User } from '../../stores/app'
-import PButton from 'primevue/button'
+import Tag from 'primevue/tag'
+import Avatar from 'primevue/avatar'
 
 const props = defineProps({
   action: {
     type: Object as PropType<Action>,
     required: true,
   },
-  users: {
-    type: Array as PropType<User[]>,
-    default: () => [],
-  },
 })
 
-defineEmits(['view', 'edit', 'delete'])
+defineEmits(['view'])
 
-const getIconForActionType = (type: string) => {
-  switch (type) {
-    case 'corrective':
-      return ['fas', 'wrench']
-    case 'preventive':
-      return ['fas', 'shield-alt']
-    case 'improvement':
-      return ['fas', 'arrow-up']
-    default:
-      return ['fas', 'tasks']
-  }
-}
-
-const getStatusColorClass = (status: string) => {
-  switch (status) {
-    case 'open':
-      return 'text-blue-500'
-    case 'in_progress':
-      return 'text-blue-500'
-    case 'completed':
-      return 'text-green-500'
-    case 'cancelled':
-      return 'text-red-500'
-    default:
-      return 'text-gray-500'
-  }
-}
-
+// Helpers
 const getStatusText = (status: string) => {
-  switch (status) {
-    case 'open':
-      return 'Ouvert'
-    case 'in_progress':
-      return 'En cours'
-    case 'completed':
-      return 'Terminé'
-    case 'cancelled':
-      return 'Annulé'
-    default:
-      return status
+  const map: Record<string, string> = {
+    open: 'Ouvert',
+    in_progress: 'En cours',
+    completed: 'Terminé',
+    cancelled: 'Annulé',
   }
+  return map[status] || status
 }
 
-const getPriorityColorClass = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'text-green-500'
-    case 'medium':
-      return 'text-yellow-500'
-    case 'high':
-      return 'text-red-500'
-    case 'critical':
-      return 'text-red-600'
-    default:
-      return 'text-gray-500'
+const getStatusSeverity = (status: string) => {
+  const map: Record<string, string> = {
+    open: 'info',
+    in_progress: 'warn',
+    completed: 'success',
+    cancelled: 'secondary',
   }
+  return map[status] || 'info'
 }
 
-const getPriorityText = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'Basse'
-    case 'medium':
-      return 'Moyenne'
-    case 'high':
-      return 'Haute'
-    case 'critical':
-      return 'Critique'
-    default:
-      return priority
+const getPriorityBorderClass = (priority: string) => {
+  const map: Record<string, string> = {
+    low: 'bg-green-500',
+    medium: 'bg-yellow-500',
+    high: 'bg-orange-500',
+    critical: 'bg-red-600',
   }
-}
-
-const getTypeText = (type: string) => {
-  switch (type) {
-    case 'corrective':
-      return 'Corrective'
-    case 'preventive':
-      return 'Préventive'
-    case 'improvement':
-      return 'Amélioration'
-    default:
-      return type
-  }
+  return map[priority] || 'bg-gray-300'
 }
 
 const getProgressColorClass = (progress: number) => {
-  if (progress < 30) return 'bg-red-500'
-  if (progress < 70) return 'bg-yellow-500'
-  if (progress < 100) return 'bg-blue-500'
-  return 'bg-green-500'
+  if (progress >= 100) return 'bg-green-500'
+  if (progress > 60) return 'bg-blue-500'
+  if (progress > 30) return 'bg-yellow-500'
+  return 'bg-gray-400'
 }
 
 const formatDate = (dateString: string | undefined) => {
-  if (!dateString) return 'Non définie'
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString('fr-FR', options)
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
 }
 
-const getAssignedUserName = (userId: number | undefined) => {
-  if (!userId) return 'Non assigné'
-  const user = props.users.find((u) => u.id === userId)
-  return user ? `${user.first_name} ${user.last_name}` : 'Utilisateur inconnu'
+const isOverdue = computed(() => {
+  if (!props.action.due_date || ['completed', 'cancelled'].includes(props.action.status))
+    return false
+  return new Date(props.action.due_date) < new Date()
+})
+
+const getInitials = (user: User) => {
+  return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
 }
 </script>
 

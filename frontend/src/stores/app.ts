@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { config } from '@/config'
+import { useApi } from '@/composables/useApi'
 
 export interface User {
   id: number
@@ -8,6 +9,8 @@ export interface User {
   first_name: string
   last_name: string
   role: string
+  is_active?: boolean
+  password?: string
 }
 
 export interface Document {
@@ -19,6 +22,7 @@ export interface Document {
   file_size?: number
   mime_type?: string
   version: string
+  document_folder_id?: number | null
   category?: string
   status: string
   created_by: number
@@ -35,7 +39,13 @@ export interface Action {
   id: number
   title: string
   description?: string
-  type: string
+  action_type_id?: number | null
+  action_type?: {
+    id: number
+    name: string
+    icon: string
+    color: string
+  }
   priority: string
   status: string
   assigned_to?: number
@@ -53,12 +63,47 @@ export interface Action {
   indicators?: Indicator[]
 }
 
+export interface IndicatorValue {
+  id: number
+  indicator_id: number
+  value: number
+  date: string
+  frequency: string
+  target_value: number
+  unit: string
+  trend_direction: string
+  threshold_min?: number | null
+  threshold_max?: number | null
+  data_source?: string | null
+  calculation_method?: string | null
+  indicator_category_id?: number | null
+  indicator_category?: {
+    id: number
+    name: string
+    icon: string
+    color: string
+  }
+  comment?: string
+  created_by: number
+  created_at: string
+  updated_at: string
+  creator?: User
+}
+
 export interface Indicator {
   id: number
   name: string
   description?: string
   code: string
-  category?: string
+  indicator_category_id?: number | null
+  manager_id?: number | null
+  manager?: User
+  indicator_category?: {
+    id: number
+    name: string
+    icon: string
+    color: string
+  }
   unit?: string
   target_value?: number
   threshold_min?: number
@@ -73,15 +118,18 @@ export interface Indicator {
   modified: string
   creator?: User
   actions?: Action[]
+  values?: IndicatorValue[]
 }
 
-// Interface pour la réponse paginée
+// Interface pour la réponse paginée (Laravel Standard)
 export interface PaginatedResponse<T> {
   data: T[]
   total: number
-  page: number
-  limit: number
-  totalPages: number
+  current_page: number
+  per_page: number
+  last_page: number
+  from: number
+  to: number
 }
 
 // Fonction de vérification de type pour déterminer si une réponse est paginée
@@ -92,9 +140,8 @@ export function isPaginatedResponse<T>(data: unknown): data is PaginatedResponse
     'data' in data &&
     Array.isArray((data as PaginatedResponse<T>).data) &&
     'total' in data &&
-    'page' in data &&
-    'limit' in data &&
-    'totalPages' in data
+    'current_page' in data &&
+    'per_page' in data
   )
 }
 
@@ -122,6 +169,7 @@ export const useAppStore = defineStore('app', {
       this.token = ''
       this.user = null
       localStorage.removeItem('token')
+      localStorage.removeItem('user_role')
     },
 
     setTheme(theme: string) {
@@ -139,45 +187,42 @@ export const useAppStore = defineStore('app', {
 
     setUser(user: User) {
       this.user = user
+      if (user.role) {
+        localStorage.setItem('user_role', user.role)
+      }
     },
 
-    async login(credentials: { username: string; password: string }) {
-      try {
-        const response = await fetch(`${this.apiUrl}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(credentials),
-        })
+    async login(credentials: { email: string; password: string }) {
+      const { post } = useApi()
+      const result = await post('/login', credentials)
 
-        const data = await response.json()
-
-        if (response.ok) {
-          this.setToken(data.token)
-          this.setUser(data.user)
-          return { success: true, user: data.user }
-        } else {
-          return { success: false, message: data.message || 'Login failed' }
-        }
-      } catch (error) {
-        console.error('Login error:', error)
-        return { success: false, message: 'Network error' }
+      if (result.success && result.data) {
+        const data = result.data as { token: string; user: User }
+        this.setToken(data.token)
+        this.setUser(data.user)
+        return { success: true, user: data.user }
+      } else {
+        return { success: false, message: result.error || 'Login failed' }
       }
     },
 
     async logout() {
-      try {
-        await fetch(`${this.apiUrl}/logout`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-      } catch (error) {
-        console.error('Logout error:', error)
-      } finally {
+      const { post } = useApi()
+      await post('/logout', {})
+      this.clearToken()
+    },
+
+    async fetchCurrentUser() {
+      if (!this.token) return
+
+      const { get } = useApi()
+      const result = await get('/user')
+
+      if (result.success && result.data) {
+        const user = result.data as User
+        this.setUser(user)
+      } else {
+        // Token invalide ou expiré
         this.clearToken()
       }
     },

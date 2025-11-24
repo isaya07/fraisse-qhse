@@ -1,166 +1,94 @@
 <template>
   <div class="p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Indicateurs & KPI</h1>
-      <Button
-        icon="pi pi-plus"
-        label="Nouvel indicateur"
-        @click="createNewIndicator"
-        class="p-button-primary"
-      />
-    </div>
-
-    <!-- Barre de recherche et filtres -->
-    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-      <div class="flex-grow">
-        <div class="relative">
-          <input
-            v-model="searchQuery"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            type="text"
-            placeholder="Rechercher un indicateur..."
-          />
-          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-            <font-awesome-icon :icon="['fas', 'search']" class="text-gray-400" />
-          </div>
-        </div>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+      <h2>Tableau de bord Indicateurs</h2>
+      <div class="flex gap-2 items-center">
+        <IconField iconPosition="left">
+          <InputIcon>
+            <font-awesome-icon icon="magnifying-glass" />
+          </InputIcon>
+          <InputText v-model="searchQuery" placeholder="Rechercher..." class="w-full md:w-64" />
+        </IconField>
+        <Button label="Configuration" @click="goToConfig" severity="secondary" variant="outlined">
+          <template #icon>
+            <font-awesome-icon icon="cog" class="mr-2" />
+          </template>
+        </Button>
+        <Button label="Nouvel indicateur" @click="createNewIndicator" severity="primary">
+          <template #icon>
+            <font-awesome-icon icon="plus" class="mr-2" />
+          </template>
+        </Button>
       </div>
     </div>
 
-    <!-- Filtres additionnels -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-        <p-dropdown
-          v-model="categoryFilter"
-          :options="categoryOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Toutes les catégories"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tendance</label>
-        <p-dropdown
-          v-model="trendFilter"
-          :options="trendOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Toutes les tendances"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-        <p-dropdown
-          v-model="statusFilter"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Tous les statuts"
-          class="w-full"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tri</label>
-        <p-dropdown
-          v-model="sortOrder"
-          :options="sortOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-        />
-      </div>
-    </div>
-
-    <!-- Liste des indicateurs -->
     <div v-if="loading" class="flex justify-center items-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else-if="indicators.length === 0" class="flex justify-center items-center py-12">
-      <p class="text-lg text-gray-600">Aucun indicateur trouvé</p>
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <IndicatorCard
+        v-for="indicator in indicators"
+        :key="indicator.id"
+        :indicator="indicator"
+        @view="viewIndicator"
+        @edit="editIndicator"
+      />
     </div>
 
-    <div v-else>
-      <div class="mb-8">
-        <IndicatorCard
-          v-for="indicator in indicators"
-          :key="indicator.id"
-          :indicator="indicator"
-          @view="viewIndicator"
-          @edit="editIndicator"
-          @delete="deleteIndicator"
-        />
-      </div>
-
-      <!-- Pagination -->
-      <div class="flex justify-center mt-8">
-        <p-paginator
-          :rows="itemsPerPage.value"
-          :totalRecords="indicatorStore.pagination.totalItems"
-          :pageLinkSize="3"
-          :currentPageReportTemplate="'Affichage {first} à {last} de {totalRecords}'"
-          @page="onPageChange"
-        />
-      </div>
+    <div v-if="!loading && indicators.length === 0" class="text-center p-8 text-gray-500">
+      Aucun indicateur trouvé. Commencez par en créer un.
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Button from 'primevue/button'
-import PDropdown from 'primevue/dropdown'
-import PPaginator from 'primevue/paginator'
-import IndicatorCard from '@/components/indicators/IndicatorCard.vue'
 import { useIndicatorStore } from '@/stores/indicators'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import IndicatorCard from '@/components/indicators/IndicatorCard.vue'
 
 const router = useRouter()
 const indicatorStore = useIndicatorStore()
 
-// États locaux
 const searchQuery = ref('')
-const categoryFilter = ref('')
-const trendFilter = ref('')
-const statusFilter = ref('')
-const sortOrder = ref('name')
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
 
-// Options pour les filtres
-const categoryOptions = [
-  { label: 'Toutes les catégories', value: '' },
-  { label: 'Sécurité', value: 'safety' },
-  { label: 'Qualité', value: 'quality' },
-  { label: 'Environnement', value: 'environment' },
-  { label: 'Hygiène', value: 'health' },
-]
+const indicators = computed(() => indicatorStore.indicators)
+const loading = computed(() => indicatorStore.loading)
 
-const trendOptions = [
-  { label: 'Toutes les tendances', value: '' },
-  { label: 'Positive', value: 'positive' },
-  { label: 'Négative', value: 'negative' },
-  { label: 'Neutre', value: 'neutral' },
-]
-
-const statusOptions = [
-  { label: 'Tous les statuts', value: '' },
-  { label: 'Actif', value: 'true' },
-  { label: 'Inactif', value: 'false' },
-]
-
-const sortOptions = [
-  { label: 'Par nom', value: 'name' },
-  { label: 'Par code', value: 'code' },
-  { label: 'Par catégorie', value: 'category' },
-]
-
-// Fonction pour charger les indicateurs
 const loadIndicators = async () => {
-  await indicatorStore.fetchIndicators(currentPage.value, itemsPerPage.value)
+  // Fetch all indicators with search filter
+  await indicatorStore.fetchIndicators(1, 100, { search: searchQuery.value })
+}
+
+// Simple debounce implementation
+const debounce = (fn: Function, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>
+  return (...args: any[]) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
+
+// Debounce search to avoid too many requests
+const debouncedSearch = debounce(() => {
+  loadIndicators()
+}, 300)
+
+watch(searchQuery, () => {
+  debouncedSearch()
+})
+
+const goToConfig = () => {
+  router.push('/indicators/config')
+}
+
+const createNewIndicator = () => {
+  router.push('/indicators/create')
 }
 
 const viewIndicator = (id: number) => {
@@ -171,45 +99,7 @@ const editIndicator = (id: number) => {
   router.push(`/indicators/${id}/edit`)
 }
 
-const createNewIndicator = () => {
-  router.push('/indicators/create')
-}
-
-const deleteIndicator = async (id: number) => {
-  if (confirm('Êtes-vous sûr de vouloir supprimer cet indicateur ?')) {
-    try {
-      await indicatorStore.deleteIndicator(id)
-      // Recharger la liste après suppression
-      await loadIndicators()
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'indicateur:", error)
-    }
-  }
-}
-
-const onPageChange = async (event: { page: number }) => {
-  currentPage.value = event.page + 1
-  await loadIndicators()
-}
-
-// Charger les indicateurs au montage
 onMounted(() => {
   loadIndicators()
 })
-
-// Accéder aux indicateurs et état de chargement depuis le store
-const indicators = computed(() => indicatorStore.indicators)
-const loading = computed(() => indicatorStore.loading)
 </script>
-
-<style scoped>
-@reference "@/assets/css/tailwind.css";
-
-.indicators-page {
-  @apply p-4;
-}
-
-.indicators-list {
-  @apply mb-8;
-}
-</style>
