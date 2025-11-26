@@ -13,40 +13,65 @@
     </div>
 
     <div class="layout-topbar-actions">
-      <div class="layout-config-menu">
-        <button
-          type="button"
-          class="layout-topbar-action theme-toggle"
-          @click="toggleDarkMode"
-          title="Changer de thème"
-        >
+      <div class="layout-config-menu flex gap-2 items-center">
+        <button v-if="currentUser" type="button" class="layout-topbar-action notification-button"
+          @click="toggleNotificationPanel" title="Notifications">
+          <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
+            severity="danger" size="small">
+            <font-awesome-icon :icon="['fas', 'bell']" />
+          </OverlayBadge>
+        </button>
+
+        <OverlayPanel ref="notificationPanel" class="w-80 sm:w-96">
+          <div class="flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b pb-2">
+              <span class="font-semibold text-lg">Notifications</span>
+              <Button v-if="notificationStore.unreadCount > 0" label="Tout marquer comme lu" size="small" text
+                @click="markAllAsRead" />
+            </div>
+
+            <div v-if="notificationStore.notifications.length === 0" class="text-center py-4 text-gray-500">
+              Aucune nouvelle notification
+            </div>
+
+            <div v-else class="flex flex-col gap-2 max-h-80 overflow-y-auto custom-scrollbar">
+              <div v-for="notification in notificationStore.notifications" :key="notification.id"
+                class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer border-l-4 border-blue-500 bg-blue-50/30 transition-colors"
+                :class="{ 'opacity-60': notification.read_at }" @click="markAsRead(notification.id)">
+                <div class="flex justify-between items-start mb-1">
+                  <span class="text-xs font-semibold uppercase text-blue-600">{{ notification.type }}</span>
+                  <span class="text-xs text-gray-500">{{ formatTimeAgo(notification.created_at) }}</span>
+                </div>
+                <p class="text-sm text-gray-800">{{ notification.message }}</p>
+              </div>
+            </div>
+
+            <div class="border-t pt-2 text-center">
+              <Button label="Voir toutes les notifications" link size="small" @click="viewAllNotifications" />
+            </div>
+          </div>
+        </OverlayPanel>
+
+        <button type="button" class="layout-topbar-action theme-toggle" @click="toggleDarkMode"
+          title="Changer de thème">
           <font-awesome-icon :icon="['fas', appStore.theme === 'dark' ? 'sun' : 'moon']" />
         </button>
       </div>
 
       <!-- Menu mobile utilisateur -->
       <div v-if="currentUser" class="user-menu-container">
-        <button
-          class="user-profile-button"
-          @click="toggleUserMenu"
-          aria-haspopup="true"
-          aria-controls="user_menu"
-        >
+        <button class="user-profile-button" @click="toggleUserMenu" aria-haspopup="true" aria-controls="user_menu">
           <div class="user-avatar">
             <span>{{ getUserInitials() }}</span>
           </div>
-          <span class="user-name hidden md:block"
-            >{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span
-          >
+          <span class="user-name hidden md:block">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span>
           <font-awesome-icon :icon="['fas', 'chevron-down']" class="ml-2 text-xs hidden md:block" />
         </button>
 
         <Popover ref="userMenuVisible" id="user_menu">
           <div class="user-popover-content">
             <div class="user-popover-header">
-              <span class="font-semibold"
-                >{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span
-              >
+              <span class="font-semibold">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span>
               <span class="text-xs text-gray-500">{{ currentUser?.email }}</span>
             </div>
             <div class="separator"></div>
@@ -77,20 +102,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useNotificationStore } from '@/stores/notification'
+import OverlayBadge from 'primevue/overlaybadge'
+import OverlayPanel from 'primevue/overlaypanel'
+import Button from 'primevue/button'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 const router = useRouter()
 const appStore = useAppStore()
+const notificationStore = useNotificationStore()
 
 const userMenuVisible = ref()
+const notificationPanel = ref()
 
 const { toggleMenu } = useLayout()
 
 const toggleUserMenu = (event: Event) => {
   userMenuVisible.value.toggle(event)
+}
+
+const toggleNotificationPanel = (event: Event) => {
+  notificationPanel.value.toggle(event)
 }
 
 const toggleDarkMode = () => {
@@ -114,6 +151,44 @@ const getUserInitials = () => {
   if (!currentUser.value) return ''
   return `${currentUser.value.first_name?.charAt(0) || ''}${currentUser.value.last_name?.charAt(0) || ''}`.toUpperCase()
 }
+
+const formatTimeAgo = (date: string) => {
+  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr })
+}
+
+const markAsRead = async (id: number) => {
+  await notificationStore.markAsRead(id)
+}
+
+const markAllAsRead = async () => {
+  await notificationStore.markAllAsRead()
+}
+
+const viewAllNotifications = () => {
+  notificationPanel.value.hide()
+  router.push('/notifications')
+}
+
+let pollingInterval: number | null = null
+
+onMounted(() => {
+  if (currentUser.value) {
+    notificationStore.fetchUnreadCount()
+    notificationStore.fetchNotifications(true) // Fetch unread initially for the popup
+
+    // Poll for notifications every minute
+    pollingInterval = setInterval(() => {
+      notificationStore.fetchUnreadCount()
+      notificationStore.fetchNotifications(true)
+    }, 60000)
+  }
+})
+
+onUnmounted(() => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+  }
+})
 </script>
 
 <style scoped>

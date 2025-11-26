@@ -141,6 +141,43 @@ const router = createRouter({
           component: () => import('../pages/trainings/TrainingSessionDetail.vue'),
           meta: { requiresAuth: true },
         },
+        // Equipment
+        {
+          path: '/equipment',
+          name: 'equipment-dashboard',
+          component: () => import('@/pages/equipment/EquipmentDashboard.vue'),
+        },
+        {
+          path: '/equipment/inventory',
+          name: 'equipment-inventory',
+          component: () => import('@/pages/equipment/EquipmentInventory.vue'),
+        },
+        {
+          path: '/equipment/:id',
+          name: 'equipment-detail',
+          component: () => import('@/pages/equipment/EquipmentDetail.vue'),
+        },
+        // Planning
+        {
+          path: '/planning',
+          name: 'planning',
+          component: () => import('@/pages/planning/PlanningDashboard.vue'),
+        },
+        {
+          path: '/planning/visits',
+          name: 'planning-visits',
+          component: () => import('@/pages/planning/SafetyVisits.vue'),
+        },
+        {
+          path: '/planning/toolbox-talks',
+          name: 'toolbox-talks',
+          component: () => import('@/pages/planning/ToolboxTalks.vue')
+        },
+        {
+          path: '/notifications',
+          name: 'notifications',
+          component: () => import('@/pages/notifications/NotificationList.vue')
+        },
       ],
     },
     {

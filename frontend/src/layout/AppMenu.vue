@@ -50,12 +50,22 @@ const model = ref<MenuItem[]>([
     to: '/',
   },
   {
+    label: 'Planning',
+    icon: ['fas', 'calendar-alt'],
+    to: '/planning',
+  },
+  {
     header: 'GESTION',
   },
   {
     label: 'Indicateurs & KPI',
     icon: ['fas', 'chart-line'],
     to: '/indicators',
+  },
+  {
+    label: 'Équipements & EPI',
+    icon: ['fas', 'tools'],
+    to: '/equipment',
   },
   {
     label: "Plans d'action",

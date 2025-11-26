@@ -1,27 +1,22 @@
 <template>
   <router-view />
-  <Toast>
+  <!-- <Toast>
     <template #message="slotProps">
       <div class="flex items-center gap-4 p-4">
-        <font-awesome-icon
-          :icon="['fas', slotProps.message.icon || getSeverityIcon(slotProps.message.severity)]"
-          class="text-2xl"
-        />
+        <font-awesome-icon :icon="['fas', slotProps.message.icon || getSeverityIcon(slotProps.message.severity)]"
+          class="text-2xl" />
         <div class="flex flex-col">
           <span class="font-bold mb-1">{{ slotProps.message.summary }}</span>
           <span class="text-sm">{{ slotProps.message.detail }}</span>
         </div>
       </div>
     </template>
-  </Toast>
+</Toast> -->
   <ConfirmDialog>
     <template #message="slotProps">
       <div class="flex items-center gap-4 p-4">
-        <font-awesome-icon
-          v-if="slotProps.message.icon"
-          :icon="['fas', slotProps.message.icon]"
-          class="text-3xl text-red-500"
-        />
+        <font-awesome-icon v-if="slotProps.message.icon" :icon="['fas', slotProps.message.icon]"
+          class="text-3xl text-red-500" />
         <span class="p-confirm-dialog-message">{{ slotProps.message.message }}</span>
       </div>
     </template>

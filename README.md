@@ -212,12 +212,77 @@ base_dir/
 - documentation complète du code frontend avec des exemples de code et des explications détaillées
 - génération de la doc avec Typedoc pour le frontend et Swagger pour le backend
 
+## 🚀 Installation & Configuration
+
+Suivez ces étapes pour installer le projet sur votre environnement local.
+
+### Prérequis
+
+- **PHP 8.2+**
+- **Composer**
+- **Node.js 18+** & **npm**
+- **MySQL** ou **MariaDB**
+
+### 1. Installation du Backend (Laravel)
+
+```bash
+cd backend
+
+# Installer les dépendances PHP
+composer install
+
+# Copier le fichier d'environnement
+cp .env.example .env
+
+# Générer la clé d'application
+php artisan key:generate
+
+# Configurer la base de données dans .env
+# DB_DATABASE=fraisse_qhse
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# Exécuter les migrations et les seeders
+php artisan migrate --seed
+
+# Lancer le serveur de développement
+php artisan serve
+```
+
+Le backend sera accessible sur `http://localhost:8000`.
+
+### 2. Installation du Frontend (Vue.js)
+
+```bash
+cd frontend
+
+# Installer les dépendances JS
+npm install
+
+# Lancer le serveur de développement
+npm run dev
+```
+
+Le frontend sera accessible sur `http://localhost:5173`.
+
+### ⏰ Planificateur de Tâches (Scheduler)
+
+Pour que les notifications automatiques et les emails quotidiens fonctionnent, vous devez configurer le scheduler Laravel sur votre serveur.
+
+Ajoutez l'entrée suivante à votre crontab :
+
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Cela exécutera les jobs planifiés (vérification des échéances, envoi d'emails) aux moments définis.
+
 ## 👤 Comptes de Démonstration
 
 L'application est livrée avec des comptes pré-configurés :
 
 | Rôle               | Email              | Mot de passe | Permissions           |
-| ------------------ | ------------------ | --------------------- |
+| ------------------ | ------------------ | ------------ | --------------------- |
 | **Administrateur** | admin@qhse.local   | password     | Accès complet         |
 | **Manager QHSE**   | manager@qhse.local | password     | Gestion QHSE complète |
 | **Utilisateur**    | user1@qhse.local   | password     | Utilisation standard  |
@@ -227,4 +292,4 @@ Développé avec ❤️ par Isaya
 
 ---
 
-Fraisse_QHSE Manager - Simplifiez votre pilotage QHSE_ 🛡️
+Fraisse*QHSE Manager - Simplifiez votre pilotage QHSE* 🛡️

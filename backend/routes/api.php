@@ -44,4 +44,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('trainings', \App\Http\Controllers\Api\TrainingController::class);
     Route::apiResource('training-sessions', \App\Http\Controllers\Api\TrainingSessionController::class);
     Route::apiResource('training-participations', \App\Http\Controllers\Api\TrainingParticipationController::class)->except(['index', 'show']);
+    // Equipment Module
+    Route::apiResource('equipment-categories', \App\Http\Controllers\Api\EquipmentCategoryController::class);
+    Route::apiResource('equipment', \App\Http\Controllers\Api\EquipmentController::class);
+    Route::post('equipment/{equipment}/assign', [\App\Http\Controllers\Api\EquipmentController::class, 'assign']);
+    Route::post('equipment/{equipment}/return', [\App\Http\Controllers\Api\EquipmentController::class, 'returnEquipment']);
+    Route::apiResource('maintenance-logs', \App\Http\Controllers\Api\MaintenanceLogController::class);
+
+    // Notification Module
+    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount']);
+    Route::put('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
+    Route::get('/notifications/settings', [\App\Http\Controllers\Api\NotificationController::class, 'getSettings']);
+    Route::put('/notifications/settings', [\App\Http\Controllers\Api\NotificationController::class, 'updateSettings']);
+
+    // Planning Module
+    Route::apiResource('planning/events', \App\Http\Controllers\Api\PlanningController::class)->only(['index']);
+    Route::apiResource('safety-visits', \App\Http\Controllers\Api\SafetyVisitController::class);
+    Route::apiResource('toolbox-talks', \App\Http\Controllers\Api\ToolboxTalkController::class);
 });
