@@ -1,16 +1,25 @@
 <template>
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Catalogue des formations</h1>
-      <div class="flex gap-2">
-        <Button
-          label="Nouvelle catégorie"
-          icon="pi pi-folder-plus"
-          severity="secondary"
-          outlined
-          @click="openCategoryDialog"
-        />
-        <Button label="Nouvelle formation" icon="pi pi-plus" @click="openTrainingDialog" />
+      <div class="flex items-center gap-4">
+        <Button text rounded severity="secondary" @click="goBack">
+          <template #icon>
+            <font-awesome-icon icon="arrow-left" />
+          </template>
+        </Button>
+        <h2>Catalogue des formations</h2>
+        <div class="flex gap-2">
+          <Button label="Nouvelle catégorie" severity="secondary" outlined @click="openCategoryDialog">
+            <template #icon>
+              <font-awesome-icon icon="folder-plus" class="mr-2" />
+            </template>
+          </Button>
+          <Button label="Nouvelle formation" @click="openTrainingDialog">
+            <template #icon>
+              <font-awesome-icon icon="plus" class="mr-2" />
+            </template>
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -21,35 +30,25 @@
     <div v-else class="flex flex-col gap-8">
       <div v-for="category in categoriesWithTrainings" :key="category.id">
         <div class="flex items-center gap-3 mb-4 border-b border-gray-200 pb-2">
-          <div
-            class="w-8 h-8 rounded flex items-center justify-center text-white"
-            :style="{ backgroundColor: category.color || '#64748B' }"
-          >
+          <div class="w-8 h-8 rounded flex items-center justify-center text-white"
+            :style="{ backgroundColor: category.color || '#64748B' }">
             <font-awesome-icon :icon="category.icon || 'folder'" />
           </div>
           <h2 class="text-xl font-semibold text-gray-800">{{ category.name }}</h2>
-          <Button
-            icon="pi pi-pencil"
-            text
-            rounded
-            size="small"
-            severity="secondary"
-            @click="editCategory(category)"
-          />
+          <Button text rounded size="small" severity="secondary" @click="editCategory(category)">
+            <template #icon>
+              <font-awesome-icon icon="pencil" />
+            </template>
+          </Button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <TrainingCard
-            v-for="training in getTrainingsByCategory(category.id)"
-            :key="training.id"
-            :training="training"
-            @click="editTraining(training)"
-          />
+          <TrainingCard v-for="training in getTrainingsByCategory(category.id)" :key="training.id" :training="training"
+            @click="editTraining(training)" />
           <!-- Add Card -->
           <div
             class="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-6 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors min-h-[200px]"
-            @click="openTrainingDialog(category.id)"
-          >
+            @click="openTrainingDialog(category.id)">
             <font-awesome-icon icon="plus" class="text-gray-400 text-3xl mb-2" />
             <span class="text-gray-500 font-medium">Ajouter une formation</span>
           </div>
@@ -65,23 +64,16 @@
           <h2 class="text-xl font-semibold text-gray-800">Sans catégorie</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <TrainingCard
-            v-for="training in uncategorizedTrainings"
-            :key="training.id"
-            :training="training"
-            @click="editTraining(training)"
-          />
+          <TrainingCard v-for="training in uncategorizedTrainings" :key="training.id" :training="training"
+            @click="editTraining(training)" />
         </div>
       </div>
     </div>
 
     <!-- Dialog Category -->
-    <Dialog
-      v-model:visible="categoryDialogVisible"
-      :header="editingCategory ? 'Modifier la catégorie' : 'Nouvelle catégorie'"
-      :modal="true"
-      class="p-fluid w-full max-w-md"
-    >
+    <Dialog v-model:visible="categoryDialogVisible"
+      :header="editingCategory ? 'Modifier la catégorie' : 'Nouvelle catégorie'" :modal="true"
+      class="p-fluid w-full max-w-md">
       <div class="field">
         <label for="catName">Nom</label>
         <InputText id="catName" v-model="categoryForm.name" required autofocus />
@@ -104,26 +96,17 @@
     </Dialog>
 
     <!-- Dialog Training -->
-    <Dialog
-      v-model:visible="trainingDialogVisible"
-      :header="editingTraining ? 'Modifier la formation' : 'Nouvelle formation'"
-      :modal="true"
-      class="p-fluid w-full max-w-lg"
-    >
+    <Dialog v-model:visible="trainingDialogVisible"
+      :header="editingTraining ? 'Modifier la formation' : 'Nouvelle formation'" :modal="true"
+      class="p-fluid w-full max-w-lg">
       <div class="field">
         <label for="title">Titre</label>
         <InputText id="title" v-model="trainingForm.title" required autofocus />
       </div>
       <div class="field mt-4">
         <label for="category">Catégorie</label>
-        <Dropdown
-          id="category"
-          v-model="trainingForm.training_category_id"
-          :options="store.categories"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Sélectionnez une catégorie"
-        />
+        <Dropdown id="category" v-model="trainingForm.training_category_id" :options="store.categories"
+          optionLabel="name" optionValue="id" placeholder="Sélectionnez une catégorie" />
       </div>
       <div class="field mt-4">
         <label for="description">Description</label>
@@ -154,6 +137,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTrainingStore, type TrainingCategory, type Training } from '@/stores/training'
 import TrainingCard from '@/components/trainings/TrainingCard.vue'
 import IconPicker from '@/components/common/IconPicker.vue'
@@ -166,6 +150,7 @@ import Dropdown from 'primevue/dropdown'
 import ColorPicker from 'primevue/colorpicker'
 import { useToast } from 'primevue/usetoast'
 
+const router = useRouter()
 const store = useTrainingStore()
 const toast = useToast()
 
@@ -321,6 +306,10 @@ const saveTraining = async () => {
       life: 3000,
     })
   }
+}
+
+const goBack = () => {
+  router.back()
 }
 
 onMounted(async () => {

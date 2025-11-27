@@ -20,6 +20,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class)->except(['create', 'edit']);
 
     // Gestion des documents
+    Route::post('documents/{id}/request-approval', [DocumentController::class, 'requestApproval']);
+    Route::post('documents/{id}/approve', [DocumentController::class, 'approve']);
+    Route::post('documents/{id}/reject', [DocumentController::class, 'reject']);
     Route::apiResource('documents', DocumentController::class);
 
     // Gestion des dossiers de documents

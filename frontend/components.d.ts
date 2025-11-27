@@ -39,6 +39,7 @@ declare module 'vue' {
     MultiSelect: typeof import('primevue/multiselect')['default']
     MyButton: typeof import('./src/components/ui/MyButton.vue')['default']
     NumberField: typeof import('./src/components/form/NumberField.vue')['default']
+    OverlayPanel: typeof import('primevue/overlaypanel')['default']
     PanelMenu: typeof import('primevue/panelmenu')['default']
     ParticipantManager: typeof import('./src/components/trainings/ParticipantManager.vue')['default']
     Popover: typeof import('primevue/popover')['default']

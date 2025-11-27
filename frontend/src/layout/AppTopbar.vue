@@ -22,7 +22,7 @@
           </OverlayBadge>
         </button>
 
-        <OverlayPanel ref="notificationPanel" class="w-80 sm:w-96">
+        <Popover ref="notificationPanel" class="w-80 sm:w-96">
           <div class="flex flex-col gap-4">
             <div class="flex justify-between items-center border-b pb-2">
               <span class="font-semibold text-lg">Notifications</span>
@@ -50,7 +50,7 @@
               <Button label="Voir toutes les notifications" link size="small" @click="viewAllNotifications" />
             </div>
           </div>
-        </OverlayPanel>
+        </Popover>
 
         <button type="button" class="layout-topbar-action theme-toggle" @click="toggleDarkMode"
           title="Changer de thème">
@@ -108,7 +108,7 @@ import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useNotificationStore } from '@/stores/notification'
 import OverlayBadge from 'primevue/overlaybadge'
-import OverlayPanel from 'primevue/overlaypanel'
+import Popover from 'primevue/popover'
 import Button from 'primevue/button'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'

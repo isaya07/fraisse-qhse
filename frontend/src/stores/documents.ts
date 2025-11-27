@@ -203,5 +203,86 @@ export const useDocumentStore = defineStore('document', {
         this.loading = false
       }
     },
+
+    async requestApproval(id: number) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { post } = useApi()
+        const response = await post<Document>(`/documents/${id}/request-approval`)
+
+        if (response.success && response.data) {
+          this.currentDocument = response.data
+          const index = this.documents.findIndex((doc) => doc.id === id)
+          if (index !== -1) {
+            this.documents[index] = response.data
+          }
+        } else {
+          this.error = response.error || 'Failed to request approval'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while requesting approval'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async approveDocument(id: number) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { post } = useApi()
+        const response = await post<Document>(`/documents/${id}/approve`)
+
+        if (response.success && response.data) {
+          this.currentDocument = response.data
+          const index = this.documents.findIndex((doc) => doc.id === id)
+          if (index !== -1) {
+            this.documents[index] = response.data
+          }
+        } else {
+          this.error = response.error || 'Failed to approve document'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while approving document'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async rejectDocument(id: number) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { post } = useApi()
+        const response = await post<Document>(`/documents/${id}/reject`)
+
+        if (response.success && response.data) {
+          this.currentDocument = response.data
+          const index = this.documents.findIndex((doc) => doc.id === id)
+          if (index !== -1) {
+            this.documents[index] = response.data
+          }
+        } else {
+          this.error = response.error || 'Failed to reject document'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while rejecting document'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
   },
 })

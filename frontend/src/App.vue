@@ -1,6 +1,6 @@
 <template>
   <router-view />
-  <!-- <Toast>
+  <Toast>
     <template #message="slotProps">
       <div class="flex items-center gap-4 p-4">
         <font-awesome-icon :icon="['fas', slotProps.message.icon || getSeverityIcon(slotProps.message.severity)]"
@@ -11,7 +11,7 @@
         </div>
       </div>
     </template>
-</Toast> -->
+  </Toast>
   <ConfirmDialog>
     <template #message="slotProps">
       <div class="flex items-center gap-4 p-4">

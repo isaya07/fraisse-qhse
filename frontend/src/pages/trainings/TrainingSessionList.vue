@@ -2,7 +2,11 @@
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Sessions de formation</h1>
-      <Button label="Nouvelle session" icon="pi pi-plus" @click="openSessionDialog" />
+      <Button label="Nouvelle session" @click="openSessionDialog">
+        <template #icon>
+          <font-awesome-icon icon="plus" class="mr-2" />
+        </template>
+      </Button>
     </div>
 
     <div v-if="loading" class="flex justify-center py-12">
@@ -14,59 +18,28 @@
     </div>
 
     <!-- Dialog Session -->
-    <Dialog
-      v-model:visible="sessionDialogVisible"
-      :header="editingSession ? 'Modifier la session' : 'Nouvelle session'"
-      :modal="true"
-      class="p-fluid w-full max-w-lg"
-    >
+    <Dialog v-model:visible="sessionDialogVisible" :header="editingSession ? 'Modifier la session' : 'Nouvelle session'"
+      :modal="true" class="p-fluid w-full max-w-lg">
       <div class="field">
         <label for="training">Formation</label>
-        <Dropdown
-          id="training"
-          v-model="sessionForm.training_id"
-          :options="store.trainings"
-          optionLabel="title"
-          optionValue="id"
-          placeholder="Sélectionnez une formation"
-          filter
-        />
+        <Dropdown id="training" v-model="sessionForm.training_id" :options="store.trainings" optionLabel="title"
+          optionValue="id" placeholder="Sélectionnez une formation" filter />
       </div>
 
       <div class="field mt-4">
         <label for="organization">Organisme</label>
-        <Dropdown
-          id="organization"
-          v-model="sessionForm.training_organization_id"
-          :options="store.organizations"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Sélectionnez un organisme"
-          filter
-          showClear
-        />
+        <Dropdown id="organization" v-model="sessionForm.training_organization_id" :options="store.organizations"
+          optionLabel="name" optionValue="id" placeholder="Sélectionnez un organisme" filter showClear />
       </div>
 
       <div class="grid grid-cols-2 gap-4 mt-4">
         <div class="field">
           <label for="startDate">Date de début</label>
-          <DatePicker
-            id="startDate"
-            v-model="sessionForm.start_date"
-            showIcon
-            showTime
-            hourFormat="24"
-          />
+          <DatePicker id="startDate" v-model="sessionForm.start_date" showIcon showTime hourFormat="24" />
         </div>
         <div class="field">
           <label for="endDate">Date de fin</label>
-          <DatePicker
-            id="endDate"
-            v-model="sessionForm.end_date"
-            showIcon
-            showTime
-            hourFormat="24"
-          />
+          <DatePicker id="endDate" v-model="sessionForm.end_date" showIcon showTime hourFormat="24" />
         </div>
       </div>
 
@@ -87,25 +60,14 @@
         </div>
         <div class="field">
           <label for="cost">Coût (€)</label>
-          <InputNumber
-            id="cost"
-            v-model="sessionForm.cost"
-            mode="currency"
-            currency="EUR"
-            locale="fr-FR"
-          />
+          <InputNumber id="cost" v-model="sessionForm.cost" mode="currency" currency="EUR" locale="fr-FR" />
         </div>
       </div>
 
       <div class="field mt-4">
         <label for="status">Statut</label>
-        <Dropdown
-          id="status"
-          v-model="sessionForm.status"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-        />
+        <Dropdown id="status" v-model="sessionForm.status" :options="statusOptions" optionLabel="label"
+          optionValue="value" />
       </div>
 
       <template #footer>

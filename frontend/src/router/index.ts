@@ -25,6 +25,11 @@ const router = createRouter({
           component: () => import('../pages/documents/DocumentCreate.vue'),
         },
         {
+          path: '/documents/:id',
+          name: 'document-detail',
+          component: () => import('../pages/documents/DocumentDetail.vue'),
+        },
+        {
           path: '/documents/:id/edit',
           name: 'document-edit',
           component: () => import('../pages/documents/DocumentEdit.vue'),

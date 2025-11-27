@@ -171,4 +171,89 @@ class DocumentController extends Controller
 
         return response()->json(['message' => 'Document deleted successfully']);
     }
+    /**
+     * Request approval for the specified document.
+     */
+    public function requestApproval($id)
+    {
+        $document = Document::findOrFail($id);
+        $this->authorize('update', $document);
+
+        if ($document->status !== 'draft' && $document->status !== 'rejected') {
+            return response()->json(['message' => 'Document is not in a state to request approval'], 400);
+        }
+
+        $document->update(['status' => 'pending_approval']);
+
+        // Notify admins and managers
+        $approvers = \App\Models\User::whereIn('role', ['admin', 'manager'])->get();
+        foreach ($approvers as $approver) {
+            \App\Models\Notification::create([
+                'user_id' => $approver->id,
+                'type' => 'document_approval_request',
+                'related_id' => $document->id,
+                'message' => "Le document '{$document->title}' est en attente d'approbation.",
+            ]);
+        }
+
+        return response()->json($document->fresh(['creator', 'approver']));
+    }
+
+    /**
+     * Approve the specified document.
+     */
+    public function approve(Request $request, $id)
+    {
+        $document = Document::findOrFail($id);
+        
+        // Check if user has permission (admin or manager)
+        if (!in_array($request->user()->role, ['admin', 'manager'])) {
+             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $document->update([
+            'status' => 'approved',
+            'approved_by' => $request->user()->id,
+            'published_date' => now(),
+        ]);
+
+        // Notify creator
+        if ($document->created_by) {
+            \App\Models\Notification::create([
+                'user_id' => $document->created_by,
+                'type' => 'document_approved',
+                'related_id' => $document->id,
+                'message' => "Votre document '{$document->title}' a été approuvé.",
+            ]);
+        }
+
+        return response()->json($document->fresh(['creator', 'approver']));
+    }
+
+    /**
+     * Reject the specified document.
+     */
+    public function reject(Request $request, $id)
+    {
+        $document = Document::findOrFail($id);
+
+        // Check if user has permission (admin or manager)
+        if (!in_array($request->user()->role, ['admin', 'manager'])) {
+             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $document->update(['status' => 'rejected']);
+
+        // Notify creator
+        if ($document->created_by) {
+            \App\Models\Notification::create([
+                'user_id' => $document->created_by,
+                'type' => 'document_rejected',
+                'related_id' => $document->id,
+                'message' => "Votre document '{$document->title}' a été rejeté.",
+            ]);
+        }
+
+        return response()->json($document->fresh(['creator', 'approver']));
+    }
 }

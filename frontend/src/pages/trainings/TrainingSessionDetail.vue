@@ -2,27 +2,26 @@
   <div class="p-4" v-if="session">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <div class="flex items-center gap-4">
-        <Button icon="pi pi-arrow-left" text rounded severity="secondary" @click="goBack" />
+        <Button text rounded severity="secondary" @click="goBack">
+          <template #icon>
+            <font-awesome-icon icon="arrow-left" />
+          </template>
+        </Button>
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">{{ session.training?.title }}</h1>
+          <h2>{{ session.training?.title }}</h2>
           <div class="flex items-center gap-2 text-sm text-gray-500">
             <font-awesome-icon icon="calendar" />
             <span>{{ formatDate(session.start_date) }} - {{ formatDate(session.end_date) }}</span>
             <span class="mx-2">|</span>
-            <Tag
-              :value="getStatusLabel(session.status)"
-              :severity="getStatusSeverity(session.status)"
-            />
+            <Tag :value="getStatusLabel(session.status)" :severity="getStatusSeverity(session.status)" />
           </div>
         </div>
       </div>
-      <Button
-        label="Modifier"
-        icon="pi pi-pencil"
-        severity="secondary"
-        outlined
-        @click="editSession"
-      />
+      <Button label="Modifier" severity="secondary" outlined @click="editSession">
+        <template #icon>
+          <font-awesome-icon icon="pencil" class="mr-2" />
+        </template>
+      </Button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -56,13 +55,8 @@
         </Card>
 
         <!-- Participants -->
-        <ParticipantManager
-          :participations="session.participations || []"
-          :users="users"
-          @add="addParticipant"
-          @update="updateParticipant"
-          @remove="removeParticipant"
-        />
+        <ParticipantManager :participations="session.participations || []" :users="users" @add="addParticipant"
+          @update="updateParticipant" @remove="removeParticipant" />
       </div>
 
       <!-- Sidebar -->
@@ -72,30 +66,26 @@
           <template #title>
             <div class="flex justify-between items-center">
               <span>Documents</span>
-              <Button
-                icon="pi pi-plus"
-                text
-                rounded
-                size="small"
-                v-tooltip="'Ajouter un document'"
-              />
+              <Button text rounded size="small" v-tooltip="'Ajouter un document'">
+                <template #icon>
+                  <font-awesome-icon icon="plus" />
+                </template>
+              </Button>
             </div>
           </template>
           <template #content>
-            <div
-              v-if="session.documents && session.documents.length > 0"
-              class="flex flex-col gap-2"
-            >
-              <div
-                v-for="doc in session.documents"
-                :key="doc.id"
-                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
-              >
+            <div v-if="session.documents && session.documents.length > 0" class="flex flex-col gap-2">
+              <div v-for="doc in session.documents" :key="doc.id"
+                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                 <div class="flex items-center gap-2 overflow-hidden">
                   <font-awesome-icon icon="file" class="text-gray-400" />
                   <span class="truncate text-sm">{{ doc.name }}</span>
                 </div>
-                <Button icon="pi pi-download" text rounded size="small" severity="secondary" />
+                <Button text rounded size="small" severity="secondary">
+                  <template #icon>
+                    <font-awesome-icon icon="download" />
+                  </template>
+                </Button>
               </div>
             </div>
             <div v-else class="text-center py-4 text-gray-500 text-sm">Aucun document associé.</div>
@@ -109,16 +99,11 @@
             <div class="flex flex-col gap-3">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Inscrits</span>
-                <span class="font-medium"
-                  >{{ session.participations?.length || 0 }} /
-                  {{ session.max_participants || '∞' }}</span
-                >
+                <span class="font-medium">{{ session.participations?.length || 0 }} /
+                  {{ session.max_participants || '∞' }}</span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2">
-                <div
-                  class="bg-blue-500 h-2 rounded-full"
-                  :style="{ width: getParticipationPercentage() + '%' }"
-                ></div>
+                <div class="bg-blue-500 h-2 rounded-full" :style="{ width: getParticipationPercentage() + '%' }"></div>
               </div>
             </div>
           </template>

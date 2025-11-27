@@ -2,7 +2,11 @@
   <div class="card">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-medium">Participants</h3>
-      <Button label="Ajouter" icon="pi pi-plus" size="small" @click="openAddDialog" />
+      <Button label="Ajouter" size="small" @click="openAddDialog">
+        <template #icon>
+          <font-awesome-icon icon="plus" class="mr-2" />
+        </template>
+      </Button>
     </div>
 
     <DataTable :value="participations" stripedRows size="small">
@@ -16,36 +20,19 @@
 
       <Column field="status" header="Statut">
         <template #body="slotProps">
-          <Tag
-            :value="getStatusLabel(slotProps.data.status)"
-            :severity="getStatusSeverity(slotProps.data.status)"
-          />
+          <Tag :value="getStatusLabel(slotProps.data.status)" :severity="getStatusSeverity(slotProps.data.status)" />
         </template>
       </Column>
 
       <Column header="Actions" :exportable="false" style="min-width: 8rem">
         <template #body="slotProps">
-          <Button
-            icon="pi pi-pencil"
-            text
-            rounded
-            severity="info"
-            class="mr-2"
-            @click="editParticipation(slotProps.data)"
-            v-tooltip="'Modifier le statut'"
-          >
+          <Button text rounded severity="info" class="mr-2" @click="editParticipation(slotProps.data)"
+            v-tooltip="'Modifier le statut'">
             <template #icon>
               <font-awesome-icon icon="pencil" />
             </template>
           </Button>
-          <Button
-            icon="pi pi-trash"
-            text
-            rounded
-            severity="danger"
-            @click="confirmDelete(slotProps.data)"
-            v-tooltip="'Retirer'"
-          >
+          <Button text rounded severity="danger" @click="confirmDelete(slotProps.data)" v-tooltip="'Retirer'">
             <template #icon>
               <font-awesome-icon icon="trash" />
             </template>
@@ -55,36 +42,19 @@
     </DataTable>
 
     <!-- Dialog Ajout/Modif -->
-    <Dialog
-      v-model:visible="dialogVisible"
-      :header="editingParticipation ? 'Modifier la participation' : 'Ajouter un participant'"
-      :modal="true"
-      class="p-fluid w-full max-w-md"
-    >
+    <Dialog v-model:visible="dialogVisible"
+      :header="editingParticipation ? 'Modifier la participation' : 'Ajouter un participant'" :modal="true"
+      class="p-fluid w-full max-w-md">
       <div class="field" v-if="!editingParticipation">
         <label for="user">Utilisateur</label>
-        <Dropdown
-          id="user"
-          v-model="form.user_id"
-          :options="users"
-          optionLabel="fullname"
-          optionValue="id"
-          placeholder="Sélectionnez un utilisateur"
-          filter
-          class="w-full"
-        />
+        <Dropdown id="user" v-model="form.user_id" :options="users" :optionLabel="getUserLabel" optionValue="id"
+          placeholder="Sélectionnez un utilisateur" filter class="w-full" />
       </div>
 
       <div class="field mt-4">
         <label for="status">Statut</label>
-        <Dropdown
-          id="status"
-          v-model="form.status"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-        />
+        <Dropdown id="status" v-model="form.status" :options="statusOptions" optionLabel="label" optionValue="value"
+          class="w-full" />
       </div>
 
       <template #footer>
@@ -98,6 +68,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { TrainingParticipation } from '@/stores/training'
+import type { User } from '@/stores/app'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
@@ -108,7 +79,7 @@ import { useConfirm } from 'primevue/useconfirm'
 
 const props = defineProps<{
   participations: TrainingParticipation[]
-  users: any[] // Should be User type
+  users: User[]
 }>()
 
 const emit = defineEmits(['add', 'update', 'remove'])
@@ -145,6 +116,11 @@ const getStatusSeverity = (status: string) => {
   return map[status] || 'info'
 }
 
+const getUserLabel = (user: any) => {
+  if (!user) return ''
+  return `${user.last_name} ${user.first_name}`
+}
+
 const openAddDialog = () => {
   editingParticipation.value = null
   form.value = { user_id: null, status: 'registered' }
@@ -178,7 +154,7 @@ const confirmDelete = (participation: TrainingParticipation) => {
   confirm.require({
     message: 'Voulez-vous vraiment retirer ce participant ?',
     header: 'Confirmation',
-    icon: 'pi pi-exclamation-triangle',
+    icon: 'fas fa-exclamation-triangle',
     accept: () => {
       emit('remove', participation.id)
     },

@@ -105,7 +105,13 @@ onMounted(async () => {
         form.value = {
             email_enabled: store.settings.email_enabled,
             email_time: store.settings.email_time.substring(0, 5), // HH:mm
-            alert_thresholds: { ...store.settings.alert_thresholds }
+            alert_thresholds: {
+                action: store.settings.alert_thresholds.action ?? 3,
+                equipment: store.settings.alert_thresholds.equipment ?? 7,
+                document: store.settings.alert_thresholds.document ?? 30,
+                training: store.settings.alert_thresholds.training ?? 7,
+                planning: store.settings.alert_thresholds.planning ?? 1
+            }
         }
     }
 })
