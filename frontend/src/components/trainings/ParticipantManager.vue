@@ -20,19 +20,34 @@
 
       <Column field="status" header="Statut">
         <template #body="slotProps">
-          <Tag :value="getStatusLabel(slotProps.data.status)" :severity="getStatusSeverity(slotProps.data.status)" />
+          <Tag
+            :value="getStatusLabel(slotProps.data.status)"
+            :severity="getStatusSeverity(slotProps.data.status)"
+          />
         </template>
       </Column>
 
       <Column header="Actions" :exportable="false" style="min-width: 8rem">
         <template #body="slotProps">
-          <Button text rounded severity="info" class="mr-2" @click="editParticipation(slotProps.data)"
-            v-tooltip="'Modifier le statut'">
+          <Button
+            text
+            rounded
+            severity="info"
+            class="mr-2"
+            @click="editParticipation(slotProps.data)"
+            v-tooltip="'Modifier le statut'"
+          >
             <template #icon>
               <font-awesome-icon icon="pencil" />
             </template>
           </Button>
-          <Button text rounded severity="danger" @click="confirmDelete(slotProps.data)" v-tooltip="'Retirer'">
+          <Button
+            text
+            rounded
+            severity="danger"
+            @click="confirmDelete(slotProps.data)"
+            v-tooltip="'Retirer'"
+          >
             <template #icon>
               <font-awesome-icon icon="trash" />
             </template>
@@ -42,19 +57,36 @@
     </DataTable>
 
     <!-- Dialog Ajout/Modif -->
-    <Dialog v-model:visible="dialogVisible"
-      :header="editingParticipation ? 'Modifier la participation' : 'Ajouter un participant'" :modal="true"
-      class="p-fluid w-full max-w-md">
+    <Dialog
+      v-model:visible="dialogVisible"
+      :header="editingParticipation ? 'Modifier la participation' : 'Ajouter un participant'"
+      :modal="true"
+      class="p-fluid w-full max-w-md"
+    >
       <div class="field" v-if="!editingParticipation">
         <label for="user">Utilisateur</label>
-        <Dropdown id="user" v-model="form.user_id" :options="users" :optionLabel="getUserLabel" optionValue="id"
-          placeholder="Sélectionnez un utilisateur" filter class="w-full" />
+        <Dropdown
+          id="user"
+          v-model="form.user_id"
+          :options="users"
+          :optionLabel="getUserLabel"
+          optionValue="id"
+          placeholder="Sélectionnez un utilisateur"
+          filter
+          class="w-full"
+        />
       </div>
 
       <div class="field mt-4">
         <label for="status">Statut</label>
-        <Dropdown id="status" v-model="form.status" :options="statusOptions" optionLabel="label" optionValue="value"
-          class="w-full" />
+        <Dropdown
+          id="status"
+          v-model="form.status"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+        />
       </div>
 
       <template #footer>

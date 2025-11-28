@@ -176,12 +176,12 @@ const router = createRouter({
         {
           path: '/planning/toolbox-talks',
           name: 'toolbox-talks',
-          component: () => import('@/pages/planning/ToolboxTalks.vue')
+          component: () => import('@/pages/planning/ToolboxTalks.vue'),
         },
         {
           path: '/notifications',
           name: 'notifications',
-          component: () => import('@/pages/notifications/NotificationList.vue')
+          component: () => import('@/pages/notifications/NotificationList.vue'),
         },
       ],
     },

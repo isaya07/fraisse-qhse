@@ -14,10 +14,18 @@
 
     <div class="layout-topbar-actions">
       <div class="layout-config-menu flex gap-2 items-center">
-        <button v-if="currentUser" type="button" class="layout-topbar-action notification-button"
-          @click="toggleNotificationPanel" title="Notifications">
-          <OverlayBadge :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
-            severity="danger" size="small">
+        <button
+          v-if="currentUser"
+          type="button"
+          class="layout-topbar-action notification-button"
+          @click="toggleNotificationPanel"
+          title="Notifications"
+        >
+          <OverlayBadge
+            :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
+            severity="danger"
+            size="small"
+          >
             <font-awesome-icon :icon="['fas', 'bell']" />
           </OverlayBadge>
         </button>
@@ -26,52 +34,86 @@
           <div class="flex flex-col gap-4">
             <div class="flex justify-between items-center border-b pb-2">
               <span class="font-semibold text-lg">Notifications</span>
-              <Button v-if="notificationStore.unreadCount > 0" label="Tout marquer comme lu" size="small" text
-                @click="markAllAsRead" />
+              <Button
+                v-if="notificationStore.unreadCount > 0"
+                label="Tout marquer comme lu"
+                size="small"
+                text
+                @click="markAllAsRead"
+              />
             </div>
 
-            <div v-if="notificationStore.notifications.length === 0" class="text-center py-4 text-gray-500">
+            <div
+              v-if="notificationStore.notifications.length === 0"
+              class="text-center py-4 text-gray-500"
+            >
               Aucune nouvelle notification
             </div>
 
             <div v-else class="flex flex-col gap-2 max-h-80 overflow-y-auto custom-scrollbar">
-              <div v-for="notification in notificationStore.notifications" :key="notification.id"
+              <div
+                v-for="notification in notificationStore.notifications"
+                :key="notification.id"
                 class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer border-l-4 border-blue-500 bg-blue-50/30 transition-colors"
-                :class="{ 'opacity-60': notification.read_at }" @click="markAsRead(notification.id)">
+                :class="{ 'opacity-60': notification.read_at }"
+                @click="markAsRead(notification.id)"
+              >
                 <div class="flex justify-between items-start mb-1">
-                  <span class="text-xs font-semibold uppercase text-blue-600">{{ notification.type }}</span>
-                  <span class="text-xs text-gray-500">{{ formatTimeAgo(notification.created_at) }}</span>
+                  <span class="text-xs font-semibold uppercase text-blue-600">{{
+                    notification.type
+                  }}</span>
+                  <span class="text-xs text-gray-500">{{
+                    formatTimeAgo(notification.created_at)
+                  }}</span>
                 </div>
                 <p class="text-sm text-gray-800">{{ notification.message }}</p>
               </div>
             </div>
 
             <div class="border-t pt-2 text-center">
-              <Button label="Voir toutes les notifications" link size="small" @click="viewAllNotifications" />
+              <Button
+                label="Voir toutes les notifications"
+                link
+                size="small"
+                @click="viewAllNotifications"
+              />
             </div>
           </div>
         </Popover>
 
-        <button type="button" class="layout-topbar-action theme-toggle" @click="toggleDarkMode"
-          title="Changer de thème">
+        <button
+          type="button"
+          class="layout-topbar-action theme-toggle"
+          @click="toggleDarkMode"
+          title="Changer de thème"
+        >
           <font-awesome-icon :icon="['fas', appStore.theme === 'dark' ? 'sun' : 'moon']" />
         </button>
       </div>
 
       <!-- Menu mobile utilisateur -->
       <div v-if="currentUser" class="user-menu-container">
-        <button class="user-profile-button" @click="toggleUserMenu" aria-haspopup="true" aria-controls="user_menu">
+        <button
+          class="user-profile-button"
+          @click="toggleUserMenu"
+          aria-haspopup="true"
+          aria-controls="user_menu"
+        >
           <div class="user-avatar">
             <span>{{ getUserInitials() }}</span>
           </div>
-          <span class="user-name hidden md:block">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span>
+          <span class="user-name hidden md:block"
+            >{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span
+          >
           <font-awesome-icon :icon="['fas', 'chevron-down']" class="ml-2 text-xs hidden md:block" />
         </button>
 
         <Popover ref="userMenuVisible" id="user_menu">
           <div class="user-popover-content">
             <div class="user-popover-header">
-              <span class="font-semibold">{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span>
+              <span class="font-semibold"
+                >{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span
+              >
               <span class="text-xs text-gray-500">{{ currentUser?.email }}</span>
             </div>
             <div class="separator"></div>

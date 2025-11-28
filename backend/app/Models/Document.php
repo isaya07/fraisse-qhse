@@ -43,6 +43,11 @@ class Document extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function versions()
+    {
+        return $this->hasMany(DocumentVersion::class)->orderBy('created_at', 'desc');
+    }
+
     public function actions()
     {
         return $this->belongsToMany(Action::class, 'action_documents');

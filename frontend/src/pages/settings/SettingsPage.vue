@@ -18,7 +18,9 @@
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
                     <span class="font-medium">Thème sombre</span>
-                    <span class="text-sm text-gray-500">Activer le mode sombre pour l'application</span>
+                    <span class="text-sm text-gray-500"
+                      >Activer le mode sombre pour l'application</span
+                    >
                   </div>
                   <ToggleSwitch v-model="isDarkMode" @change="toggleTheme" />
                 </div>
@@ -30,7 +32,9 @@
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
                     <span class="font-medium text-red-700">Vider le cache</span>
-                    <span class="text-sm text-red-500">Effacer le cache local de l'application</span>
+                    <span class="text-sm text-red-500"
+                      >Effacer le cache local de l'application</span
+                    >
                   </div>
                   <Button label="Vider le cache" severity="danger" outlined @click="clearCache" />
                 </div>

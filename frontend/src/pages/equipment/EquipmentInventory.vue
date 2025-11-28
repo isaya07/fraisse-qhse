@@ -17,18 +17,39 @@
         </div>
         <div class="field">
           <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-          <Dropdown v-model="filters.category_id" :options="store.categories" optionLabel="name" optionValue="id"
-            placeholder="Toutes les catégories" showClear class="w-full" />
+          <Dropdown
+            v-model="filters.category_id"
+            :options="store.categories"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Toutes les catégories"
+            showClear
+            class="w-full"
+          />
         </div>
         <div class="field">
           <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-          <Dropdown v-model="filters.status" :options="statusOptions" optionLabel="label" optionValue="value"
-            placeholder="Tous les statuts" showClear class="w-full" />
+          <Dropdown
+            v-model="filters.status"
+            :options="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Tous les statuts"
+            showClear
+            class="w-full"
+          />
         </div>
         <div class="field">
           <label class="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
-          <Dropdown v-model="filters.location" :options="locationOptions" optionLabel="label" optionValue="value"
-            placeholder="Toutes les localisations" showClear class="w-full" />
+          <Dropdown
+            v-model="filters.location"
+            :options="locationOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Toutes les localisations"
+            showClear
+            class="w-full"
+          />
         </div>
       </div>
     </div>
@@ -37,16 +58,24 @@
     <div v-if="store.loading" class="flex justify-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
-    <div v-else-if="filteredEquipment.length === 0" class="text-center py-12 bg-white rounded-lg shadow">
+    <div
+      v-else-if="filteredEquipment.length === 0"
+      class="text-center py-12 bg-white rounded-lg shadow"
+    >
       <font-awesome-icon icon="box-open" class="text-gray-300 text-5xl mb-4" />
       <p class="text-gray-500 text-lg">Aucun équipement trouvé</p>
     </div>
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div v-for="item in filteredEquipment" :key="item.id"
+      <div
+        v-for="item in filteredEquipment"
+        :key="item.id"
         class="bg-white rounded-lg shadow hover:shadow-md transition-all cursor-pointer border border-gray-100 flex flex-col"
-        @click="viewEquipment(item)">
+        @click="viewEquipment(item)"
+      >
         <!-- Header / Image Placeholder -->
-        <div class="h-32 bg-gray-100 rounded-t-lg flex items-center justify-center relative overflow-hidden">
+        <div
+          class="h-32 bg-gray-100 rounded-t-lg flex items-center justify-center relative overflow-hidden"
+        >
           <img v-if="item.image_path" :src="item.image_path" class="w-full h-full object-cover" />
           <div v-else class="text-gray-400 flex flex-col items-center">
             <font-awesome-icon :icon="item.category?.icon || 'tools'" class="text-3xl mb-2" />
@@ -54,8 +83,10 @@
           </div>
 
           <!-- Status Badge -->
-          <div class="absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold shadow-sm"
-            :class="getStatusBadge(item.status)">
+          <div
+            class="absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold shadow-sm"
+            :class="getStatusBadge(item.status)"
+          >
             {{ getStatusLabel(item.status) }}
           </div>
         </div>
@@ -81,14 +112,23 @@
               </span>
             </div>
 
-            <div v-if="item.expiration_date" class="flex items-center text-sm"
-              :class="isExpired(item.expiration_date) ? 'text-red-600 font-bold' : 'text-gray-600'">
-              <font-awesome-icon icon="clock" class="w-4 mr-2"
-                :class="isExpired(item.expiration_date) ? 'text-red-500' : 'text-gray-400'" />
+            <div
+              v-if="item.expiration_date"
+              class="flex items-center text-sm"
+              :class="isExpired(item.expiration_date) ? 'text-red-600 font-bold' : 'text-gray-600'"
+            >
+              <font-awesome-icon
+                icon="clock"
+                class="w-4 mr-2"
+                :class="isExpired(item.expiration_date) ? 'text-red-500' : 'text-gray-400'"
+              />
               <span>Exp: {{ formatDate(item.expiration_date) }}</span>
             </div>
 
-            <div v-if="item.maintenance_frequency_months" class="flex items-center text-sm text-gray-600">
+            <div
+              v-if="item.maintenance_frequency_months"
+              class="flex items-center text-sm text-gray-600"
+            >
               <font-awesome-icon icon="calendar-check" class="w-4 mr-2 text-gray-400" />
               <span>Freq: {{ item.maintenance_frequency_months }} mois</span>
             </div>
@@ -98,8 +138,12 @@
     </div>
 
     <!-- Dialog -->
-    <Dialog v-model:visible="equipmentDialogVisible" header="Nouvel équipement" :modal="true"
-      class="p-fluid w-full max-w-2xl">
+    <Dialog
+      v-model:visible="equipmentDialogVisible"
+      header="Nouvel équipement"
+      :modal="true"
+      class="p-fluid w-full max-w-2xl"
+    >
       <EquipmentForm @save="onEquipmentSaved" @cancel="equipmentDialogVisible = false" />
     </Dialog>
   </div>

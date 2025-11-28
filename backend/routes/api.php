@@ -23,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('documents/{id}/request-approval', [DocumentController::class, 'requestApproval']);
     Route::post('documents/{id}/approve', [DocumentController::class, 'approve']);
     Route::post('documents/{id}/reject', [DocumentController::class, 'reject']);
+    Route::get('documents/{id}/download', [DocumentController::class, 'download']);
+    Route::post('documents/{id}/versions', [DocumentController::class, 'addVersion']);
+    Route::get('documents/{id}/versions', [DocumentController::class, 'getVersions']);
     Route::apiResource('documents', DocumentController::class);
 
     // Gestion des dossiers de documents

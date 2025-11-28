@@ -1,8 +1,15 @@
 <template>
   <Card>
     <template #content>
-      <DataTable :value="sessions" paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]"
-        tableStyle="min-width: 50rem" stripedRows removableSort>
+      <DataTable
+        :value="sessions"
+        paginator
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        tableStyle="min-width: 50rem"
+        stripedRows
+        removableSort
+      >
         <template #empty> Aucune session trouvée. </template>
 
         <Column field="start_date" header="Date" sortable>
@@ -27,20 +34,34 @@
 
         <Column field="status" header="Statut" sortable>
           <template #body="slotProps">
-            <Tag :value="getStatusLabel(slotProps.data.status)" :severity="getStatusSeverity(slotProps.data.status)" />
+            <Tag
+              :value="getStatusLabel(slotProps.data.status)"
+              :severity="getStatusSeverity(slotProps.data.status)"
+            />
           </template>
         </Column>
 
         <Column header="Actions" :exportable="false" style="min-width: 8rem">
           <template #body="slotProps">
-            <Button text rounded severity="secondary" @click="$emit('view', slotProps.data)"
-              v-tooltip="'Voir les détails'">
+            <Button
+              text
+              rounded
+              severity="secondary"
+              @click="$emit('view', slotProps.data)"
+              v-tooltip="'Voir les détails'"
+            >
               <template #icon>
                 <font-awesome-icon icon="eye" />
               </template>
             </Button>
-            <Button text rounded severity="info" class="mr-2" @click="$emit('edit', slotProps.data)"
-              v-tooltip="'Modifier'">
+            <Button
+              text
+              rounded
+              severity="info"
+              class="mr-2"
+              @click="$emit('edit', slotProps.data)"
+              v-tooltip="'Modifier'"
+            >
               <template #icon>
                 <font-awesome-icon icon="pencil" />
               </template>

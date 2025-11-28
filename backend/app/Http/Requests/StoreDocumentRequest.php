@@ -23,7 +23,7 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'file' => 'required|file|max:20480', // 20MB max
+            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480', // 20MB max
             'version' => 'required|string|max:20',
             'category' => 'required|string|max:50', // Document Type
             'document_folder_id' => 'nullable|exists:document_folders,id',

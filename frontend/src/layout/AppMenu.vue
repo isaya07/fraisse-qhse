@@ -8,7 +8,12 @@
       </li>
 
       <li v-else class="menu-item" :class="{ 'active-menuitem': isMenuItemActive(item) }">
-        <router-link v-if="item.to" :to="item.to" class="menu-link" exact-active-class="active-route">
+        <router-link
+          v-if="item.to"
+          :to="item.to"
+          class="menu-link"
+          exact-active-class="active-route"
+        >
           <font-awesome-icon :icon="item.icon" class="menu-icon" />
           <span class="menu-label">{{ item.label }}</span>
           <span v-if="item.badge" class="menu-badge">{{ item.badge }}</span>

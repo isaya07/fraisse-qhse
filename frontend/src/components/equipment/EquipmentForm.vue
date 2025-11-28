@@ -3,27 +3,52 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Basic Info -->
       <div class="field">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nom de l'équipement *</label>
-        <InputText id="name" v-model="form.name" class="w-full" :class="{ 'p-invalid': errors.name }" />
+        <label for="name" class="block text-sm font-medium text-gray-700 mb-1"
+          >Nom de l'équipement *</label
+        >
+        <InputText
+          id="name"
+          v-model="form.name"
+          class="w-full"
+          :class="{ 'p-invalid': errors.name }"
+        />
         <small v-if="errors.name" class="text-red-500">{{ errors.name }}</small>
       </div>
 
       <div class="field">
-        <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Catégorie *</label>
-        <Select id="category" v-model="form.category_id" :options="store.categories" optionLabel="name" optionValue="id"
-          placeholder="Sélectionner une catégorie" class="w-full" :class="{ 'p-invalid': errors.category_id }" />
+        <label for="category" class="block text-sm font-medium text-gray-700 mb-1"
+          >Catégorie *</label
+        >
+        <Select
+          id="category"
+          v-model="form.category_id"
+          :options="store.categories"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Sélectionner une catégorie"
+          class="w-full"
+          :class="{ 'p-invalid': errors.category_id }"
+        />
         <small v-if="errors.category_id" class="text-red-500">{{ errors.category_id }}</small>
       </div>
 
       <div class="field">
-        <label for="serial_number" class="block text-sm font-medium text-gray-700 mb-1">Numéro de série *</label>
-        <InputText id="serial_number" v-model="form.serial_number" class="w-full"
-          :class="{ 'p-invalid': errors.serial_number }" />
+        <label for="serial_number" class="block text-sm font-medium text-gray-700 mb-1"
+          >Numéro de série *</label
+        >
+        <InputText
+          id="serial_number"
+          v-model="form.serial_number"
+          class="w-full"
+          :class="{ 'p-invalid': errors.serial_number }"
+        />
         <small v-if="errors.serial_number" class="text-red-500">{{ errors.serial_number }}</small>
       </div>
 
       <div class="field">
-        <label for="internal_ref" class="block text-sm font-medium text-gray-700 mb-1">Référence interne</label>
+        <label for="internal_ref" class="block text-sm font-medium text-gray-700 mb-1"
+          >Référence interne</label
+        >
         <InputText id="internal_ref" v-model="form.internal_ref" class="w-full" />
       </div>
 
@@ -39,44 +64,95 @@
 
       <!-- Dates & Status -->
       <div class="field">
-        <label for="purchase_date" class="block text-sm font-medium text-gray-700 mb-1">Date d'achat *</label>
-        <DatePicker id="purchase_date" v-model="form.purchase_date" dateFormat="dd/mm/yy" class="w-full"
-          :class="{ 'p-invalid': errors.purchase_date }" />
+        <label for="purchase_date" class="block text-sm font-medium text-gray-700 mb-1"
+          >Date d'achat *</label
+        >
+        <DatePicker
+          id="purchase_date"
+          v-model="form.purchase_date"
+          dateFormat="dd/mm/yy"
+          class="w-full"
+          :class="{ 'p-invalid': errors.purchase_date }"
+        />
         <small v-if="errors.purchase_date" class="text-red-500">{{ errors.purchase_date }}</small>
       </div>
 
       <div class="field">
-        <label for="expiration_date" class="block text-sm font-medium text-gray-700 mb-1">Date d'expiration</label>
-        <DatePicker id="expiration_date" v-model="form.expiration_date" dateFormat="dd/mm/yy" class="w-full" />
+        <label for="expiration_date" class="block text-sm font-medium text-gray-700 mb-1"
+          >Date d'expiration</label
+        >
+        <DatePicker
+          id="expiration_date"
+          v-model="form.expiration_date"
+          dateFormat="dd/mm/yy"
+          class="w-full"
+        />
       </div>
 
       <div class="field">
-        <label for="maintenance_frequency_months" class="block text-sm font-medium text-gray-700 mb-1">Fréquence de
-          contrôle (mois)</label>
-        <InputNumber id="maintenance_frequency_months" v-model="form.maintenance_frequency_months" class="w-full"
-          :min="0" showButtons />
+        <label
+          for="maintenance_frequency_months"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >Fréquence de contrôle (mois)</label
+        >
+        <InputNumber
+          id="maintenance_frequency_months"
+          v-model="form.maintenance_frequency_months"
+          class="w-full"
+          :min="0"
+          showButtons
+        />
       </div>
 
       <div class="field">
         <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
-        <Select id="status" v-model="form.status" :options="statusOptions" optionLabel="label" optionValue="value"
-          class="w-full" :class="{ 'p-invalid': errors.status }" />
+        <Select
+          id="status"
+          v-model="form.status"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          :class="{ 'p-invalid': errors.status }"
+        />
       </div>
 
       <div class="field">
-        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Localisation *</label>
-        <Select id="location" v-model="form.location" :options="locationOptions" optionLabel="label" optionValue="value"
-          class="w-full" :class="{ 'p-invalid': errors.location }" />
+        <label for="location" class="block text-sm font-medium text-gray-700 mb-1"
+          >Localisation *</label
+        >
+        <Select
+          id="location"
+          v-model="form.location"
+          :options="locationOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          :class="{ 'p-invalid': errors.location }"
+        />
       </div>
 
       <div class="field col-span-1 md:col-span-2">
-        <label for="image_path" class="block text-sm font-medium text-gray-700 mb-1">URL Image</label>
-        <InputText id="image_path" v-model="form.image_path" class="w-full" placeholder="https://..." />
+        <label for="image_path" class="block text-sm font-medium text-gray-700 mb-1"
+          >URL Image</label
+        >
+        <InputText
+          id="image_path"
+          v-model="form.image_path"
+          class="w-full"
+          placeholder="https://..."
+        />
       </div>
     </div>
 
     <div class="flex justify-end gap-2 mt-6">
-      <Button label="Annuler" icon="pi pi-times" severity="secondary" text @click="$emit('cancel')" />
+      <Button
+        label="Annuler"
+        icon="pi pi-times"
+        severity="secondary"
+        text
+        @click="$emit('cancel')"
+      />
       <Button label="Enregistrer" icon="pi pi-check" @click="save" :loading="store.loading" />
     </div>
   </div>
@@ -177,7 +253,9 @@ const save = async () => {
     category_id: form.value.category_id || undefined,
     status: form.value.status as 'available' | 'assigned' | 'maintenance' | 'broken' | 'retired',
     location: form.value.location as 'warehouse' | 'workshop' | 'office' | 'vehicle' | 'site',
-    purchase_date: form.value.purchase_date ? format(form.value.purchase_date, 'yyyy-MM-dd') : undefined,
+    purchase_date: form.value.purchase_date
+      ? format(form.value.purchase_date, 'yyyy-MM-dd')
+      : undefined,
     expiration_date: form.value.expiration_date
       ? format(form.value.expiration_date, 'yyyy-MM-dd')
       : null,
@@ -186,7 +264,12 @@ const save = async () => {
   try {
     if (props.equipment) {
       await store.updateEquipment(props.equipment.id, data)
-      toast.add({ severity: 'success', summary: 'Succès', detail: 'Équipement mis à jour', life: 3000 })
+      toast.add({
+        severity: 'success',
+        summary: 'Succès',
+        detail: 'Équipement mis à jour',
+        life: 3000,
+      })
     } else {
       await store.createEquipment(data)
       toast.add({ severity: 'success', summary: 'Succès', detail: 'Équipement créé', life: 3000 })
@@ -194,7 +277,12 @@ const save = async () => {
     emit('save')
   } catch (e) {
     console.error(e)
-    toast.add({ severity: 'error', summary: 'Erreur', detail: "Une erreur est survenue lors de l'enregistrement", life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: "Une erreur est survenue lors de l'enregistrement",
+      life: 3000,
+    })
   }
 }
 </script>

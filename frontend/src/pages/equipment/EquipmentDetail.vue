@@ -12,12 +12,32 @@
         </div>
       </div>
       <div class="flex gap-2 mt-4 md:mt-0">
-        <Button label="Modifier" icon="pi pi-pencil" severity="secondary" outlined @click="openEditDialog" />
-        <Button v-if="equipment.status === 'available'" label="Affecter" icon="pi pi-user-plus"
-          @click="openAssignDialog" />
-        <Button v-if="equipment.status === 'assigned'" label="Retourner" icon="pi pi-replay" severity="warning"
-          @click="openReturnDialog" />
-        <Button label="Maintenance" icon="pi pi-wrench" severity="help" @click="openMaintenanceDialog" />
+        <Button
+          label="Modifier"
+          icon="pi pi-pencil"
+          severity="secondary"
+          outlined
+          @click="openEditDialog"
+        />
+        <Button
+          v-if="equipment.status === 'available'"
+          label="Affecter"
+          icon="pi pi-user-plus"
+          @click="openAssignDialog"
+        />
+        <Button
+          v-if="equipment.status === 'assigned'"
+          label="Retourner"
+          icon="pi pi-replay"
+          severity="warning"
+          @click="openReturnDialog"
+        />
+        <Button
+          label="Maintenance"
+          icon="pi pi-wrench"
+          severity="help"
+          @click="openMaintenanceDialog"
+        />
       </div>
     </div>
 
@@ -27,7 +47,10 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex justify-between items-start mb-4">
             <h2 class="text-lg font-semibold text-gray-800">Informations</h2>
-            <span class="px-2 py-1 rounded text-xs font-bold" :class="getStatusBadge(equipment.status)">
+            <span
+              class="px-2 py-1 rounded text-xs font-bold"
+              :class="getStatusBadge(equipment.status)"
+            >
               {{ getStatusLabel(equipment.status) }}
             </span>
           </div>
@@ -55,17 +78,31 @@
             <div>
               <label class="text-xs font-bold text-gray-500 uppercase">Fréquence de contrôle</label>
               <p class="font-medium text-gray-800">
-                {{ equipment.maintenance_frequency_months ? `${equipment.maintenance_frequency_months} mois` :
-                  'Non défini' }}
+                {{
+                  equipment.maintenance_frequency_months
+                    ? `${equipment.maintenance_frequency_months} mois`
+                    : 'Non défini'
+                }}
               </p>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Prochaine vérification</label>
-              <p class="font-medium"
-                :class="nextVerificationDate && isExpired(nextVerificationDate) ? 'text-red-600' : 'text-gray-800'">
+              <label class="text-xs font-bold text-gray-500 uppercase"
+                >Prochaine vérification</label
+              >
+              <p
+                class="font-medium"
+                :class="
+                  nextVerificationDate && isExpired(nextVerificationDate)
+                    ? 'text-red-600'
+                    : 'text-gray-800'
+                "
+              >
                 {{ nextVerificationDate ? formatDate(nextVerificationDate) : 'Non planifiée' }}
-                <font-awesome-icon v-if="nextVerificationDate && isExpired(nextVerificationDate)"
-                  icon="exclamation-triangle" class="ml-2" />
+                <font-awesome-icon
+                  v-if="nextVerificationDate && isExpired(nextVerificationDate)"
+                  icon="exclamation-triangle"
+                  class="ml-2"
+                />
               </p>
             </div>
             <div>
@@ -74,20 +111,31 @@
             </div>
             <div v-if="equipment.expiration_date">
               <label class="text-xs font-bold text-gray-500 uppercase">Date d'expiration</label>
-              <p class="font-medium" :class="isExpired(equipment.expiration_date) ? 'text-red-600' : 'text-gray-800'">
+              <p
+                class="font-medium"
+                :class="isExpired(equipment.expiration_date) ? 'text-red-600' : 'text-gray-800'"
+              >
                 {{ formatDate(equipment.expiration_date) }}
-                <font-awesome-icon v-if="isExpired(equipment.expiration_date)" icon="exclamation-triangle"
-                  class="ml-2" />
+                <font-awesome-icon
+                  v-if="isExpired(equipment.expiration_date)"
+                  icon="exclamation-triangle"
+                  class="ml-2"
+                />
               </p>
             </div>
           </div>
         </div>
 
         <!-- Current Assignment -->
-        <div v-if="equipment.current_assignment" class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+        <div
+          v-if="equipment.current_assignment"
+          class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500"
+        >
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Affectation en cours</h2>
           <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl"
+            >
               <font-awesome-icon icon="user" />
             </div>
             <div>
@@ -100,7 +148,10 @@
               </p>
             </div>
           </div>
-          <div v-if="equipment.current_assignment.notes" class="bg-gray-50 p-3 rounded text-sm text-gray-600 italic">
+          <div
+            v-if="equipment.current_assignment.notes"
+            class="bg-gray-50 p-3 rounded text-sm text-gray-600 italic"
+          >
             "{{ equipment.current_assignment.notes }}"
           </div>
         </div>
@@ -112,23 +163,38 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-semibold text-gray-800">Historique de Maintenance</h2>
-            <Button label="Ajouter" icon="pi pi-plus" size="small" text @click="openMaintenanceDialog" />
+            <Button
+              label="Ajouter"
+              icon="pi pi-plus"
+              size="small"
+              text
+              @click="openMaintenanceDialog"
+            />
           </div>
 
           <div v-if="store.maintenanceLogs.length === 0" class="text-center py-8 text-gray-500">
             <p>Aucune maintenance enregistrée</p>
           </div>
           <div v-else class="space-y-4">
-            <div v-for="log in store.maintenanceLogs" :key="log.id"
-              class="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+            <div
+              v-for="log in store.maintenanceLogs"
+              :key="log.id"
+              class="border-b border-gray-100 last:border-0 pb-4 last:pb-0"
+            >
               <div class="flex justify-between items-start mb-2">
                 <div class="flex items-center gap-2">
-                  <span class="px-2 py-0.5 rounded text-xs font-bold uppercase" :class="getLogTypeBadge(log.type)">
+                  <span
+                    class="px-2 py-0.5 rounded text-xs font-bold uppercase"
+                    :class="getLogTypeBadge(log.type)"
+                  >
                     {{ getLogTypeLabel(log.type) }}
                   </span>
                   <span class="text-sm text-gray-500">{{ formatDate(log.date) }}</span>
                 </div>
-                <span class="text-xs px-2 py-1 rounded font-medium" :class="getResultBadge(log.result)">
+                <span
+                  class="text-xs px-2 py-1 rounded font-medium"
+                  :class="getResultBadge(log.result)"
+                >
                   {{ getResultLabel(log.result) }}
                 </span>
               </div>
@@ -150,21 +216,46 @@
     </div>
 
     <!-- Dialogs -->
-    <Dialog v-model:visible="maintenanceDialogVisible" header="Nouvelle Maintenance" :modal="true"
-      class="p-fluid w-full max-w-lg">
-      <MaintenanceForm v-if="equipment" :equipment-id="equipment.id" @save="onMaintenanceSaved"
-        @cancel="maintenanceDialogVisible = false" />
+    <Dialog
+      v-model:visible="maintenanceDialogVisible"
+      header="Nouvelle Maintenance"
+      :modal="true"
+      class="p-fluid w-full max-w-lg"
+    >
+      <MaintenanceForm
+        v-if="equipment"
+        :equipment-id="equipment.id"
+        @save="onMaintenanceSaved"
+        @cancel="maintenanceDialogVisible = false"
+      />
     </Dialog>
 
-    <Dialog v-model:visible="assignmentDialogVisible" header="Affecter l'équipement" :modal="true"
-      class="p-fluid w-full max-w-lg">
-      <AssignmentForm v-if="equipment" :equipment-id="equipment.id" @save="onAssignmentSaved"
-        @cancel="assignmentDialogVisible = false" />
+    <Dialog
+      v-model:visible="assignmentDialogVisible"
+      header="Affecter l'équipement"
+      :modal="true"
+      class="p-fluid w-full max-w-lg"
+    >
+      <AssignmentForm
+        v-if="equipment"
+        :equipment-id="equipment.id"
+        @save="onAssignmentSaved"
+        @cancel="assignmentDialogVisible = false"
+      />
     </Dialog>
 
-    <Dialog v-model:visible="editDialogVisible" header="Modifier l'équipement" :modal="true"
-      class="p-fluid w-full max-w-2xl">
-      <EquipmentForm v-if="equipment" :equipment="equipment" @save="onEditSaved" @cancel="editDialogVisible = false" />
+    <Dialog
+      v-model:visible="editDialogVisible"
+      header="Modifier l'équipement"
+      :modal="true"
+      class="p-fluid w-full max-w-2xl"
+    >
+      <EquipmentForm
+        v-if="equipment"
+        :equipment="equipment"
+        @save="onEditSaved"
+        @cancel="editDialogVisible = false"
+      />
     </Dialog>
   </div>
   <div v-else class="flex justify-center py-12">
@@ -200,7 +291,9 @@ const nextVerificationDate = computed(() => {
   const logs = store.maintenanceLogs
   if (logs && logs.length > 0) {
     // Sort by date desc
-    const sortedLogs = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    const sortedLogs = [...logs].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    )
     const lastLog = sortedLogs[0]
 
     if (lastLog) {

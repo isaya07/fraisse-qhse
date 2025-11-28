@@ -29,7 +29,9 @@
               <span class="block text-gray-500 text-sm font-medium mb-1">Sessions à venir</span>
               <span class="text-3xl font-bold">{{ upcomingSessionsCount }}</span>
             </div>
-            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <div
+              class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"
+            >
               <font-awesome-icon icon="calendar-alt" size="lg" />
             </div>
           </div>
@@ -43,7 +45,9 @@
               <span class="block text-gray-500 text-sm font-medium mb-1">Formations actives</span>
               <span class="text-3xl font-bold">{{ activeTrainingsCount }}</span>
             </div>
-            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+            <div
+              class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600"
+            >
               <font-awesome-icon icon="book-open" size="lg" />
             </div>
           </div>
@@ -57,7 +61,9 @@
               <span class="block text-gray-500 text-sm font-medium mb-1">Participants ce mois</span>
               <span class="text-3xl font-bold">{{ participantsThisMonth }}</span>
             </div>
-            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+            <div
+              class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"
+            >
               <font-awesome-icon icon="users" size="lg" />
             </div>
           </div>
@@ -71,7 +77,9 @@
               <span class="block text-gray-500 text-sm font-medium mb-1">Renouvellements</span>
               <span class="text-3xl font-bold">{{ renewalsNeeded.length }}</span>
             </div>
-            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+            <div
+              class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"
+            >
               <font-awesome-icon icon="clock" size="lg" />
             </div>
           </div>
@@ -83,7 +91,10 @@
     <div class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <h3>Prochaines sessions</h3>
-        <router-link to="/trainings/sessions" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+        <router-link
+          to="/trainings/sessions"
+          class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+        >
           Voir tout
         </router-link>
       </div>
@@ -93,7 +104,10 @@
     <!-- Renewals Needed -->
     <div class="mb-8">
       <h3>Renouvellements à prévoir</h3>
-      <div v-if="renewalsNeeded.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        v-if="renewalsNeeded.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
         <Card v-for="renewal in renewalsNeeded" :key="renewal.id">
           <template #content>
             <div class="flex items-start justify-between">
@@ -103,14 +117,24 @@
                   {{ renewal.user?.first_name }} {{ renewal.user?.last_name }}
                 </span>
                 <div class="mt-2 flex items-center gap-2 text-sm">
-                  <font-awesome-icon icon="clock" :class="renewal.is_expired ? 'text-red-600' : 'text-orange-600'" />
-                  <span :class="renewal.is_expired ? 'text-red-700 font-medium' : 'text-orange-700'">
+                  <font-awesome-icon
+                    icon="clock"
+                    :class="renewal.is_expired ? 'text-red-600' : 'text-orange-600'"
+                  />
+                  <span
+                    :class="renewal.is_expired ? 'text-red-700 font-medium' : 'text-orange-700'"
+                  >
                     Expire le {{ new Date(renewal.expiration_date).toLocaleDateString() }}
                   </span>
                 </div>
               </div>
-              <Button text rounded size="small" :severity="renewal.is_expired ? 'danger' : 'warning'"
-                v-tooltip="'Relancer'">
+              <Button
+                text
+                rounded
+                size="small"
+                :severity="renewal.is_expired ? 'danger' : 'warning'"
+                v-tooltip="'Relancer'"
+              >
                 <template #icon>
                   <font-awesome-icon icon="envelope" />
                 </template>

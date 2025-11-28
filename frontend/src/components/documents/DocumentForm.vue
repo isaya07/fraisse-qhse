@@ -1,123 +1,109 @@
 <template>
   <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
+    <!-- Fichier (Moved to top) -->
+    <div class="field">
+      <label class="block text-sm font-medium mb-2 text-gray-700">Fichier</label>
+
+      <div v-if="isEditMode" class="bg-blue-50 p-4 rounded-md border border-blue-200 mb-2">
+        <div class="flex items-start">
+          <font-awesome-icon :icon="['fas', 'info-circle']" class="text-blue-500 mt-1 mr-2" />
+          <p class="text-sm text-blue-700 m-0">
+            Pour modifier le fichier ou créer une nouvelle version, veuillez utiliser le bouton <strong>"Nouvelle
+              Version"</strong> sur la page de détail du document.
+          </p>
+        </div>
+      </div>
+
+      <FileUpload v-if="!isEditMode" name="file" :auto="true" :customUpload="true" @uploader="onFileSelect"
+        :maxFileSize="10000000"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png">
+        <template #empty>
+          <div class="flex items-center justify-center flex-col">
+            <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="text-6xl text-gray-300 mb-4" />
+            <p class="mt-4 mb-0">Glisser-déposer le fichier ici pour le télécharger.</p>
+          </div>
+        </template>
+      </FileUpload>
+
+      <!-- Display selected file separately -->
+      <div v-if="selectedFile" class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+        <font-awesome-icon :icon="['fas', 'check-circle']" class="text-green-500" />
+        <span class="font-semibold">{{ selectedFile.name }}</span>
+        <span>({{ formatFileSize(selectedFile.size) }})</span>
+        <Button @click="clearFile" outlined rounded severity="danger" size="small" class="w-8 h-8">
+          <template #icon>
+            <font-awesome-icon :icon="['fas', 'times']" />
+          </template>
+        </Button>
+      </div>
+      <small v-if="errors.file" class="text-red-500">{{ errors.file }}</small>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Titre -->
       <div class="field">
         <label for="title" class="block text-sm font-medium mb-2 text-gray-700">Titre *</label>
-        <InputText
-          id="title"
-          v-model="formData.title"
-          placeholder="Titre du document"
-          class="w-full"
-          :class="{ 'p-invalid': errors.title }"
-        />
+        <InputText id="title" v-model="formData.title" placeholder="Titre du document" class="w-full"
+          :class="{ 'p-invalid': errors.title }" />
         <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
       </div>
 
       <!-- Version -->
       <div class="field">
         <label for="version" class="block text-sm font-medium mb-2 text-gray-700">Version *</label>
-        <InputText
-          id="version"
-          v-model="formData.version"
-          placeholder="1.0"
-          class="w-full"
-          :class="{ 'p-invalid': errors.version }"
-        />
+        <InputText id="version" v-model="formData.version" placeholder="1.0" class="w-full"
+          :class="{ 'p-invalid': errors.version }" :disabled="isEditMode" />
         <small v-if="errors.version" class="text-red-500">{{ errors.version }}</small>
       </div>
 
       <!-- Dossier -->
       <div class="field">
         <label for="folder" class="block text-sm font-medium mb-2 text-gray-700">Dossier</label>
-        <TreeSelect
-          v-model="formData.document_folder_id"
-          :options="folderOptions"
-          placeholder="Sélectionnez un dossier"
-          class="w-full"
-          :class="{ 'p-invalid': errors.document_folder_id }"
-        />
+        <TreeSelect :modelValue="formData.document_folder_id" @update:modelValue="onFolderChange"
+          :options="folderOptions" placeholder="Sélectionnez un dossier" class="w-full"
+          :class="{ 'p-invalid': errors.document_folder_id }" />
         <small v-if="errors.document_folder_id" class="text-red-500">{{
           errors.document_folder_id
-        }}</small>
+          }}</small>
       </div>
 
       <!-- Type de document (Catégorie) -->
       <div class="field">
-        <label for="category" class="block text-sm font-medium mb-2 text-gray-700"
-          >Type de document *</label
-        >
-        <Dropdown
-          id="category"
-          v-model="formData.category"
-          :options="categoryOptions"
-          optionLabel="text"
-          optionValue="value"
-          placeholder="Sélectionnez un type"
-          class="w-full"
-          :class="{ 'p-invalid': errors.category }"
-        />
+        <label for="category" class="block text-sm font-medium mb-2 text-gray-700">Type de document *</label>
+        <Dropdown id="category" v-model="formData.category" :options="categoryOptions" optionLabel="text"
+          optionValue="value" placeholder="Sélectionnez un type" class="w-full"
+          :class="{ 'p-invalid': errors.category }" />
         <small v-if="errors.category" class="text-red-500">{{ errors.category }}</small>
       </div>
 
       <!-- Statut -->
       <div class="field">
         <label for="status" class="block text-sm font-medium mb-2 text-gray-700">Statut *</label>
-        <Dropdown
-          id="status"
-          v-model="formData.status"
-          :options="statusOptions"
-          optionLabel="text"
-          optionValue="value"
-          placeholder="Sélectionnez un statut"
-          class="w-full"
-          :class="{ 'p-invalid': errors.status }"
-        />
+        <Dropdown id="status" v-model="formData.status" :options="statusOptions" optionLabel="text" optionValue="value"
+          placeholder="Sélectionnez un statut" class="w-full" :class="{ 'p-invalid': errors.status }" />
         <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
       </div>
     </div>
 
     <!-- Description -->
     <div class="field">
-      <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
-        >Description</label
-      >
-      <Textarea
-        id="description"
-        v-model="formData.description"
-        placeholder="Description du document"
-        rows="4"
-        class="w-full"
-      />
-    </div>
-
-    <!-- Fichier -->
-    <div class="field">
-      <label class="block text-sm font-medium mb-2 text-gray-700">Fichier</label>
-      <FileUpload
-        mode="basic"
-        name="file"
-        :auto="false"
-        chooseLabel="Choisir un fichier"
-        @select="onFileSelect"
-        :maxFileSize="10000000"
-        class="w-full"
-      />
-      <div
-        v-if="selectedFile"
-        class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded"
-      >
-        <i class="pi pi-file"></i>
-        <span>{{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})</span>
-        <Button icon="pi pi-times" text rounded severity="danger" size="small" @click="clearFile" />
-      </div>
-      <small v-if="errors.file" class="text-red-500">{{ errors.file }}</small>
+      <label for="description" class="block text-sm font-medium mb-2 text-gray-700">Description</label>
+      <Textarea id="description" v-model="formData.description" placeholder="Description du document" rows="4"
+        class="w-full" />
     </div>
 
     <!-- Actions -->
     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-      <Button label="Annuler" icon="pi pi-times" text severity="secondary" @click="onCancel" />
-      <Button type="submit" :label="submitButtonText" icon="pi pi-save" :loading="loading" />
+      <Button label="Annuler" text severity="secondary" @click="onCancel">
+        <template #icon>
+          <font-awesome-icon :icon="['fas', 'times']" />
+        </template>
+      </Button>
+      <Button type="submit" :label="submitButtonText" :loading="loading">
+        <template #icon>
+          <font-awesome-icon :icon="['fas', 'save']" />
+        </template>
+      </Button>
     </div>
   </form>
 </template>
@@ -140,6 +126,7 @@ interface Props {
   initialData?: Partial<DocumentFormData>
   submitButtonText?: string
   loading?: boolean
+  isEditMode?: boolean
 }
 
 interface Emits {
@@ -158,6 +145,7 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   submitButtonText: 'Enregistrer',
   loading: false,
+  isEditMode: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -226,12 +214,27 @@ const clearFile = () => {
   selectedFile.value = undefined
 }
 
+const onFolderChange = (value: any) => {
+  if (value && typeof value === 'object') {
+    // PrimeVue TreeSelect might return { "key": true }
+    const keys = Object.keys(value)
+    if (keys.length > 0) {
+      formData.document_folder_id = parseInt(keys[0])
+    } else {
+      formData.document_folder_id = null
+    }
+  } else {
+    formData.document_folder_id = value
+  }
+}
+
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  const unit = sizes[i] || sizes[sizes.length - 1]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + unit
 }
 
 const validate = () => {
@@ -278,6 +281,8 @@ watch(
   },
   { deep: true },
 )
+
+
 
 onMounted(() => {
   folderStore.fetchFolders()

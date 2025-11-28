@@ -13,7 +13,10 @@
             <font-awesome-icon icon="calendar" />
             <span>{{ formatDate(session.start_date) }} - {{ formatDate(session.end_date) }}</span>
             <span class="mx-2">|</span>
-            <Tag :value="getStatusLabel(session.status)" :severity="getStatusSeverity(session.status)" />
+            <Tag
+              :value="getStatusLabel(session.status)"
+              :severity="getStatusSeverity(session.status)"
+            />
           </div>
         </div>
       </div>
@@ -55,8 +58,13 @@
         </Card>
 
         <!-- Participants -->
-        <ParticipantManager :participations="session.participations || []" :users="users" @add="addParticipant"
-          @update="updateParticipant" @remove="removeParticipant" />
+        <ParticipantManager
+          :participations="session.participations || []"
+          :users="users"
+          @add="addParticipant"
+          @update="updateParticipant"
+          @remove="removeParticipant"
+        />
       </div>
 
       <!-- Sidebar -->
@@ -74,9 +82,15 @@
             </div>
           </template>
           <template #content>
-            <div v-if="session.documents && session.documents.length > 0" class="flex flex-col gap-2">
-              <div v-for="doc in session.documents" :key="doc.id"
-                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+            <div
+              v-if="session.documents && session.documents.length > 0"
+              class="flex flex-col gap-2"
+            >
+              <div
+                v-for="doc in session.documents"
+                :key="doc.id"
+                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
+              >
                 <div class="flex items-center gap-2 overflow-hidden">
                   <font-awesome-icon icon="file" class="text-gray-400" />
                   <span class="truncate text-sm">{{ doc.name }}</span>
@@ -99,11 +113,16 @@
             <div class="flex flex-col gap-3">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Inscrits</span>
-                <span class="font-medium">{{ session.participations?.length || 0 }} /
-                  {{ session.max_participants || '∞' }}</span>
+                <span class="font-medium"
+                  >{{ session.participations?.length || 0 }} /
+                  {{ session.max_participants || '∞' }}</span
+                >
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2">
-                <div class="bg-blue-500 h-2 rounded-full" :style="{ width: getParticipationPercentage() + '%' }"></div>
+                <div
+                  class="bg-blue-500 h-2 rounded-full"
+                  :style="{ width: getParticipationPercentage() + '%' }"
+                ></div>
               </div>
             </div>
           </template>

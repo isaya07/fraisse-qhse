@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class PlanningController extends Controller
 {
-    public function getEvents(Request $request)
+    public function index(Request $request)
     {
         $start = $request->input('start');
         $end = $request->input('end');

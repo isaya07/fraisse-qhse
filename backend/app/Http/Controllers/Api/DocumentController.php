@@ -56,47 +56,66 @@ class DocumentController extends Controller
     {
         $this->authorize('create', Document::class);
 
-        $validated = $request->validated();
-        $validated['created_by'] = $request->user()->id;
+        DB::beginTransaction();
 
-        // Ensure 'category' is handled as a string if it's part of the validated data
-        // and 'document_folder_id' is included if present in the request.
-        // The StoreDocumentRequest should handle validation for these fields.
+        try {
+            $validated = $request->validated();
+            $validated['created_by'] = $request->user()->id;
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            
-            // Get settings
-            $basePath = Setting::where('key', 'document_base_path')->value('value') ?? 'documents';
-            $namingConvention = Setting::where('key', 'document_naming_convention')->value('value') ?? '{original_name}';
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                
+                // Get settings
+                $basePath = Setting::where('key', 'document_base_path')->value('value') ?? 'documents';
+                $namingConvention = Setting::where('key', 'document_naming_convention')->value('value') ?? '{original_name}';
 
-            // Generate filename
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
-            
-            $filename = str_replace(
-                ['{original_name}', '{date}', '{timestamp}'],
-                [$originalName, date('Y-m-d'), time()],
-                $namingConvention
-            );
-            
-            // Ensure extension is present
-            if (!str_ends_with($filename, '.' . $extension)) {
-                $filename .= '.' . $extension;
+                // Generate filename
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                
+                $filename = str_replace(
+                    ['{original_name}', '{date}', '{timestamp}'],
+                    [$originalName, date('Y-m-d'), time()],
+                    $namingConvention
+                );
+                
+                // Ensure extension is present
+                if (!str_ends_with($filename, '.' . $extension)) {
+                    $filename .= '.' . $extension;
+                }
+
+                // Store file
+                $path = $file->storeAs($basePath, $filename, 'public');
+
+                $validated['filename'] = $filename;
+                $validated['filepath'] = $path;
+                $validated['file_size'] = $file->getSize();
+                $validated['mime_type'] = $file->getMimeType();
             }
 
-            // Store file
-            $path = $file->storeAs($basePath, $filename, 'public');
+            $document = Document::create($validated);
 
-            $validated['filename'] = $filename;
-            $validated['filepath'] = $path;
-            $validated['file_size'] = $file->getSize();
-            $validated['mime_type'] = $file->getMimeType();
+            // Create initial version
+            $document->versions()->create([
+                'version' => $validated['version'],
+                'filename' => $validated['filename'],
+                'filepath' => $validated['filepath'],
+                'file_size' => $validated['file_size'],
+                'mime_type' => $validated['mime_type'],
+                'created_by' => auth()->id(),
+                'changelog' => 'Initial version',
+            ]);
+
+            DB::commit();
+
+            return response()->json($document->load('creator', 'approver'), 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if (isset($path) && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            }
+            return response()->json(['message' => 'Failed to create document: ' . $e->getMessage()], 500);
         }
-
-        $document = Document::create($validated);
-
-        return response()->json($document->load('creator', 'approver', 'category'), 201);
     }
 
     /**
@@ -155,7 +174,7 @@ class DocumentController extends Controller
 
         $document->update($validated);
 
-        return response()->json($document->load('creator', 'approver', 'category'));
+        return response()->json($document->load('creator', 'approver'));
     }
 
     /**
@@ -255,5 +274,96 @@ class DocumentController extends Controller
         }
 
         return response()->json($document->fresh(['creator', 'approver']));
+    }
+    /**
+     * Download the specified document.
+     */
+    public function download($id)
+    {
+        $document = Document::findOrFail($id);
+        $this->authorize('view', $document);
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($document->filepath)) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($document->filepath, $document->filename);
+    }
+
+    /**
+     * Add a new version to the document.
+     */
+    public function addVersion(Request $request, $id)
+    {
+        $document = Document::findOrFail($id);
+        $this->authorize('update', $document);
+
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
+            'version' => 'required|string|max:20',
+            'changelog' => 'nullable|string',
+        ]);
+
+        // Validate version number (must be different)
+        if ($request->version === $document->version) {
+            return response()->json(['message' => 'The new version must be different from the current one.'], 422);
+        }
+
+        $file = $request->file('file');
+        $basePath = 'documents/' . date('Y/m');
+        $filename = $file->getClientOriginalName();
+        
+        // Ensure unique filename
+        $i = 1;
+        while (\Illuminate\Support\Facades\Storage::disk('public')->exists($basePath . '/' . $filename)) {
+            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . $i . '.' . $file->getClientOriginalExtension();
+            $i++;
+        }
+
+        $path = $file->storeAs($basePath, $filename, 'public');
+
+        DB::beginTransaction();
+        try {
+            // Create new version entry
+            $document->versions()->create([
+                'version' => $request->version,
+                'filename' => $filename,
+                'filepath' => $path,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'created_by' => auth()->id(),
+                'changelog' => $request->changelog,
+            ]);
+
+            // Update document with new file and version info
+            $document->update([
+                'version' => $request->version,
+                'filename' => $filename,
+                'filepath' => $path,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'status' => 'draft', // Reset status to draft on new version
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json($document->fresh(['versions', 'creator']));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            return response()->json(['message' => 'Failed to add version'], 500);
+        }
+    }
+
+    /**
+     * Get document versions history.
+     */
+    public function getVersions($id)
+    {
+        $document = Document::findOrFail($id);
+        $this->authorize('view', $document);
+
+        return response()->json($document->versions()->with('creator')->get());
     }
 }

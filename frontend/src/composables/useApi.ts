@@ -15,17 +15,41 @@ export const useApi = () => {
     options: RequestInit = {},
   ): Promise<ApiResponse<T>> => {
     try {
+      const isFormData = options.body instanceof FormData
+      const headers: HeadersInit = {
+        Authorization: `Bearer ${store.token}`,
+        Accept: 'application/json',
+        ...options.headers,
+      }
+
+      if (!isFormData) {
+        ;(headers as any)['Content-Type'] = 'application/json'
+      }
+
       const response = await fetch(`${store.apiUrl}${endpoint}`, {
         ...options,
-        headers: {
-          Authorization: `Bearer ${store.token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          ...options.headers,
-        },
+        headers,
       })
 
-      const data = await response.json()
+      const contentType = response.headers.get('content-type')
+      let data
+
+      if (
+        (options as any).responseType === 'blob' ||
+        (contentType &&
+          !contentType.includes('application/json') &&
+          !contentType.includes('text/plain'))
+      ) {
+        data = await response.blob()
+      } else {
+        try {
+          data = await response.json()
+        } catch (e) {
+          // Fallback for empty responses or non-JSON text
+          data = null
+        }
+      }
+
       if (response.status === 401) {
         // Token expiré ou invalide - Afficher une notification avec Toast
         // Utiliser le message spécifique du backend s'il est disponible
@@ -71,6 +95,20 @@ export const useApi = () => {
       } else {
         // Gérer les autres erreurs (422, etc.) en affichant le message spécifique du backend
         const errorMessage = data?.error?.message || 'Request failed'
+
+        if (response.status >= 500) {
+          window.dispatchEvent(
+            new CustomEvent('api-error', {
+              detail: {
+                severity: 'error',
+                summary: 'Erreur Serveur',
+                detail: errorMessage,
+                life: 5000,
+              },
+            }),
+          )
+        }
+
         return { success: false, error: errorMessage }
       }
     } catch (error) {
@@ -79,28 +117,31 @@ export const useApi = () => {
     }
   }
 
-  const get = async <T = unknown>(endpoint: string): Promise<ApiResponse<T>> => {
-    return request<T>(endpoint, { method: 'GET' })
+  const get = async <T = unknown>(
+    endpoint: string,
+    options: RequestInit & { responseType?: 'json' | 'blob' } = {},
+  ): Promise<ApiResponse<T>> => {
+    return request<T>(endpoint, { method: 'GET', ...options })
   }
 
   const post = async <T = unknown>(endpoint: string, data: unknown): Promise<ApiResponse<T>> => {
     return request<T>(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     })
   }
 
   const put = async <T = unknown>(endpoint: string, data: unknown): Promise<ApiResponse<T>> => {
     return request<T>(endpoint, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     })
   }
 
   const patch = async <T = unknown>(endpoint: string, data: unknown): Promise<ApiResponse<T>> => {
     return request<T>(endpoint, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
     })
   }
 

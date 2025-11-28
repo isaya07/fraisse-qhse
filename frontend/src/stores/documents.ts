@@ -156,8 +156,13 @@ export const useDocumentStore = defineStore('document', {
       this.error = null
 
       try {
-        const { put } = useApi()
-        const response = await put<Document>(`/documents/${id}`, documentData)
+        const { put, post } = useApi()
+        let response
+        if (documentData instanceof FormData) {
+          response = await post<Document>(`/documents/${id}`, documentData)
+        } else {
+          response = await put<Document>(`/documents/${id}`, documentData)
+        }
 
         if (response.success && response.data) {
           const index = this.documents.findIndex((doc) => doc.id === id)
@@ -210,7 +215,7 @@ export const useDocumentStore = defineStore('document', {
 
       try {
         const { post } = useApi()
-        const response = await post<Document>(`/documents/${id}/request-approval`)
+        const response = await post<Document>(`/documents/${id}/request-approval`, {})
 
         if (response.success && response.data) {
           this.currentDocument = response.data
@@ -237,7 +242,7 @@ export const useDocumentStore = defineStore('document', {
 
       try {
         const { post } = useApi()
-        const response = await post<Document>(`/documents/${id}/approve`)
+        const response = await post<Document>(`/documents/${id}/approve`, {})
 
         if (response.success && response.data) {
           this.currentDocument = response.data
@@ -264,7 +269,7 @@ export const useDocumentStore = defineStore('document', {
 
       try {
         const { post } = useApi()
-        const response = await post<Document>(`/documents/${id}/reject`)
+        const response = await post<Document>(`/documents/${id}/reject`, {})
 
         if (response.success && response.data) {
           this.currentDocument = response.data
@@ -278,6 +283,70 @@ export const useDocumentStore = defineStore('document', {
         }
       } catch (error) {
         this.error = 'An error occurred while rejecting document'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async downloadDocument(id: number, title: string) {
+      try {
+        const { get } = useApi()
+        // Use 'blob' as response type to handle file download
+        const response = await get<Blob>(`/documents/${id}/download`, { responseType: 'blob' })
+
+        if (response.success && response.data) {
+          const url = window.URL.createObjectURL(new Blob([response.data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', title) // Use the document title or filename
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+        } else {
+          throw new Error(response.error || 'Failed to download document')
+        }
+      } catch (error) {
+        console.error('Download error:', error)
+        throw error
+      }
+    },
+
+    async fetchVersions(id: number) {
+      try {
+        const { get } = useApi()
+        const response = await get<any[]>(`/documents/${id}/versions`)
+        if (response.success && response.data) {
+          return response.data
+        }
+        return []
+      } catch (error) {
+        console.error('Error fetching versions:', error)
+        return []
+      }
+    },
+
+    async addVersion(id: number, formData: FormData) {
+      this.loading = true
+      this.error = null
+      try {
+        const { post } = useApi()
+        const response = await post<Document>(`/documents/${id}/versions`, formData)
+
+        if (response.success && response.data) {
+          this.currentDocument = response.data
+          const index = this.documents.findIndex((doc) => doc.id === id)
+          if (index !== -1) {
+            this.documents[index] = response.data
+          }
+          return response.data
+        } else {
+          throw new Error(response.error || 'Failed to add version')
+        }
+      } catch (error) {
+        this.error = 'An error occurred while adding version'
         console.error(error)
         throw error
       } finally {

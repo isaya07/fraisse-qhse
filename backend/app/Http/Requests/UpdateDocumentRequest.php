@@ -23,7 +23,7 @@ class UpdateDocumentRequest extends FormRequest
     {
         return [
             'title' => 'sometimes|string|max:255',
-            'file' => 'nullable|file|max:20480',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:20480',
             'version' => 'sometimes|required|string|max:20',
             'category' => 'sometimes|required|string|max:50', // Document Type
             'document_folder_id' => 'nullable|exists:document_folders,id',

@@ -2,9 +2,11 @@
   <router-view />
   <Toast>
     <template #message="slotProps">
-      <div class="flex items-center gap-4 p-4">
-        <font-awesome-icon :icon="['fas', slotProps.message.icon || getSeverityIcon(slotProps.message.severity)]"
-          class="text-2xl" />
+      <div class="flex items-center gap-4 p-4 flex-1 w-full">
+        <font-awesome-icon
+          :icon="['fas', slotProps.message.icon || getSeverityIcon(slotProps.message.severity)]"
+          class="text-2xl"
+        />
         <div class="flex flex-col">
           <span class="font-bold mb-1">{{ slotProps.message.summary }}</span>
           <span class="text-sm">{{ slotProps.message.detail }}</span>
@@ -15,8 +17,11 @@
   <ConfirmDialog>
     <template #message="slotProps">
       <div class="flex items-center gap-4 p-4">
-        <font-awesome-icon v-if="slotProps.message.icon" :icon="['fas', slotProps.message.icon]"
-          class="text-3xl text-red-500" />
+        <font-awesome-icon
+          v-if="slotProps.message.icon"
+          :icon="['fas', slotProps.message.icon]"
+          class="text-3xl text-red-500"
+        />
         <span class="p-confirm-dialog-message">{{ slotProps.message.message }}</span>
       </div>
     </template>
@@ -24,12 +29,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { useAppStore } from '@/stores/app'
 
 const toast = useToast()
+const router = useRouter()
+const appStore = useAppStore()
 
 const getSeverityIcon = (severity: string) => {
   switch (severity) {
@@ -57,11 +65,20 @@ onMounted(() => {
   window.addEventListener('api-error', handleApiError as EventListener)
 
   // Restaurer la session utilisateur si un token existe
-  const appStore = useAppStore()
   if (appStore.token && !appStore.user) {
     appStore.fetchCurrentUser()
   }
 })
+
+// Surveiller le token pour rediriger vers le login s'il est supprimé (déconnexion ou expiration)
+watch(
+  () => appStore.token,
+  (newToken) => {
+    if (!newToken) {
+      router.push('/login')
+    }
+  },
+)
 
 onUnmounted(() => {
   // Nettoyer l'écouteur d'événement

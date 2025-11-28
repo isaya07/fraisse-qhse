@@ -3,15 +3,32 @@
     <div class="grid grid-cols-1 gap-4">
       <div class="field">
         <label for="user" class="block text-sm font-medium text-gray-700 mb-1">Utilisateur *</label>
-        <Select id="user" v-model="form.user_id" :options="users" optionLabel="fullname" optionValue="id"
-          placeholder="Sélectionner un utilisateur" class="w-full" :class="{ 'p-invalid': errors.user_id }" filter />
+        <Select
+          id="user"
+          v-model="form.user_id"
+          :options="users"
+          optionLabel="fullname"
+          optionValue="id"
+          placeholder="Sélectionner un utilisateur"
+          class="w-full"
+          :class="{ 'p-invalid': errors.user_id }"
+          filter
+        />
         <small v-if="errors.user_id" class="text-red-500">{{ errors.user_id }}</small>
       </div>
 
       <div class="field">
-        <label for="assigned_at" class="block text-sm font-medium text-gray-700 mb-1">Date d'affectation *</label>
-        <DatePicker id="assigned_at" v-model="form.assigned_at" showTime dateFormat="dd/mm/yy" class="w-full"
-          :class="{ 'p-invalid': errors.assigned_at }" />
+        <label for="assigned_at" class="block text-sm font-medium text-gray-700 mb-1"
+          >Date d'affectation *</label
+        >
+        <DatePicker
+          id="assigned_at"
+          v-model="form.assigned_at"
+          showTime
+          dateFormat="dd/mm/yy"
+          class="w-full"
+          :class="{ 'p-invalid': errors.assigned_at }"
+        />
         <small v-if="errors.assigned_at" class="text-red-500">{{ errors.assigned_at }}</small>
       </div>
 
@@ -22,7 +39,13 @@
     </div>
 
     <div class="flex justify-end gap-2 mt-6">
-      <Button label="Annuler" icon="pi pi-times" severity="secondary" text @click="$emit('cancel')" />
+      <Button
+        label="Annuler"
+        icon="pi pi-times"
+        severity="secondary"
+        text
+        @click="$emit('cancel')"
+      />
       <Button label="Affecter" icon="pi pi-check" @click="save" :loading="store.loading" />
     </div>
   </div>
