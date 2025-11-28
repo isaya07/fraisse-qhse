@@ -197,6 +197,19 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 
+// Define types for Chart.js datasets
+interface ChartDataset {
+  label: string;
+  data: number[];
+  fill: boolean;
+  borderColor: string;
+  backgroundColor?: string;
+  tension: number;
+  borderDash?: number[];
+  pointRadius?: number;
+  borderWidth?: number;
+}
+
 const route = useRoute()
 const router = useRouter()
 const store = useIndicatorStore()
@@ -231,7 +244,7 @@ const chartData = computed(() => {
   const data = sortedValues.map((v) => v.value)
   const target = indicator.value.target_value
 
-  const datasets = [
+  const datasets: ChartDataset[] = [
     {
       label: 'Valeur',
       data: data,
@@ -239,6 +252,7 @@ const chartData = computed(() => {
       borderColor: '#3B82F6',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       tension: 0.4,
+      borderWidth: 1,
     },
   ]
 
@@ -252,7 +266,7 @@ const chartData = computed(() => {
       tension: 0,
       pointRadius: 0,
       borderWidth: 2,
-    } as any)
+    })
   }
 
   const thresholdMin = indicator.value.threshold_min
@@ -266,7 +280,7 @@ const chartData = computed(() => {
       tension: 0,
       pointRadius: 0,
       borderWidth: 1,
-    } as any)
+    })
   }
 
   const thresholdMax = indicator.value.threshold_max
@@ -280,7 +294,7 @@ const chartData = computed(() => {
       tension: 0,
       pointRadius: 0,
       borderWidth: 1,
-    } as any)
+    })
   }
 
   return {
@@ -305,9 +319,12 @@ const chartOptions = {
 
 const loadData = async () => {
   const paramId = route.params.id
-  const id = parseInt(Array.isArray(paramId) ? paramId[0] : paramId || '')
-  if (id) {
-    await store.fetchIndicatorById(id)
+  const idString = Array.isArray(paramId) ? paramId[0] : paramId
+  if (idString) {
+    const id = parseInt(idString as string)
+    if (!isNaN(id)) {
+      await store.fetchIndicatorById(id)
+    }
   }
 }
 
@@ -326,9 +343,17 @@ const submitValue = async () => {
   submitting.value = true
   try {
     const paramId = route.params.id
-    const id = parseInt(Array.isArray(paramId) ? paramId[0] : paramId || '')
+    const idString = Array.isArray(paramId) ? paramId[0] : paramId
+    if (!idString) {
+      throw new Error("ID de l'indicateur manquant")
+    }
+    const id = parseInt(idString as string)
+    if (isNaN(id)) {
+      throw new Error("ID de l'indicateur invalide")
+    }
+    
     // Format date as YYYY-MM-DD for backend
-    const dateStr = newValue.value.date.toISOString().split('T')[0]
+    const dateStr = newValue.value.date.toISOString().split('T')[0] as string
 
     await store.addIndicatorValue(id, {
       value: newValue.value.value,
@@ -351,6 +376,7 @@ const submitValue = async () => {
       comment: '',
     }
   } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',

@@ -13,6 +13,21 @@ export interface User {
   password?: string
 }
 
+export interface DocumentVersion {
+  id: number
+  document_id: number
+  version: string
+  filename: string
+  filepath: string
+  file_size?: number | null
+  mime_type?: string | null
+  changelog?: string | null
+  created_by?: number | null
+  created_at: string
+  updated_at: string
+  creator?: User
+}
+
 export interface Document {
   id: number
   title: string
@@ -111,7 +126,7 @@ export interface Indicator {
   calculation_method?: string
   data_source?: string
   frequency: string
-  trend_direction: string
+ trend_direction: string
   created_by: number
   is_active: boolean
   created: string
@@ -128,8 +143,8 @@ export interface PaginatedResponse<T> {
   current_page: number
   per_page: number
   last_page: number
-  from: number
-  to: number
+ from: number
+ to: number
 }
 
 // Fonction de vérification de type pour déterminer si une réponse est paginée

@@ -144,6 +144,7 @@ const save = async () => {
     date: format(form.value.date!, 'yyyy-MM-dd'),
     auditor_id: form.value.auditor_id || undefined,
     score: form.value.score || undefined,
+    status: form.value.status as 'planned' | 'completed' | 'cancelled' | undefined,
   }
 
   try {
@@ -156,10 +157,7 @@ const save = async () => {
         life: 3000,
       })
     } else {
-      // Create expects Omit<SafetyVisit, 'id' | ...> but our store action might take Partial or similar.
-      // Actually store.createVisit takes Omit<SafetyVisit, 'id' | 'created_at' | 'updated_at' | 'auditor'>
-      // Let's cast to any to avoid strict type checking blocking the fix for now, or better, match the type.
-      await store.createVisit(data as any)
+      await store.createVisit(data)
       toast.add({ severity: 'success', summary: 'Succès', detail: 'Visite créée', life: 3000 })
     }
     emit('save')

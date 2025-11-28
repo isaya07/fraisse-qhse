@@ -46,6 +46,7 @@ export const useApi = () => {
           data = await response.json()
         } catch (e) {
           // Fallback for empty responses or non-JSON text
+          console.log(e)
           data = null
         }
       }

@@ -299,9 +299,9 @@ const handleSubmit = () => {
   if (validate()) {
     // Formater la date pour l'envoi
     const dataToSend = { ...formData.value }
-    const formattedData: ActionFormDataForApi = { ...dataToSend } as any
+    const formattedData: ActionFormDataForApi = { ...dataToSend } as ActionFormDataForApi
     if (dataToSend.due_date instanceof Date) {
-      formattedData.due_date = dataToSend.due_date.toISOString().split('T')[0]
+      formattedData.due_date = dataToSend.due_date.toISOString().split('T')[0] as string | null
     } else {
       formattedData.due_date = null
     }

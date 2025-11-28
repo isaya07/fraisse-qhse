@@ -19,7 +19,7 @@ class IndicatorFactory extends Factory
         return [
             'name' => fake()->sentence(3),
             'code' => fake()->unique()->lexify('IND-?????'),
-            'category' => fake()->optional()->randomElement(['safety', 'quality', 'environment', 'compliance']),
+            'indicator_category_id' => null, // Will be set via relationship
             'unit' => fake()->randomElement(['%', 'hours', 'incidents', 'score']),
             'target_value' => fake()->randomFloat(2, 80, 100),
             'threshold_min' => fake()->randomFloat(2, 70, 80),

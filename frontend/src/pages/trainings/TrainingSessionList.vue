@@ -240,7 +240,7 @@ const saveSession = async () => {
 
   try {
     if (editingSession.value) {
-      await store.updateSession(editingSession.value.id, payload)
+      await store.updateSession(editingSession.value.id, payload as TrainingSession)
       toast.add({
         severity: 'success',
         summary: 'Succès',
@@ -248,11 +248,12 @@ const saveSession = async () => {
         life: 3000,
       })
     } else {
-      await store.createSession(payload)
+      await store.createSession(payload as TrainingSession)
       toast.add({ severity: 'success', summary: 'Succès', detail: 'Session créée', life: 3000 })
     }
     closeSessionDialog()
   } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',

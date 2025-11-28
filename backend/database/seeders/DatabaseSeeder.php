@@ -21,7 +21,9 @@ class DatabaseSeeder extends Seeder
             IndicatorSeeder::class,
             IndicatorValueSeeder::class,
             DocumentSeeder::class,
+            ActionTypeSeeder::class,
             ActionSeeder::class,
+            EquipmentCategorySeeder::Class,
         ]);
     }
 }

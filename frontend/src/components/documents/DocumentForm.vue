@@ -8,25 +8,37 @@
         <div class="flex items-start">
           <font-awesome-icon :icon="['fas', 'info-circle']" class="text-blue-500 mt-1 mr-2" />
           <p class="text-sm text-blue-700 m-0">
-            Pour modifier le fichier ou créer une nouvelle version, veuillez utiliser le bouton <strong>"Nouvelle
-              Version"</strong> sur la page de détail du document.
+            Pour modifier le fichier ou créer une nouvelle version, veuillez utiliser le bouton
+            <strong>"Nouvelle Version"</strong> sur la page de détail du document.
           </p>
         </div>
       </div>
 
-      <FileUpload v-if="!isEditMode" name="file" :auto="true" :customUpload="true" @uploader="onFileSelect"
+      <FileUpload
+        v-if="!isEditMode"
+        name="file"
+        :auto="true"
+        :customUpload="true"
+        @uploader="onFileSelect"
         :maxFileSize="10000000"
-        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png">
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png"
+      >
         <template #empty>
           <div class="flex items-center justify-center flex-col">
-            <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" class="text-6xl text-gray-300 mb-4" />
+            <font-awesome-icon
+              :icon="['fas', 'cloud-upload-alt']"
+              class="text-6xl text-gray-300 mb-4"
+            />
             <p class="mt-4 mb-0">Glisser-déposer le fichier ici pour le télécharger.</p>
           </div>
         </template>
       </FileUpload>
 
       <!-- Display selected file separately -->
-      <div v-if="selectedFile" class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+      <div
+        v-if="selectedFile"
+        class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded"
+      >
         <font-awesome-icon :icon="['fas', 'check-circle']" class="text-green-500" />
         <span class="font-semibold">{{ selectedFile.name }}</span>
         <span>({{ formatFileSize(selectedFile.size) }})</span>
@@ -43,53 +55,93 @@
       <!-- Titre -->
       <div class="field">
         <label for="title" class="block text-sm font-medium mb-2 text-gray-700">Titre *</label>
-        <InputText id="title" v-model="formData.title" placeholder="Titre du document" class="w-full"
-          :class="{ 'p-invalid': errors.title }" />
+        <InputText
+          id="title"
+          v-model="formData.title"
+          placeholder="Titre du document"
+          class="w-full"
+          :class="{ 'p-invalid': errors.title }"
+        />
         <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
       </div>
 
       <!-- Version -->
       <div class="field">
         <label for="version" class="block text-sm font-medium mb-2 text-gray-700">Version *</label>
-        <InputText id="version" v-model="formData.version" placeholder="1.0" class="w-full"
-          :class="{ 'p-invalid': errors.version }" :disabled="isEditMode" />
+        <InputText
+          id="version"
+          v-model="formData.version"
+          placeholder="1.0"
+          class="w-full"
+          :class="{ 'p-invalid': errors.version }"
+          :disabled="isEditMode"
+        />
         <small v-if="errors.version" class="text-red-500">{{ errors.version }}</small>
       </div>
 
       <!-- Dossier -->
       <div class="field">
         <label for="folder" class="block text-sm font-medium mb-2 text-gray-700">Dossier</label>
-        <TreeSelect :modelValue="formData.document_folder_id" @update:modelValue="onFolderChange"
-          :options="folderOptions" placeholder="Sélectionnez un dossier" class="w-full"
-          :class="{ 'p-invalid': errors.document_folder_id }" />
+        <TreeSelect
+          :modelValue="formData.document_folder_id"
+          @update:modelValue="onFolderChange"
+          :options="folderOptions"
+          placeholder="Sélectionnez un dossier"
+          class="w-full"
+          :class="{ 'p-invalid': errors.document_folder_id }"
+        />
         <small v-if="errors.document_folder_id" class="text-red-500">{{
           errors.document_folder_id
-          }}</small>
+        }}</small>
       </div>
 
       <!-- Type de document (Catégorie) -->
       <div class="field">
-        <label for="category" class="block text-sm font-medium mb-2 text-gray-700">Type de document *</label>
-        <Dropdown id="category" v-model="formData.category" :options="categoryOptions" optionLabel="text"
-          optionValue="value" placeholder="Sélectionnez un type" class="w-full"
-          :class="{ 'p-invalid': errors.category }" />
+        <label for="category" class="block text-sm font-medium mb-2 text-gray-700"
+          >Type de document *</label
+        >
+        <Dropdown
+          id="category"
+          v-model="formData.category"
+          :options="categoryOptions"
+          optionLabel="text"
+          optionValue="value"
+          placeholder="Sélectionnez un type"
+          class="w-full"
+          :class="{ 'p-invalid': errors.category }"
+        />
         <small v-if="errors.category" class="text-red-500">{{ errors.category }}</small>
       </div>
 
       <!-- Statut -->
       <div class="field">
         <label for="status" class="block text-sm font-medium mb-2 text-gray-700">Statut *</label>
-        <Dropdown id="status" v-model="formData.status" :options="statusOptions" optionLabel="text" optionValue="value"
-          placeholder="Sélectionnez un statut" class="w-full" :class="{ 'p-invalid': errors.status }" />
+        <Dropdown
+          id="status"
+          v-model="formData.status"
+          :options="statusOptions"
+          optionLabel="text"
+          optionValue="value"
+          placeholder="Sélectionnez un statut"
+          class="w-full"
+          :class="{ 'p-invalid': errors.status }"
+        />
         <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
       </div>
     </div>
 
     <!-- Description -->
     <div class="field">
-      <label for="description" class="block text-sm font-medium mb-2 text-gray-700">Description</label>
-      <Textarea id="description" v-model="formData.description" placeholder="Description du document" rows="4"
-        class="w-full" />
+      <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
+        >Description</label
+      >
+      <Textarea
+        id="description"
+        v-model="formData.description"
+        placeholder="Description du document"
+        rows="4"
+        class="w-full"
+      />
     </div>
 
     <!-- Actions -->
@@ -115,13 +167,13 @@ import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
-import FileUpload from 'primevue/fileupload'
+import FileUpload, { type FileUploadUploaderEvent } from 'primevue/fileupload'
 import TreeSelect from 'primevue/treeselect'
-import { useDocumentFolderStore } from '@/stores/documentFolders'
+import { useDocumentFolderStore, type DocumentFolder } from '@/stores/documentFolders'
 import type { DocumentFormData } from '@/stores/documents'
+import type { TreeNode } from 'primevue/treenode'
 
 // Types
-
 interface Props {
   initialData?: Partial<DocumentFormData>
   submitButtonText?: string
@@ -176,9 +228,9 @@ const schema = z.object({
 })
 
 // Options
-const folderOptions = computed(() => {
-  const mapFolderToNode = (folder: any): any => ({
-    key: folder.id,
+const folderOptions = computed<TreeNode[]>(() => {
+ const mapFolderToNode = (folder: DocumentFolder): TreeNode => ({
+    key: folder.id.toString(),
     label: folder.name,
     data: folder.id,
     children: folder.children ? folder.children.map(mapFolderToNode) : [],
@@ -202,8 +254,8 @@ const statusOptions = [
 ]
 
 // Méthodes
-const onFileSelect = (event: any) => {
-  const file = event.files[0]
+const onFileSelect = (event: FileUploadUploaderEvent) => {
+  const file = Array.isArray(event.files) ? event.files[0] : event.files
   if (file) {
     selectedFile.value = file
     delete errors.file
@@ -214,12 +266,15 @@ const clearFile = () => {
   selectedFile.value = undefined
 }
 
-const onFolderChange = (value: any) => {
+const onFolderChange = (value: number | Record<string, boolean> | null) => {
   if (value && typeof value === 'object') {
     // PrimeVue TreeSelect might return { "key": true }
     const keys = Object.keys(value)
     if (keys.length > 0) {
-      formData.document_folder_id = parseInt(keys[0])
+      const key = keys[0]
+      if (key) {
+        formData.document_folder_id = parseInt(key)
+      }
     } else {
       formData.document_folder_id = null
     }
@@ -281,8 +336,6 @@ watch(
   },
   { deep: true },
 )
-
-
 
 onMounted(() => {
   folderStore.fetchFolders()

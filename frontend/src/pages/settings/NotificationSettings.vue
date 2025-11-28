@@ -26,7 +26,7 @@
           timeOnly
           inputId="email_time"
         >
-          <template #inputicon="slotProps">
+          <template #inputicon>
             <font-awesome-icon :icon="['fas', 'clock']" />
           </template>
         </DatePicker>
@@ -139,6 +139,7 @@ import { useToast } from 'primevue/usetoast'
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
+import DatePicker from 'primevue/datepicker'
 
 const store = useNotificationStore()
 const toast = useToast()
@@ -146,7 +147,7 @@ const toast = useToast()
 const loading = ref(false)
 const form = ref({
   email_enabled: true,
-  email_time: '08:00',
+  email_time: new Date(0, 0, 0, 8, 0, 0), // 8:00 AM as Date object for time picker
   alert_thresholds: {
     action: 3,
     equipment: 7,
@@ -159,9 +160,11 @@ const form = ref({
 onMounted(async () => {
   await store.fetchSettings()
   if (store.settings) {
+    // Convert time string to Date object for the time picker
+    const [hours, minutes] = store.settings.email_time.split(':').map(Number);
     form.value = {
       email_enabled: store.settings.email_enabled,
-      email_time: store.settings.email_time.substring(0, 5), // HH:mm
+      email_time: new Date(0, 0, 0, hours, minutes, 0), // Date object with time
       alert_thresholds: {
         action: store.settings.alert_thresholds.action ?? 3,
         equipment: store.settings.alert_thresholds.equipment ?? 7,
@@ -176,9 +179,14 @@ onMounted(async () => {
 const save = async () => {
   loading.value = true
   try {
+    // Convert Date object back to time string in HH:mm:ss format
+    const timeString = form.value.email_time instanceof Date
+      ? `${String(form.value.email_time.getHours()).padStart(2, '0')}:${String(form.value.email_time.getMinutes()).padStart(2, '0')}:00`
+      : form.value.email_time;
+      
     await store.updateSettings({
       email_enabled: form.value.email_enabled,
-      email_time: form.value.email_time + ':00',
+      email_time: timeString,
       alert_thresholds: form.value.alert_thresholds,
     })
     toast.add({
@@ -188,6 +196,7 @@ const save = async () => {
       life: 3000,
     })
   } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',

@@ -93,7 +93,7 @@
               >
                 <div class="flex items-center gap-2 overflow-hidden">
                   <font-awesome-icon icon="file" class="text-gray-400" />
-                  <span class="truncate text-sm">{{ doc.name }}</span>
+                  <span class="truncate text-sm">{{ doc.title }}</span>
                 </div>
                 <Button text rounded size="small" severity="secondary">
                   <template #icon>
@@ -136,9 +136,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTrainingStore } from '@/stores/training'
+import { useTrainingStore, type TrainingParticipationStatus } from '@/stores/training'
 import { useUserStore } from '@/stores/users'
 import ParticipantManager from '@/components/trainings/ParticipantManager.vue'
 import Card from 'primevue/card'
@@ -212,20 +212,21 @@ const addParticipant = async (data: { user_id: number; status: string }) => {
     await store.addParticipant({
       training_session_id: session.value?.id,
       user_id: data.user_id,
-      status: data.status as any,
+      status: data.status as TrainingParticipationStatus ,
     })
     toast.add({ severity: 'success', summary: 'Succès', detail: 'Participant ajouté', life: 3000 })
-  } catch (e: any) {
+  } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',
-      detail: e.message || "Erreur lors de l'ajout",
+      detail: "Erreur lors de l'ajout",
       life: 3000,
     })
   }
 }
 
-const updateParticipant = async (data: any) => {
+const updateParticipant = async (data: { id: number; status: TrainingParticipationStatus; obtained_date?: string; expiration_date?: string }) => {
   try {
     await store.updateParticipant(data.id, {
       status: data.status,
@@ -238,7 +239,8 @@ const updateParticipant = async (data: any) => {
       detail: 'Participant mis à jour',
       life: 3000,
     })
-  } catch (e: any) {
+  } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',
@@ -253,7 +255,8 @@ const removeParticipant = async (id: number) => {
   try {
     await store.removeParticipant(id, session.value.id)
     toast.add({ severity: 'success', summary: 'Succès', detail: 'Participant retiré', life: 3000 })
-  } catch (e: any) {
+  } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',

@@ -259,7 +259,8 @@ const onProfileSubmit = async ({ valid, values }: FormSubmitEvent) => {
       life: 3000,
       icon: 'check',
     })
-  } catch (error: unknown) {
+  } catch (e) {
+    console.log(e)
     toast.add({
       severity: 'error',
       summary: 'Erreur',
@@ -272,15 +273,12 @@ const onProfileSubmit = async ({ valid, values }: FormSubmitEvent) => {
   }
 }
 
-const onPasswordSubmit = async ({
-  valid,
-  values,
-}: {
-  valid: boolean
-  values: PasswordFormValues
-}) => {
+const onPasswordSubmit = async ({ valid, values }: FormSubmitEvent) => {
   if (!valid || !currentUser.value) return
 
+  // Cast the values to the correct type
+  const passwordValues = values as unknown as PasswordFormValues
+  
   passwordLoading.value = true
   try {
     // Note: Il faudrait idéalement un endpoint spécifique pour changer le mot de passe
@@ -290,7 +288,7 @@ const onPasswordSubmit = async ({
 
     // En attendant, on simule ou on envoie juste le nouveau password si l'admin/user a le droit
     await userStore.updateUser(currentUser.value.id, {
-      password: values.new_password,
+      password: passwordValues.new_password,
     })
 
     toast.add({

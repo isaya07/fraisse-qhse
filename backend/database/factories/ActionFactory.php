@@ -18,7 +18,7 @@ class ActionFactory extends Factory
     {
         return [
             'title' => fake()->sentence(4),
-            'type' => fake()->randomElement(['corrective', 'preventive', 'improvement']),
+            'action_type_id' => null, // Will be set via relationship
             'priority' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
             'status' => fake()->randomElement(['open', 'in_progress', 'completed', 'cancelled']),
             'assigned_to' => null, // Will be set via relationship

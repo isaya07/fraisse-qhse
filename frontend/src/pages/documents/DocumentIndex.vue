@@ -34,18 +34,32 @@
             </div>
           </template>
           <template #content>
-            <DataTable ref="dt" :value="documents" lazy :paginator="true" :rows="itemsPerPage"
-              :totalRecords="totalRecords" :loading="loading" @page="onPage"
+            <DataTable
+              ref="dt"
+              :value="documents"
+              lazy
+              :paginator="true"
+              :rows="itemsPerPage"
+              :totalRecords="totalRecords"
+              :loading="loading"
+              @page="onPage"
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              :rowsPerPageOptions="[10, 25, 50]" currentPageReportTemplate="{first} - {last} / {totalRecords}"
-              class="p-datatable-sm" scrollable scrollHeight="flex">
+              :rowsPerPageOptions="[10, 25, 50]"
+              currentPageReportTemplate="{first} - {last} / {totalRecords}"
+              class="p-datatable-sm"
+              scrollable
+              scrollHeight="flex"
+            >
               <template #empty> Aucun document trouvé. </template>
 
               <Column field="title" header="Nom" sortable style="min-width: 200px">
                 <template #body="{ data }">
                   <div class="flex items-center gap-2">
-                    <font-awesome-icon :icon="getFileIcon(data.filename)" class="text-xl"
-                      :class="getFileIconColor(data.filename)" />
+                    <font-awesome-icon
+                      :icon="getFileIcon(data.filename)"
+                      class="text-xl"
+                      :class="getFileIconColor(data.filename)"
+                    />
                     <div class="flex flex-col">
                       <span class="font-medium">{{ data.title }}</span>
                       <span class="text-xs text-gray-500">{{ data.filename }}</span>
@@ -56,7 +70,10 @@
 
               <Column field="category" header="Type" sortable style="width: 120px">
                 <template #body="{ data }">
-                  <Tag :value="getCategoryLabel(data.category)" :severity="getCategorySeverity(data.category)" />
+                  <Tag
+                    :value="getCategoryLabel(data.category)"
+                    :severity="getCategorySeverity(data.category)"
+                  />
                 </template>
               </Column>
 
@@ -68,7 +85,10 @@
 
               <Column field="status" header="Statut" style="width: 100px">
                 <template #body="{ data }">
-                  <Tag :value="getStatusLabel(data.status)" :severity="getStatusSeverity(data.status)" />
+                  <Tag
+                    :value="getStatusLabel(data.status)"
+                    :severity="getStatusSeverity(data.status)"
+                  />
                 </template>
               </Column>
 
@@ -81,26 +101,50 @@
               <Column header="Actions" :exportable="false" style="width: 100px">
                 <template #body="{ data }">
                   <div class="flex gap-1">
-                    <Button text rounded severity="secondary" size="small" @click="downloadDocument(data)"
-                      v-tooltip.top="'Télécharger'">
+                    <Button
+                      text
+                      rounded
+                      severity="secondary"
+                      size="small"
+                      @click="downloadDocument(data)"
+                      v-tooltip.top="'Télécharger'"
+                    >
                       <template #icon>
                         <font-awesome-icon icon="download" />
                       </template>
                     </Button>
-                    <Button text rounded severity="info" size="small" @click="viewDocument(data.id)"
-                      v-tooltip.top="'Voir'">
+                    <Button
+                      text
+                      rounded
+                      severity="info"
+                      size="small"
+                      @click="viewDocument(data.id)"
+                      v-tooltip.top="'Voir'"
+                    >
                       <template #icon>
                         <font-awesome-icon icon="eye" />
                       </template>
                     </Button>
-                    <Button text rounded severity="success" size="small" @click="editDocument(data.id)"
-                      v-tooltip.top="'Modifier'">
+                    <Button
+                      text
+                      rounded
+                      severity="success"
+                      size="small"
+                      @click="editDocument(data.id)"
+                      v-tooltip.top="'Modifier'"
+                    >
                       <template #icon>
                         <font-awesome-icon icon="pen" />
                       </template>
                     </Button>
-                    <Button text rounded severity="danger" size="small" @click="confirmDelete(data)"
-                      v-tooltip.top="'Supprimer'">
+                    <Button
+                      text
+                      rounded
+                      severity="danger"
+                      size="small"
+                      @click="confirmDelete(data)"
+                      v-tooltip.top="'Supprimer'"
+                    >
                       <template #icon>
                         <font-awesome-icon icon="trash" />
                       </template>

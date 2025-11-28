@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Document, PaginatedResponse } from './app'
+import type { Document, DocumentVersion, PaginatedResponse } from './app'
 import { useApi } from '@/composables/useApi'
 import { isPaginatedResponse } from './app'
 
@@ -306,6 +306,7 @@ export const useDocumentStore = defineStore('document', {
           document.body.removeChild(link)
           window.URL.revokeObjectURL(url)
         } else {
+          console.log(response)
           throw new Error(response.error || 'Failed to download document')
         }
       } catch (error) {
@@ -317,7 +318,7 @@ export const useDocumentStore = defineStore('document', {
     async fetchVersions(id: number) {
       try {
         const { get } = useApi()
-        const response = await get<any[]>(`/documents/${id}/versions`)
+        const response = await get<DocumentVersion[]>(`/documents/${id}/versions`)
         if (response.success && response.data) {
           return response.data
         }

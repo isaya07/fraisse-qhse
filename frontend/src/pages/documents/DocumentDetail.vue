@@ -13,7 +13,10 @@
             <font-awesome-icon :icon="getFileIcon(document.filename)" />
             <span>{{ document.filename }}</span>
             <span class="mx-2">|</span>
-            <Tag :value="getStatusLabel(document.status)" :severity="getStatusSeverity(document.status)" />
+            <Tag
+              :value="getStatusLabel(document.status)"
+              :severity="getStatusSeverity(document.status)"
+            />
           </div>
         </div>
       </div>
@@ -37,8 +40,12 @@
     </div>
 
     <div class="flex justify-end gap-2 mb-6" v-if="document">
-      <Button v-if="document.status === 'draft' || document.status === 'rejected'" label="Demander approbation"
-        severity="help" @click="requestApproval">
+      <Button
+        v-if="document.status === 'draft' || document.status === 'rejected'"
+        label="Demander approbation"
+        severity="help"
+        @click="requestApproval"
+      >
         <template #icon>
           <font-awesome-icon icon="paper-plane" class="mr-2" />
         </template>
@@ -67,7 +74,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <span class="block text-sm text-gray-500">Type</span>
-                <Tag :value="getCategoryLabel(document.category)" :severity="getCategorySeverity(document.category)" />
+                <Tag
+                  :value="getCategoryLabel(document.category)"
+                  :severity="getCategorySeverity(document.category)"
+                />
               </div>
               <div>
                 <span class="block text-sm text-gray-500">Version</span>
@@ -75,7 +85,9 @@
               </div>
               <div>
                 <span class="block text-sm text-gray-500">Créé par</span>
-                <span class="font-medium">{{ document.creator?.first_name }} {{ document.creator?.last_name }}</span>
+                <span class="font-medium"
+                  >{{ document.creator?.first_name }} {{ document.creator?.last_name }}</span
+                >
               </div>
               <div>
                 <span class="block text-sm text-gray-500">Date de création</span>

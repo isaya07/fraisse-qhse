@@ -211,7 +211,7 @@ const viewAllNotifications = () => {
   router.push('/notifications')
 }
 
-let pollingInterval: number | null = null
+let pollingInterval: number | null | ReturnType<typeof setInterval> = null
 
 onMounted(() => {
   if (currentUser.value) {
