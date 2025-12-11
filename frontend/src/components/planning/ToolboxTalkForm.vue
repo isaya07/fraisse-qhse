@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 gap-4">
     <div class="field">
-      <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+      <label for="date" class="block text-sm font-medium text-color-secondary mb-1">Date *</label>
       <DatePicker
         id="date"
         v-model="form.date"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="field">
-      <label for="topic" class="block text-sm font-medium text-gray-700 mb-1">Sujet *</label>
+      <label for="topic" class="block text-sm font-medium text-color-secondary mb-1">Sujet *</label>
       <InputText
         id="topic"
         v-model="form.topic"
@@ -24,7 +24,7 @@
     </div>
 
     <div class="field">
-      <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Lieu *</label>
+      <label for="location" class="block text-sm font-medium text-color-secondary mb-1">Lieu *</label>
       <InputText
         id="location"
         v-model="form.location"
@@ -35,7 +35,7 @@
     </div>
 
     <div class="field">
-      <label for="instructor" class="block text-sm font-medium text-gray-700 mb-1"
+      <label for="instructor" class="block text-sm font-medium text-color-secondary mb-1"
         >Animateur *</label
       >
       <Select
@@ -53,7 +53,7 @@
     </div>
 
     <div class="field">
-      <label for="attendees" class="block text-sm font-medium text-gray-700 mb-1"
+      <label for="attendees" class="block text-sm font-medium text-color-secondary mb-1"
         >Participants</label
       >
       <MultiSelect

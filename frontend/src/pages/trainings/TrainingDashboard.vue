@@ -26,11 +26,11 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-gray-500 text-sm font-medium mb-1">Sessions à venir</span>
-              <span class="text-3xl font-bold">{{ upcomingSessionsCount }}</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1">Sessions à venir</span>
+              <span class="text-3xl font-bold text-color">{{ upcomingSessionsCount }}</span>
             </div>
             <div
-              class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"
+              class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400"
             >
               <font-awesome-icon icon="calendar-alt" size="lg" />
             </div>
@@ -42,11 +42,11 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-gray-500 text-sm font-medium mb-1">Formations actives</span>
-              <span class="text-3xl font-bold">{{ activeTrainingsCount }}</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1">Formations actives</span>
+              <span class="text-3xl font-bold text-color">{{ activeTrainingsCount }}</span>
             </div>
             <div
-              class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600"
+              class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400"
             >
               <font-awesome-icon icon="book-open" size="lg" />
             </div>
@@ -58,11 +58,11 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-gray-500 text-sm font-medium mb-1">Participants ce mois</span>
-              <span class="text-3xl font-bold">{{ participantsThisMonth }}</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1">Participants ce mois</span>
+              <span class="text-3xl font-bold text-color">{{ participantsThisMonth }}</span>
             </div>
             <div
-              class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"
+              class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400"
             >
               <font-awesome-icon icon="users" size="lg" />
             </div>
@@ -74,11 +74,11 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-gray-500 text-sm font-medium mb-1">Renouvellements</span>
-              <span class="text-3xl font-bold">{{ renewalsNeeded.length }}</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1">Renouvellements</span>
+              <span class="text-3xl font-bold text-color">{{ renewalsNeeded.length }}</span>
             </div>
             <div
-              class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"
+              class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400"
             >
               <font-awesome-icon icon="clock" size="lg" />
             </div>
@@ -112,8 +112,8 @@
           <template #content>
             <div class="flex items-start justify-between">
               <div>
-                <span class="block font-semibold text-gray-800">{{ renewal.training?.title }}</span>
-                <span class="block text-sm text-gray-600 mt-1">
+                <span class="block font-semibold text-color">{{ renewal.training?.title }}</span>
+                <span class="block text-sm text-color-secondary mt-1">
                   {{ renewal.user?.first_name }} {{ renewal.user?.last_name }}
                 </span>
                 <div class="mt-2 flex items-center gap-2 text-sm">
@@ -146,10 +146,10 @@
       <Card v-else>
         <template #content>
           <font-awesome-icon icon="check-circle" class="text-green-500 text-3xl mb-3" />
-          <p class="text-gray-500 font-medium">
+          <p class="text-color font-medium">
             Aucun renouvellement à prévoir pour les 3 prochains mois.
           </p>
-          <p class="text-gray-500 text-sm mt-1">Tout est à jour !</p>
+          <p class="text-color-secondary text-sm mt-1">Tout est à jour !</p>
         </template>
       </Card>
     </div>

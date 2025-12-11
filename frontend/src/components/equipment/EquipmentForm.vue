@@ -3,7 +3,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Basic Info -->
       <div class="field">
-        <label for="name" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="name" class="block text-sm font-medium text-color-secondary mb-1"
           >Nom de l'équipement *</label
         >
         <InputText
@@ -16,7 +16,7 @@
       </div>
 
       <div class="field">
-        <label for="category" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="category" class="block text-sm font-medium text-color-secondary mb-1"
           >Catégorie *</label
         >
         <Select
@@ -33,7 +33,7 @@
       </div>
 
       <div class="field">
-        <label for="serial_number" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="serial_number" class="block text-sm font-medium text-color-secondary mb-1"
           >Numéro de série *</label
         >
         <InputText
@@ -46,25 +46,25 @@
       </div>
 
       <div class="field">
-        <label for="internal_ref" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="internal_ref" class="block text-sm font-medium text-color-secondary mb-1"
           >Référence interne</label
         >
         <InputText id="internal_ref" v-model="form.internal_ref" class="w-full" />
       </div>
 
       <div class="field">
-        <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Marque</label>
+        <label for="brand" class="block text-sm font-medium text-color-secondary mb-1">Marque</label>
         <InputText id="brand" v-model="form.brand" class="w-full" />
       </div>
 
       <div class="field">
-        <label for="model" class="block text-sm font-medium text-gray-700 mb-1">Modèle</label>
+        <label for="model" class="block text-sm font-medium text-color-secondary mb-1">Modèle</label>
         <InputText id="model" v-model="form.model" class="w-full" />
       </div>
 
       <!-- Dates & Status -->
       <div class="field">
-        <label for="purchase_date" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="purchase_date" class="block text-sm font-medium text-color-secondary mb-1"
           >Date d'achat *</label
         >
         <DatePicker
@@ -78,7 +78,7 @@
       </div>
 
       <div class="field">
-        <label for="expiration_date" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="expiration_date" class="block text-sm font-medium text-color-secondary mb-1"
           >Date d'expiration</label
         >
         <DatePicker
@@ -92,7 +92,7 @@
       <div class="field">
         <label
           for="maintenance_frequency_months"
-          class="block text-sm font-medium text-gray-700 mb-1"
+          class="block text-sm font-medium text-color-secondary mb-1"
           >Fréquence de contrôle (mois)</label
         >
         <InputNumber
@@ -105,7 +105,7 @@
       </div>
 
       <div class="field">
-        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
+        <label for="status" class="block text-sm font-medium text-color-secondary mb-1">Statut *</label>
         <Select
           id="status"
           v-model="form.status"
@@ -118,7 +118,7 @@
       </div>
 
       <div class="field">
-        <label for="location" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="location" class="block text-sm font-medium text-color-secondary mb-1"
           >Localisation *</label
         >
         <Select
@@ -133,7 +133,7 @@
       </div>
 
       <div class="field col-span-1 md:col-span-2">
-        <label for="image_path" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="image_path" class="block text-sm font-medium text-color-secondary mb-1"
           >URL Image</label
         >
         <InputText

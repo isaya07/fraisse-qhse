@@ -17,7 +17,7 @@ class Document extends Model
         'file_size',
         'mime_type',
         'version',
-        'category', // String for Type
+        'category_id',
         'document_folder_id',
         'status',
         'created_by',
@@ -51,5 +51,10 @@ class Document extends Model
     public function actions()
     {
         return $this->belongsToMany(Action::class, 'action_documents');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

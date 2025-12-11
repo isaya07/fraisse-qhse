@@ -247,5 +247,56 @@ export const useIndicatorStore = defineStore('indicator', {
         this.loading = false
       }
     },
+    async updateIndicatorValue(
+      id: number,
+      valueId: number,
+      data: { value: number; date: string; comment?: string },
+    ) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { put } = useApi()
+        const response = await put<IndicatorValue>(`/indicator-values/${valueId}`, data)
+
+        if (response.success && response.data) {
+          // Refresh indicator to update everything properly
+          await this.fetchIndicatorById(id)
+        } else {
+          this.error = response.error || 'Failed to update indicator value'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while updating indicator value'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteIndicatorValue(id: number, valueId: number) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { del } = useApi()
+        const response = await del(`/indicator-values/${valueId}`)
+
+        if (response.success) {
+          // Refresh indicator
+          await this.fetchIndicatorById(id)
+        } else {
+          this.error = response.error || 'Failed to delete indicator value'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while deleting indicator value'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
   },
 })

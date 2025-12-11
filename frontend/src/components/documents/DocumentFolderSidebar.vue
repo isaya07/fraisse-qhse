@@ -2,7 +2,7 @@
   <Card class="h-full">
     <template #title>
       <div class="flex justify-between items-center px-4 py-2">
-        <h4>Dossiers</h4>
+        <h4 class="text-color m-0">Dossiers</h4>
         <div class="flex gap-1">
           <Button
             text
@@ -43,8 +43,8 @@
           <template #default="slotProps">
             <div class="flex items-center justify-between w-full group">
               <span class="flex items-center gap-2">
-                <font-awesome-icon icon="folder" class="text-yellow-500" />
-                {{ slotProps.node.label }}
+                <font-awesome-icon icon="folder" class="text-primary-500 dark:text-primary-400" />
+                <span class="text-color">{{ slotProps.node.label }}</span>
               </span>
               <div class="hidden group-hover:flex gap-1">
                 <Button
@@ -54,6 +54,7 @@
                   size="small"
                   class="w-6 h-6"
                   @click.stop="openFolderDialog(slotProps.node.data)"
+                  v-tooltip.top="'Modifier le dossier'"
                 >
                   <template #icon>
                     <font-awesome-icon icon="pen" class="text-xs" />
@@ -66,6 +67,7 @@
                   size="small"
                   class="w-6 h-6"
                   @click.stop="confirmDeleteFolder(slotProps.node.data)"
+                  v-tooltip.top="'Supprimer le dossier'"
                 >
                   <template #icon>
                     <font-awesome-icon icon="trash" class="text-xs" />
@@ -95,7 +97,8 @@
       <TreeSelect
         v-model="folderForm.parent_id"
         :options="folderTreeSelect"
-        placeholder="Sélectionnez un parent (optionnel)"
+        showClear
+        placeholder="Sélectionnez un parent (ou laisser vide pour la racine)"
       />
     </div>
     <template #footer>

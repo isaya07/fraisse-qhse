@@ -157,15 +157,36 @@ const isMenuItemActive = (item: MenuItem) => {
 }
 
 .active-route {
-  background-color: var(--primary-50);
-  color: var(--primary-600);
+  color: var(--primary-color);
+  background-color: var(--surface-100); /* or var(--primary-50) if available */
   font-weight: 600;
 }
 
-.dark .active-route {
-  background-color: rgba(var(--primary-500-rgb), 0.15);
-  color: var(--primary-400);
+:deep(.dark) .active-route {
+    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.05);
 }
+
+/*
+   Note: If you prefer a lighter background with colored text for active state:
+
+   .active-route {
+     background-color: var(--highlight-bg); 
+     color: var(--highlight-text-color);
+     font-weight: 600;
+   }
+   
+   But user asked for "standard PrimeVue theme colors", usually active navigation items 
+   in sidebars are highlighted. 
+   Let's use the semantic "highlight" variables from PrimeVue if available, 
+   or stick to a safe approach.
+*/
+
+.active-route {
+  background-color: var(--primary-color);
+  color: var(--primary-contrast-color);
+}
+
 
 .menu-icon {
   margin-right: 0.75rem;

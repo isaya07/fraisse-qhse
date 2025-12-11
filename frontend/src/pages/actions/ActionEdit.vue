@@ -1,37 +1,43 @@
 <template>
-  <div class="p-4 p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Modifier l'action</h1>
-      <router-link
-        to="/actions"
-        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-      >
-        <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
-        Retour à la liste
-      </router-link>
+  <div class="p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-4">
+      <div class="flex items-center gap-4">
+        <Button text rounded severity="secondary" @click="goBack">
+          <template #icon>
+            <font-awesome-icon icon="arrow-left" />
+          </template>
+        </Button>
+        <div>
+          <div class="flex items-center gap-3">
+            <h2 class="text-color">Modifier l'action</h2>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="isLoading" class="flex justify-center items-center py-12">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
     </div>
 
     <div v-else-if="!currentAction && !error" class="flex justify-center items-center py-12">
-      <p class="text-lg text-gray-600">Action non trouvée</p>
+      <p class="text-lg text-color-secondary">Action non trouvée</p>
     </div>
 
     <div v-else-if="error" class="flex justify-center items-center py-12">
       <p class="text-lg text-red-600">{{ error }}</p>
     </div>
 
-    <div v-else class="bg-white p-6 rounded-lg shadow-md">
-      <ActionForm
-        :initialData="formData"
-        :submitButtonText="'Enregistrer les modifications'"
-        :loading="isSubmitting"
-        @submit="submitAction"
-        @cancel="cancel"
-      />
-    </div>
+    <Card v-else>
+      <template #content>
+        <ActionForm
+          :initialData="formData"
+          :submitButtonText="'Enregistrer les modifications'"
+          :loading="isSubmitting"
+          @submit="submitAction"
+          @cancel="cancel"
+        />
+      </template>
+    </Card>
   </div>
 </template>
 
@@ -41,6 +47,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useActionStore } from '@/stores/actions'
 import ActionForm from '@/components/actions/ActionForm.vue'
 import { useToast } from 'primevue/usetoast'
+import Button from 'primevue/button'
 
 // Définir le type pour les données de l'action
 interface ActionData {
@@ -144,18 +151,17 @@ const submitAction = async (data: ActionData) => {
       summary: 'Succès',
       detail: 'Action mise à jour avec succès',
       life: 3000,
-      icon: 'check',
     })
     // Rediriger vers la liste des actions
     router.push('/actions')
   } catch (err: unknown) {
     const errorMessage = (err as Error).message || "Erreur lors de la mise à jour de l'action"
+    console.error(errorMessage)
     toast.add({
       severity: 'error',
       summary: 'Erreur',
       detail: "Erreur lors de la mise à jour de l'action",
       life: 3000,
-      icon: 'times',
     })
     console.error(err)
   } finally {
@@ -164,9 +170,8 @@ const submitAction = async (data: ActionData) => {
 }
 
 // Fonction d'annulation
-const cancel = () => {
-  router.push('/actions')
-}
+const cancel = () => router.push('/actions')
+const goBack = () => router.back()
 
 // Charger l'action au montage du composant
 onMounted(() => {

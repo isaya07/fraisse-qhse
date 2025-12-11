@@ -39,25 +39,25 @@
       <template #content>
         <div class="grow flex flex-col border rounded-lg overflow-hidden">
           <!-- Week Days Header -->
-          <div class="grid grid-cols-7 bg-gray-50 border-b">
+          <div class="grid grid-cols-7 bg-surface-50 dark:bg-surface-800 border-b border-surface-border">
             <div
               v-for="day in weekDays"
               :key="day"
-              class="p-3 text-center font-semibold text-gray-600 uppercase text-sm"
+              class="p-3 text-center font-semibold text-color-secondary uppercase text-sm"
             >
               {{ day }}
             </div>
           </div>
 
           <!-- Days Grid -->
-          <div class="grid grid-cols-7 auto-rows-fr bg-white">
+          <div class="grid grid-cols-7 auto-rows-fr bg-surface-0 dark:bg-surface-900">
             <div
               v-for="day in calendarDays"
               :key="day.date.toISOString()"
-              class="min-h-[120px] p-2 border-b border-r relative hover:bg-gray-50 transition-colors"
+              class="min-h-[120px] p-2 border-b border-r border-surface-border relative hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
               :class="{
-                'bg-gray-50/50': !day.isCurrentMonth,
-                'bg-blue-50/30': day.isToday,
+                'bg-surface-50/50 dark:bg-surface-800/50': !day.isCurrentMonth,
+                'bg-blue-50/30 dark:bg-blue-900/10': day.isToday,
               }"
               @click="handleDateClick(day.date)"
             >
@@ -66,8 +66,8 @@
                   class="text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full"
                   :class="{
                     'bg-blue-600 text-white': day.isToday,
-                    'text-gray-400': !day.isCurrentMonth,
-                    'text-gray-700': day.isCurrentMonth && !day.isToday,
+                    'text-color-secondary': !day.isCurrentMonth,
+                    'text-color': day.isCurrentMonth && !day.isToday,
                   }"
                 >
                   {{ format(day.date, 'd') }}

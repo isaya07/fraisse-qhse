@@ -38,7 +38,12 @@ export interface Document {
   mime_type?: string
   version: string
   document_folder_id?: number | null
-  category?: string
+  category?: {
+    id: number
+    name: string
+    color: string
+    icon: string
+  } | null
   status: string
   created_by: number
   approved_by?: number
@@ -48,6 +53,16 @@ export interface Document {
   modified: string
   creator?: User
   approver?: User
+}
+
+export interface Comment {
+  id: number
+  action_id: number
+  user_id: number
+  content: string
+  created_at: string
+  updated_at: string
+  user?: User
 }
 
 export interface Action {
@@ -70,12 +85,13 @@ export interface Action {
   progress: number
   related_to?: string
   related_id?: number
-  created: string
-  modified: string
+  created_at: string
+  updated_at: string
   assignee?: User
   creator?: User
   documents?: Document[]
   indicators?: Indicator[]
+  comments?: Comment[]
 }
 
 export interface IndicatorValue {
@@ -120,13 +136,14 @@ export interface Indicator {
     color: string
   }
   unit?: string
-  target_value?: number
-  threshold_min?: number
-  threshold_max?: number
+  target_value?: number | null
+  threshold_min?: number | null
+  threshold_max?: number | null
   calculation_method?: string
   data_source?: string
   frequency: string
- trend_direction: string
+  trend_direction: string
+  goal_type?: 'maximize' | 'minimize' | 'target'
   created_by: number
   is_active: boolean
   created: string
@@ -143,8 +160,8 @@ export interface PaginatedResponse<T> {
   current_page: number
   per_page: number
   last_page: number
- from: number
- to: number
+  from: number
+  to: number
 }
 
 // Fonction de vérification de type pour déterminer si une réponse est paginée

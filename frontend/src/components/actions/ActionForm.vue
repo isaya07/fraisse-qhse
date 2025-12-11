@@ -2,21 +2,24 @@
   <form @submit.prevent="handleSubmit" class="flex flex-col gap-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Titre -->
-      <div class="mb-4 col-span-1 md:col-span-2">
-        <label for="title" class="block text-sm font-medium mb-2 text-gray-700">Titre *</label>
+      <div class="mb-2 col-span-1 md:col-span-2">
+        <label for="title" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Titre *</label
+        >
         <InputText
           id="title"
           v-model="formData.title"
           placeholder="Titre de l'action"
           class="w-full"
+          size="large"
           :class="{ 'p-invalid': errors.title }"
         />
         <small v-if="errors.title" class="text-red-500">{{ errors.title }}</small>
       </div>
 
       <!-- Type -->
-      <div class="mb-4">
-        <label for="type" class="block text-sm font-medium mb-2 text-gray-700">Type *</label>
+      <div class="mb-2">
+        <label for="type" class="block text-sm font-medium mb-2 text-color-secondary">Type *</label>
         <Select
           id="type"
           v-model="formData.action_type_id"
@@ -25,48 +28,48 @@
           optionValue="value"
           placeholder="Sélectionnez un type"
           class="w-full"
+          size="large"
           :class="{ 'p-invalid': errors.action_type_id }"
-        />
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="flex items-center gap-2">
+              <div
+                v-if="getTypeDetails(slotProps.value)"
+                class="w-8 h-8 rounded flex items-center justify-center text-base"
+                :style="{
+                  backgroundColor: getTypeDetails(slotProps.value)?.color + '20',
+                  color: getTypeDetails(slotProps.value)?.color,
+                }"
+              >
+                <font-awesome-icon
+                  :icon="['fas', getTypeDetails(slotProps.value)?.icon || 'tasks']"
+                />
+              </div>
+              <div>{{ getTypeLabel(slotProps.value) }}</div>
+            </div>
+            <span v-else>{{ slotProps.placeholder }}</span>
+          </template>
+          <template #option="slotProps">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded flex items-center justify-center text-base"
+                :style="{
+                  backgroundColor: slotProps.option.color + '20',
+                  color: slotProps.option.color,
+                }"
+              >
+                <font-awesome-icon :icon="['fas', slotProps.option.icon || 'tasks']" />
+              </div>
+              <div>{{ slotProps.option.label }}</div>
+            </div>
+          </template>
+        </Select>
         <small v-if="errors.action_type_id" class="text-red-500">{{ errors.action_type_id }}</small>
       </div>
 
-      <!-- Priorité -->
-      <div class="mb-4">
-        <label for="priority" class="block text-sm font-medium mb-2 text-gray-700"
-          >Priorité *</label
-        >
-        <Select
-          id="priority"
-          v-model="formData.priority"
-          :options="priorityOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Sélectionnez une priorité"
-          class="w-full"
-          :class="{ 'p-invalid': errors.priority }"
-        />
-        <small v-if="errors.priority" class="text-red-500">{{ errors.priority }}</small>
-      </div>
-
-      <!-- Statut -->
-      <div class="mb-4">
-        <label for="status" class="block text-sm font-medium mb-2 text-gray-700">Statut *</label>
-        <Select
-          id="status"
-          v-model="formData.status"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Sélectionnez un statut"
-          class="w-full"
-          :class="{ 'p-invalid': errors.status }"
-        />
-        <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
-      </div>
-
       <!-- Responsable -->
-      <div class="mb-4">
-        <label for="assigned_to" class="block text-sm font-medium mb-2 text-gray-700"
+      <div class="mb-2">
+        <label for="assigned_to" class="block text-sm font-medium mb-2 text-color-secondary"
           >Responsable</label
         >
         <Select
@@ -77,35 +80,112 @@
           optionValue="value"
           placeholder="Sélectionnez un responsable"
           class="w-full"
+          size="large"
           showClear
           filter
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="flex items-center gap-2">
+              <Avatar
+                :label="getUserInitials(slotProps.value)"
+                shape="circle"
+                class="bg-primary-100 text-primary-700 text-xs"
+              />
+              <div>{{ getUserLabel(slotProps.value) }}</div>
+            </div>
+            <span v-else>{{ slotProps.placeholder }}</span>
+          </template>
+          <template #option="slotProps">
+            <div class="flex items-center gap-2">
+              <Avatar
+                :label="getInitials(slotProps.option.firstName, slotProps.option.lastName)"
+                shape="circle"
+                class="bg-primary-100 text-primary-700 text-xs"
+              />
+              <div>{{ slotProps.option.label }}</div>
+            </div>
+          </template>
+        </Select>
+      </div>
+
+      <!-- Priorité -->
+      <div class="mb-2">
+        <label for="priority" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Priorité *</label
+        >
+        <SelectButton
+          v-model="formData.priority"
+          :options="priorityOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          size="large"
+          :class="{ 'p-invalid': errors.priority }"
+          :pt="{
+            button: ({ context }: any) => ({
+              class: [
+                'flex-1 border-0 transition-colors duration-200',
+                context.active ? context.option.activeClass : context.option.class,
+              ],
+            }),
+          }"
         />
+        <small v-if="errors.priority" class="text-red-500">{{ errors.priority }}</small>
+      </div>
+
+      <!-- Statut -->
+      <div class="mb-2">
+        <label for="status" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Statut *</label
+        >
+        <SelectButton
+          v-model="formData.status"
+          :options="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          size="large"
+          :class="{ 'p-invalid': errors.status }"
+          :pt="{
+            button: ({ context }: any) => ({
+              class: [
+                'flex-1 border-0 transition-colors duration-200',
+                context.active ? context.option.activeClass : context.option.class,
+              ],
+            }),
+          }"
+        />
+        <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
       </div>
 
       <!-- Échéance -->
-      <div class="mb-4">
-        <label for="due_date" class="block text-sm font-medium mb-2 text-gray-700">Échéance</label>
+      <div class="mb-2">
+        <label for="due_date" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Échéance</label
+        >
         <DatePicker
           id="due_date"
           v-model="formData.due_date"
           dateFormat="yy-mm-dd"
           showIcon
           class="w-full"
+          size="large"
+          fluid
         />
       </div>
 
       <!-- Progression -->
-      <div class="mb-4">
-        <label for="progress" class="block text-sm font-medium mb-2 text-gray-700"
+      <div class="mb-2">
+        <label for="progress" class="block text-sm font-medium mb-2 text-color-secondary"
           >Progression ({{ formData.progress }}%)</label
         >
-        <Slider v-model="formData.progress" class="w-full" :step="5" />
+        <Slider id="progress" v-model="formData.progress" class="w-full" :step="5" />
       </div>
     </div>
 
     <!-- Description -->
-    <div class="mb-4">
-      <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
+    <div class="mb-2">
+      <label for="description" class="block text-sm font-medium mb-2 text-color-secondary"
         >Description</label
       >
       <Textarea
@@ -118,9 +198,17 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-      <Button label="Annuler" icon="pi pi-times" text severity="secondary" @click="onCancel" />
-      <Button type="submit" :label="submitButtonText" icon="pi pi-save" :loading="loading" />
+    <div class="flex justify-end gap-3 pt-4 border-t border-surface-border">
+      <Button label="Annuler" text severity="secondary" @click="onCancel">
+        <template #icon>
+          <font-awesome-icon icon="xmark" class="mr-2" />
+        </template>
+      </Button>
+      <Button type="submit" :label="submitButtonText" :loading="loading">
+        <template #icon>
+          <font-awesome-icon icon="floppy-disk" class="mr-2" />
+        </template>
+      </Button>
     </div>
   </form>
 </template>
@@ -130,10 +218,12 @@ import { ref, watch } from 'vue'
 import { z } from 'zod'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import SelectButton from 'primevue/selectbutton'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Slider from 'primevue/slider'
+import Avatar from 'primevue/avatar'
 import { useActionTypeStore } from '@/stores/actionTypes'
 import { useUserStore } from '@/stores/users'
 import { onMounted, computed } from 'vue'
@@ -251,28 +341,95 @@ const typeOptions = computed(() => {
   return (actionTypeStore.types || []).map((type) => ({
     label: type.name,
     value: type.id,
+    icon: type.icon,
+    color: type.color,
   }))
 })
+
+// Helper functions for type display
+const getTypeDetails = (id: number) => {
+  return typeOptions.value.find((t) => t.value === id)
+}
+
+const getTypeLabel = (id: number) => {
+  return typeOptions.value.find((t) => t.value === id)?.label || ''
+}
 
 const userOptions = computed(() => {
   return (userStore.users || []).map((user) => ({
     label: `${user.first_name} ${user.last_name}`,
     value: user.id,
+    firstName: user.first_name,
+    lastName: user.last_name,
   }))
 })
 
+// Helper functions for user display
+const getUserInitials = (id: number) => {
+  const user = userOptions.value.find((u) => u.value === id)
+  return user ? getInitials(user.firstName, user.lastName) : '?'
+}
+
+const getUserLabel = (id: number) => {
+  return userOptions.value.find((u) => u.value === id)?.label || ''
+}
+
+const getInitials = (firstName: string, lastName: string) => {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+}
+
 const priorityOptions = [
-  { label: 'Basse', value: 'low' },
-  { label: 'Moyenne', value: 'medium' },
-  { label: 'Haute', value: 'high' },
-  { label: 'Critique', value: 'critical' },
+  {
+    label: 'Basse',
+    value: 'low',
+    class: 'bg-green-100 text-green-700 hover:bg-green-200',
+    activeClass: 'bg-green-500 text-white hover:bg-green-600',
+  },
+  {
+    label: 'Moyenne',
+    value: 'medium',
+    class: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+    activeClass: 'bg-yellow-500 text-white hover:bg-yellow-600',
+  },
+  {
+    label: 'Haute',
+    value: 'high',
+    class: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
+    activeClass: 'bg-orange-500 text-white hover:bg-orange-600',
+  },
+  {
+    label: 'Critique',
+    value: 'critical',
+    class: 'bg-red-100 text-red-700 hover:bg-red-200',
+    activeClass: 'bg-red-500 text-white hover:bg-red-600',
+  },
 ]
 
 const statusOptions = [
-  { label: 'Ouvert', value: 'open' },
-  { label: 'En cours', value: 'in_progress' },
-  { label: 'Terminé', value: 'completed' },
-  { label: 'Annulé', value: 'cancelled' },
+  {
+    label: 'Ouvert',
+    value: 'open',
+    class: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+    activeClass: 'bg-blue-500 text-white hover:bg-blue-600',
+  },
+  {
+    label: 'En cours',
+    value: 'in_progress',
+    class: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+    activeClass: 'bg-yellow-500 text-white hover:bg-yellow-600',
+  },
+  {
+    label: 'Terminé',
+    value: 'completed',
+    class: 'bg-green-100 text-green-700 hover:bg-green-200',
+    activeClass: 'bg-green-500 text-white hover:bg-green-600',
+  },
+  {
+    label: 'Annulé',
+    value: 'cancelled',
+    class: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+    activeClass: 'bg-gray-500 text-white hover:bg-gray-600',
+  },
 ]
 
 // Méthodes

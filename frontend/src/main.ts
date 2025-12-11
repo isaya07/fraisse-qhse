@@ -42,6 +42,44 @@ const MyPreset = definePreset(Aura, {
       900: '#0e213d',
       950: '#081324',
     },
+    colorScheme: {
+      light: {
+        surface: {
+          0: '#ffffff',
+          50: '{slate.50}',
+          100: '{slate.100}',
+          200: '{slate.200}',
+          300: '{slate.300}',
+          400: '{slate.400}',
+          500: '{slate.500}',
+          600: '{slate.600}',
+          700: '{slate.700}',
+          800: '{slate.800}',
+          900: '{slate.900}',
+          950: '{slate.950}',
+        },
+      },
+      dark: {
+        surface: {
+          0: '#ffffff',
+          50: '{slate.50}',
+          100: '{slate.100}',
+          200: '{slate.200}',
+          300: '{slate.300}',
+          400: '{slate.400}',
+          500: '{slate.500}',
+          600: '{slate.600}',
+          // 700: '{slate.700}', // Original neutral
+          700: '#334155', // Lighter bluish tint
+          // 800: '{slate.800}', // Original neutral
+          800: '#1a2436', // Bluish tint (Cards, Sidebars)
+          // 900: '{slate.900}', // Original neutral
+          900: '#111826', // Bluish tint
+          // 950: '{slate.950}', // Original neutral
+          950: '#243046', // Deep bluish background (Page Bg)
+        },
+      },
+    },
   },
 })
 

@@ -1,8 +1,8 @@
 <template>
   <div class="p-4">
-    <div class="card">
+    <div class="card surface-card p-4 border-round shadow-2">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-        <h1 class="text-2xl font-bold text-gray-800">Gestion des Utilisateurs</h1>
+        <h1 class="text-2xl font-bold text-color">Gestion des Utilisateurs</h1>
         <div class="flex gap-2">
           <Button label="Nouvel utilisateur" @click="createNewUser" severity="primary">
             <template #icon>

@@ -1,14 +1,18 @@
 <template>
-  <div class="p-4 p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h2>Créer un nouveau document</h2>
-      <router-link
-        to="/documents"
-        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-      >
-        <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-2" />
-        Retour à la liste
-      </router-link>
+  <div class="p-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-4">
+      <div class="flex items-center gap-4">
+        <Button text rounded severity="secondary" @click="goBack">
+          <template #icon>
+            <font-awesome-icon icon="arrow-left" />
+          </template>
+        </Button>
+        <div>
+          <div class="flex items-center gap-3">
+            <h2 class="text-color">Créer un nouveau document</h2>
+          </div>
+        </div>
+      </div>
     </div>
 
     <Card>
@@ -30,6 +34,9 @@ import { useRouter } from 'vue-router'
 import { useDocumentStore, type DocumentFormData } from '@/stores/documents'
 import DocumentForm from '@/components/documents/DocumentForm.vue'
 import { useToast } from 'primevue/usetoast'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+
 
 const router = useRouter()
 const documentStore = useDocumentStore()
@@ -42,13 +49,21 @@ const submitForm = async (data: DocumentFormData & { file?: File | undefined }) 
   try {
     const formDataToSend = new FormData()
     formDataToSend.append('title', data.title)
-    formDataToSend.append('description', data.description || '')
+    formDataToSend.append('description', data.description ?? '')
     if (data.document_folder_id) {
       formDataToSend.append('document_folder_id', data.document_folder_id.toString())
     }
-    formDataToSend.append('category', data.category)
+    if (data.category_id) {
+      formDataToSend.append('category_id', data.category_id.toString())
+    }
     formDataToSend.append('version', data.version)
     formDataToSend.append('status', data.status)
+
+    if (data.expires_date) {
+      const date = new Date(data.expires_date)
+      const formattedDate = date.toISOString().split('T')[0]
+      formDataToSend.append('expires_date', formattedDate ?? '')
+    }
 
     if (data.file) {
       formDataToSend.append('file', data.file)
@@ -83,4 +98,9 @@ const submitForm = async (data: DocumentFormData & { file?: File | undefined }) 
 const cancel = () => {
   router.push('/documents')
 }
+
+const goBack = () => {
+  router.back()
+}
+
 </script>

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Action, PaginatedResponse } from './app'
+import type { Action, Comment, PaginatedResponse } from './app'
 import { useApi } from '@/composables/useApi'
 import { isPaginatedResponse } from './app'
 
@@ -216,6 +216,138 @@ export const useActionStore = defineStore('action', {
       } catch (error) {
         this.error = 'An error occurred while updating progress'
         console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addComment(actionId: number, content: string) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const { post } = useApi()
+        const response = await post<Comment>(`/actions/${actionId}/comments`, { content })
+
+        if (response.success && response.data) {
+          if (this.currentAction && this.currentAction.id === actionId) {
+            if (!this.currentAction.comments) {
+              this.currentAction.comments = []
+            }
+            this.currentAction.comments.push(response.data)
+          }
+        } else {
+          this.error = response.error || 'Failed to add comment'
+          throw new Error(this.error)
+        }
+      } catch (error) {
+        this.error = 'An error occurred while adding comment'
+        console.error(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async linkDocument(actionId: number, documentId: number) {
+      this.loading = true
+      this.error = null
+      try {
+        const { post } = useApi()
+        const response = await post<Action>(`/actions/${actionId}/documents`, {
+          document_id: documentId,
+        })
+        if (response.success && response.data) {
+          this.currentAction = response.data
+        } else {
+          throw new Error(response.error || 'Failed to link document')
+        }
+      } catch (error) {
+        this.error = 'Error linking document'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async unlinkDocument(actionId: number, documentId: number) {
+      this.loading = true
+      this.error = null
+      try {
+        const { del } = useApi()
+        const response = await del<Action>(`/actions/${actionId}/documents/${documentId}`)
+        if (response.success && response.data) {
+          this.currentAction = response.data
+        } else {
+          throw new Error(response.error || 'Failed to unlink document')
+        }
+      } catch (error) {
+        this.error = 'Error unlinking document'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async linkIndicator(actionId: number, indicatorId: number) {
+      this.loading = true
+      this.error = null
+      try {
+        const { post } = useApi()
+        const response = await post<Action>(`/actions/${actionId}/indicators`, {
+          indicator_id: indicatorId,
+        })
+        if (response.success && response.data) {
+          this.currentAction = response.data
+        } else {
+          throw new Error(response.error || 'Failed to link indicator')
+        }
+      } catch (error) {
+        this.error = 'Error linking indicator'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async unlinkIndicator(actionId: number, indicatorId: number) {
+      this.loading = true
+      this.error = null
+      try {
+        const { del } = useApi()
+        const response = await del<Action>(`/actions/${actionId}/indicators/${indicatorId}`)
+        if (response.success && response.data) {
+          this.currentAction = response.data
+        } else {
+          throw new Error(response.error || 'Failed to unlink indicator')
+        }
+      } catch (error) {
+        this.error = 'Error unlinking indicator'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteComment(commentId: number) {
+      this.loading = true
+      this.error = null
+      try {
+        const { del } = useApi()
+        const response = await del(`/comments/${commentId}`)
+
+        if (response.success) {
+          if (this.currentAction && this.currentAction.comments) {
+            this.currentAction.comments = this.currentAction.comments.filter(
+              (c) => c.id !== commentId,
+            )
+          }
+        } else {
+          throw new Error(response.error || 'Failed to delete comment')
+        }
+      } catch (error) {
+        this.error = 'Error deleting comment'
         throw error
       } finally {
         this.loading = false

@@ -21,13 +21,13 @@ class IndicatorController extends Controller
         $this->authorize('viewAny', Indicator::class);
 
         $query = Indicator::with(['creator', 'manager', 'actions', 'indicatorCategory', 'values'])
-            ->select('id', 'name', 'code', 'manager_id', 'indicator_category_id', 'unit', 'target_value', 'threshold_min', 'threshold_max', 'calculation_method', 'data_source', 'frequency', 'trend_direction', 'created_by', 'is_active', 'created_at', 'updated_at');
+            ->select('id', 'name', 'code', 'manager_id', 'indicator_category_id', 'unit', 'target_value', 'threshold_min', 'threshold_max', 'calculation_method', 'data_source', 'frequency', 'trend_direction', 'goal_type', 'created_by', 'is_active', 'created_at', 'updated_at');
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -132,6 +132,8 @@ class IndicatorController extends Controller
             'comment' => $validated['comment'],
             'created_by' => auth()->id(),
         ]);
+
+        $indicator->updateTrend();
 
         return response()->json([
             'success' => true,

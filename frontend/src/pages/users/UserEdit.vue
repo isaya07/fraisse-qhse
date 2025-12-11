@@ -1,7 +1,7 @@
 <template>
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+      <h1 class="text-2xl font-bold text-color mb-4 md:mb-0">
         {{ isEditing ? "Modifier l'utilisateur" : 'Nouvel utilisateur' }}
       </h1>
       <Button
@@ -13,7 +13,7 @@
       />
     </div>
 
-    <div class="card max-w-2xl mx-auto">
+    <div class="card surface-card p-4 border-round shadow-2 max-w-2xl mx-auto">
       <Form
         v-slot="$form"
         :resolver="resolver"

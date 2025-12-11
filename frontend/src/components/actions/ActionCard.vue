@@ -11,7 +11,7 @@
       <div class="flex-1 flex flex-col gap-4">
         <!-- Header: Type & Status -->
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-sm text-gray-600">
+          <div class="flex items-center gap-2 text-sm text-color-secondary">
             <font-awesome-icon
               :icon="['fas', action.action_type?.icon || 'tasks']"
               :style="{ color: action.action_type?.color }"
@@ -19,21 +19,23 @@
             />
             <span class="text-xl font-medium">{{ action.action_type?.name }}</span>
           </div>
-          <Tag
-            :value="getStatusText(action.status)"
-            :severity="getStatusSeverity(action.status)"
-            class="text-xs px-2 py-0.5"
-          />
+          <div class="flex items-center gap-2">
+            <Tag
+              :value="getStatusText(action.status)"
+              :severity="getStatusSeverity(action.status)"
+              class="text-xs px-2 py-0.5"
+            />
+          </div>
         </div>
 
         <!-- Title -->
-        <h3 class="font-bold text-gray-900 text-lg leading-snug">
+        <h3 class="font-bold text-color text-lg leading-snug">
           {{ action.title }}
         </h3>
 
         <!-- Progress Bar -->
         <div class="mt-auto">
-          <div class="flex justify-between text-xs text-gray-500 mb-1">
+          <div class="flex justify-between text-xs text-color-secondary mb-1">
             <span>Progression</span>
             <span class="font-medium">{{ action.progress }}%</span>
           </div>
@@ -42,7 +44,7 @@
             :showValue="false"
             :class="getProgressColorClass(action.progress)"
           />  -->
-          <div class="w-full bg-gray-100 rounded-full h-4">
+          <div class="w-full bg-surface-100 dark:bg-surface-800 rounded-full h-4">
             <div
               class="h-4 rounded-full transition-all duration-300"
               :class="getProgressColorClass(action.progress)"
@@ -52,19 +54,18 @@
         </div>
 
         <!-- Footer: Assignee & Date -->
-        <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-2">
+        <div class="flex items-center justify-between pt-4 border-t border-surface-border mt-2">
           <div class="flex items-center gap-2">
             <Avatar
               v-if="action.assignee"
               :label="getInitials(action.assignee)"
               shape="circle"
               size="small"
-              class="w-8 h-8 text-xs"
-              :style="{ backgroundColor: '#f1f5f9', color: '#475569' }"
+              class="w-8 h-8 text-xs bg-surface-200 dark:bg-surface-700 text-color-secondary"
             />
             <div class="flex flex-col">
-              <span class="text-xs text-gray-500">Responsable</span>
-              <span class="text-sm font-medium text-gray-700 truncate max-w-[120px]">
+              <span class="text-xs text-color-secondary">Responsable</span>
+              <span class="text-sm font-medium text-color truncate max-w-[120px]">
                 {{
                   action.assignee
                     ? `${action.assignee.first_name} ${action.assignee.last_name}`
@@ -75,10 +76,10 @@
           </div>
 
           <div class="flex flex-col items-end">
-            <span class="text-xs text-gray-500">Échéance</span>
+            <span class="text-xs text-color-secondary">Échéance</span>
             <div
               class="flex items-center gap-1.5 text-sm font-medium"
-              :class="isOverdue ? 'text-red-600' : 'text-gray-700'"
+              :class="isOverdue ? 'text-red-500' : 'text-color'"
             >
               <font-awesome-icon icon="calendar" class="text-xs" />
               <span>{{ formatDate(action.due_date) }}</span>
@@ -104,7 +105,7 @@ const props = defineProps({
   },
 })
 
-defineEmits(['view'])
+defineEmits(['view', 'edit', 'delete'])
 
 // Helpers
 const getStatusText = (status: string) => {
@@ -164,13 +165,3 @@ const getInitials = (user: User) => {
   return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
 }
 </script>
-
-<style scoped>
-.action-card {
-  margin-bottom: 1rem;
-}
-
-.progress {
-  margin-bottom: 0.5rem;
-}
-</style>

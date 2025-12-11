@@ -2,7 +2,7 @@
   <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
     <!-- Fichier (Moved to top) -->
     <div class="field">
-      <label class="block text-sm font-medium mb-2 text-gray-700">Fichier</label>
+      <label class="block text-sm font-medium mb-2 text-color-secondary">Fichier</label>
 
       <div v-if="isEditMode" class="bg-blue-50 p-4 rounded-md border border-blue-200 mb-2">
         <div class="flex items-start">
@@ -27,9 +27,9 @@
           <div class="flex items-center justify-center flex-col">
             <font-awesome-icon
               :icon="['fas', 'cloud-upload-alt']"
-              class="text-6xl text-gray-300 mb-4"
+              class="text-6xl text-color-secondary mb-4"
             />
-            <p class="mt-4 mb-0">Glisser-déposer le fichier ici pour le télécharger.</p>
+            <p class="mt-4 mb-0 text-color-secondary">Glisser-déposer le fichier ici pour le télécharger.</p>
           </div>
         </template>
       </FileUpload>
@@ -37,7 +37,7 @@
       <!-- Display selected file separately -->
       <div
         v-if="selectedFile"
-        class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded"
+        class="mt-2 flex items-center gap-2 text-sm text-color bg-surface-100 dark:bg-surface-800 p-2 rounded"
       >
         <font-awesome-icon :icon="['fas', 'check-circle']" class="text-green-500" />
         <span class="font-semibold">{{ selectedFile.name }}</span>
@@ -54,7 +54,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Titre -->
       <div class="field">
-        <label for="title" class="block text-sm font-medium mb-2 text-gray-700">Titre *</label>
+        <label for="title" class="block text-sm font-medium mb-2 text-color-secondary">Titre *</label>
         <InputText
           id="title"
           v-model="formData.title"
@@ -67,7 +67,7 @@
 
       <!-- Version -->
       <div class="field">
-        <label for="version" class="block text-sm font-medium mb-2 text-gray-700">Version *</label>
+        <label for="version" class="block text-sm font-medium mb-2 text-color-secondary">Version *</label>
         <InputText
           id="version"
           v-model="formData.version"
@@ -81,10 +81,9 @@
 
       <!-- Dossier -->
       <div class="field">
-        <label for="folder" class="block text-sm font-medium mb-2 text-gray-700">Dossier</label>
+        <label for="folder" class="block text-sm font-medium mb-2 text-color-secondary">Dossier</label>
         <TreeSelect
-          :modelValue="formData.document_folder_id"
-          @update:modelValue="onFolderChange"
+          v-model="selectedFolder"
           :options="folderOptions"
           placeholder="Sélectionnez un dossier"
           class="w-full"
@@ -97,26 +96,45 @@
 
       <!-- Type de document (Catégorie) -->
       <div class="field">
-        <label for="category" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="category" class="block text-sm font-medium mb-2 text-color-secondary"
           >Type de document *</label
         >
-        <Dropdown
+        <Select
           id="category"
-          v-model="formData.category"
+          v-model="formData.category_id"
           :options="categoryOptions"
           optionLabel="text"
           optionValue="value"
           placeholder="Sélectionnez un type"
           class="w-full"
-          :class="{ 'p-invalid': errors.category }"
-        />
-        <small v-if="errors.category" class="text-red-500">{{ errors.category }}</small>
+          :class="{ 'p-invalid': errors.category_id }"
+        >
+          <template #option="{ option }">
+            <div class="flex items-center gap-2">
+              <font-awesome-icon
+                v-if="option.icon"
+                :icon="['fas', option.icon]"
+              />
+              <span>{{ option.text }}</span>
+            </div>
+          </template>
+          <template #value="{ value }">
+            <div v-if="value" class="flex items-center gap-2">
+              <font-awesome-icon
+                v-if="categoryOptions.find(c => c.value === value)?.icon"
+                :icon="['fas', categoryOptions.find(c => c.value === value)?.icon]"
+              />
+              <span>{{ categoryOptions.find(c => c.value === value)?.text }}</span>
+            </div>
+          </template>
+        </Select>
+        <small v-if="errors.category_id" class="text-red-500">{{ errors.category_id }}</small>
       </div>
 
       <!-- Statut -->
       <div class="field">
-        <label for="status" class="block text-sm font-medium mb-2 text-gray-700">Statut *</label>
-        <Dropdown
+        <label for="status" class="block text-sm font-medium mb-2 text-color-secondary">Statut *</label>
+        <Select
           id="status"
           v-model="formData.status"
           :options="statusOptions"
@@ -128,11 +146,28 @@
         />
         <small v-if="errors.status" class="text-red-500">{{ errors.status }}</small>
       </div>
+      <!-- Date d'expiration -->
+      <div class="field">
+        <label for="expires_date" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Date d'expiration (optionnel)</label
+        >
+        <DatePicker
+          id="expires_date"
+          v-model="formData.expires_date"
+          dateFormat="dd/mm/yy"
+          placeholder="Sélectionnez une date"
+          class="w-full"
+          fluid
+          showIcon
+          iconDisplay="input"
+          :class="{ 'p-invalid': errors.expires_date }"
+        />
+        <small v-if="errors.expires_date" class="text-red-500">{{ errors.expires_date }}</small>
+      </div>
     </div>
-
     <!-- Description -->
     <div class="field">
-      <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
+      <label for="description" class="block text-sm font-medium mb-2 text-color-secondary"
         >Description</label
       >
       <Textarea
@@ -145,7 +180,7 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+    <div class="flex justify-end gap-3 pt-4 border-t border-surface-border">
       <Button label="Annuler" text severity="secondary" @click="onCancel">
         <template #icon>
           <font-awesome-icon :icon="['fas', 'times']" />
@@ -164,11 +199,12 @@
 import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { z } from 'zod'
 import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import FileUpload, { type FileUploadUploaderEvent } from 'primevue/fileupload'
 import TreeSelect from 'primevue/treeselect'
+import DatePicker from 'primevue/datepicker'
 import { useDocumentFolderStore, type DocumentFolder } from '@/stores/documentFolders'
 import type { DocumentFormData } from '@/stores/documents'
 import type { TreeNode } from 'primevue/treenode'
@@ -191,7 +227,7 @@ const props = withDefaults(defineProps<Props>(), {
     title: '',
     description: '',
     document_folder_id: null,
-    category: '',
+    category_id: null,
     version: '1.0',
     status: 'draft',
   }),
@@ -200,15 +236,20 @@ const props = withDefaults(defineProps<Props>(), {
   isEditMode: false,
 })
 
+import { useCategoryStore } from '@/stores/category'
+
+// ...
+
 const emit = defineEmits<Emits>()
 const folderStore = useDocumentFolderStore()
+const categoryStore = useCategoryStore()
 
 // Données
 const formData = reactive<DocumentFormData>({
   title: '',
   description: '',
   document_folder_id: null,
-  category: '',
+  category_id: null,
   version: '1.0',
   status: 'draft',
   ...props.initialData,
@@ -222,9 +263,10 @@ const schema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(255, 'Le titre est trop long'),
   description: z.string().optional(),
   document_folder_id: z.number().nullable(),
-  category: z.string().min(1, 'Le type de document est requis'),
+  category_id: z.number({ required_error: 'Le type de document est requis', invalid_type_error: 'Le type de document est requis' }),
   version: z.string().min(1, 'La version est requise'),
   status: z.string().min(1, 'Le statut est requis'),
+  expires_date: z.date().nullable().optional(),
 })
 
 // Options
@@ -238,12 +280,13 @@ const folderOptions = computed<TreeNode[]>(() => {
   return folderStore.folders.map(mapFolderToNode)
 })
 
-const categoryOptions = [
-  { value: 'procedure', text: 'Procédure' },
-  { value: 'form', text: 'Formulaire' },
-  { value: 'consigne', text: 'Consigne' },
-  { value: 'other', text: 'Autre' },
-]
+const categoryOptions = computed(() => {
+  return categoryStore.categories.map(cat => ({
+    value: cat.id,
+    text: cat.name,
+    icon: cat.icon
+  }))
+})
 
 const statusOptions = [
   { value: 'draft', text: 'Brouillon' },
@@ -266,22 +309,25 @@ const clearFile = () => {
   selectedFile.value = undefined
 }
 
-const onFolderChange = (value: number | Record<string, boolean> | null) => {
-  if (value && typeof value === 'object') {
-    // PrimeVue TreeSelect might return { "key": true }
-    const keys = Object.keys(value)
-    if (keys.length > 0) {
-      const key = keys[0]
-      if (key) {
-        formData.document_folder_id = parseInt(key)
+const selectedFolder = computed({
+  get: () => {
+    return formData.document_folder_id
+      ? { [formData.document_folder_id.toString()]: true }
+      : null
+  },
+  set: (value: any) => {
+    if (value && typeof value === 'object') {
+      const keys = Object.keys(value)
+      if (keys.length > 0) {
+        formData.document_folder_id = parseInt(keys[0])
+      } else {
+        formData.document_folder_id = null
       }
     } else {
       formData.document_folder_id = null
     }
-  } else {
-    formData.document_folder_id = value
-  }
-}
+  },
+})
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return '0 Bytes'
@@ -339,5 +385,6 @@ watch(
 
 onMounted(() => {
   folderStore.fetchFolders()
+  categoryStore.fetchCategories()
 })
 </script>

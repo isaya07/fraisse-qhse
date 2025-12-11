@@ -52,17 +52,17 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-12">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
     </div>
 
     <!-- Empty State -->
     <div
       v-else-if="actions.length === 0"
-      class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+      class="text-center py-12 bg-surface-50 dark:bg-surface-800 rounded-lg border-2 border-dashed border-surface-border"
     >
-      <font-awesome-icon icon="tasks" class="text-gray-300 text-5xl mb-4" />
-      <h3 class="text-lg font-medium text-gray-900">Aucune action trouvée</h3>
-      <p class="text-gray-500 mt-1">Commencez par créer une nouvelle action.</p>
+      <font-awesome-icon icon="tasks" class="text-color-secondary text-5xl mb-4" />
+      <h3 class="text-lg font-medium text-color">Aucune action trouvée</h3>
+      <p class="text-color-secondary mt-1">Commencez par créer une nouvelle action.</p>
       <Button label="Nouvelle action" @click="createNewAction" severity="primary" class="mt-4">
         <template #icon>
           <font-awesome-icon icon="plus" class="mr-2" />
@@ -72,7 +72,14 @@
 
     <!-- Grid -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <ActionCard v-for="action in actions" :key="action.id" :action="action" @view="viewAction" />
+      <ActionCard
+        v-for="action in actions"
+        :key="action.id"
+        :action="action"
+        @view="viewAction"
+        @edit="editAction"
+        @delete="confirmDelete"
+      />
     </div>
 
     <!-- Pagination -->
@@ -101,7 +108,6 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import Paginator from 'primevue/paginator'
-import type { Action } from '@/stores/app'
 
 const router = useRouter()
 const actionStore = useActionStore()
@@ -175,7 +181,7 @@ const confirmDelete = (id: number) => {
   confirm.require({
     message: `Voulez-vous vraiment supprimer l'action "${action.title}" ?`,
     header: 'Confirmation de suppression',
-    icon: 'exclamation-triangle',
+    icon: 'pi pi-exclamation-triangle',
     rejectLabel: 'Annuler',
     acceptLabel: 'Supprimer',
     rejectClass: 'p-button-secondary p-button-outlined',
@@ -188,7 +194,6 @@ const confirmDelete = (id: number) => {
           summary: 'Succès',
           detail: 'Action supprimée',
           life: 3000,
-          icon: 'check',
         })
         loadActions()
       } catch {
@@ -197,7 +202,6 @@ const confirmDelete = (id: number) => {
           summary: 'Erreur',
           detail: "Impossible de supprimer l'action",
           life: 3000,
-          icon: 'times',
         })
       }
     },

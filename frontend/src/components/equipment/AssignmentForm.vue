@@ -2,7 +2,7 @@
   <div class="assignment-form">
     <div class="grid grid-cols-1 gap-4">
       <div class="field">
-        <label for="user" class="block text-sm font-medium text-gray-700 mb-1">Utilisateur *</label>
+        <label for="user" class="block text-sm font-medium text-color-secondary mb-1">Utilisateur *</label>
         <Select
           id="user"
           v-model="form.user_id"
@@ -18,7 +18,7 @@
       </div>
 
       <div class="field">
-        <label for="assigned_at" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="assigned_at" class="block text-sm font-medium text-color-secondary mb-1"
           >Date d'affectation *</label
         >
         <DatePicker
@@ -33,7 +33,7 @@
       </div>
 
       <div class="field">
-        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+        <label for="notes" class="block text-sm font-medium text-color-secondary mb-1">Notes</label>
         <Textarea id="notes" v-model="form.notes" rows="3" class="w-full" />
       </div>
     </div>

@@ -12,3 +12,4 @@ Artisan::command('inspire', function () {
 
 Schedule::job(new \App\Jobs\CheckDueItems)->dailyAt('07:00');
 Schedule::job(new \App\Jobs\SendDailyNotifications)->hourly();
+Schedule::command('documents:archive-versions --keep=10')->weekly();

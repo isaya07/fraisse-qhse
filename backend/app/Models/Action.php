@@ -54,4 +54,9 @@ class Action extends Model
     {
         return $this->belongsToMany(Indicator::class, 'action_indicators');
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

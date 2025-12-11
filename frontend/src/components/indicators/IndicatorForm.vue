@@ -3,7 +3,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Nom -->
       <div class="mb-4 col-span-1 md:col-span-2">
-        <label for="name" class="block text-sm font-medium mb-2 text-gray-700">Nom *</label>
+        <label for="name" class="block text-sm font-medium mb-2 text-color-secondary">Nom *</label>
         <InputText
           id="name"
           v-model="formData.name"
@@ -16,7 +16,9 @@
 
       <!-- Catégorie -->
       <div class="mb-4">
-        <label for="category" class="block text-sm font-medium mb-2 text-gray-700">Catégorie</label>
+        <label for="category" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Catégorie</label
+        >
         <Select
           id="category"
           v-model="formData.indicator_category_id"
@@ -31,7 +33,7 @@
 
       <!-- Responsable -->
       <div class="mb-4">
-        <label for="manager" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="manager" class="block text-sm font-medium mb-2 text-color-secondary"
           >Responsable</label
         >
         <Select
@@ -49,7 +51,7 @@
 
       <!-- Unité -->
       <div class="mb-4">
-        <label for="unit" class="block text-sm font-medium mb-2 text-gray-700">Unité</label>
+        <label for="unit" class="block text-sm font-medium mb-2 text-color-secondary">Unité</label>
         <InputText
           id="unit"
           v-model="formData.unit"
@@ -60,7 +62,7 @@
 
       <!-- Fréquence -->
       <div class="mb-4">
-        <label for="frequency" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="frequency" class="block text-sm font-medium mb-2 text-color-secondary"
           >Fréquence *</label
         >
         <Select
@@ -78,7 +80,7 @@
 
       <!-- Valeur cible -->
       <div class="mb-4">
-        <label for="target_value" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="target_value" class="block text-sm font-medium mb-2 text-color-secondary"
           >Valeur cible</label
         >
         <InputNumber
@@ -91,29 +93,30 @@
         />
       </div>
 
-      <!-- Sens de tendance -->
+      <!-- Objectif (Goal Type) -->
       <div class="mb-4">
-        <label for="trend_direction" class="block text-sm font-medium mb-2 text-gray-700"
-          >Sens de tendance *</label
+        <label for="goal_type" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Objectif de l'indicateur *</label
         >
         <Select
-          id="trend_direction"
-          v-model="formData.trend_direction"
-          :options="trendDirectionOptions"
+          id="goal_type"
+          v-model="formData.goal_type"
+          :options="goalTypeOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Sélectionnez le sens"
+          placeholder="Sélectionnez l'objectif"
           class="w-full"
-          :class="{ 'p-invalid': errors.trend_direction }"
+          :class="{ 'p-invalid': errors.goal_type }"
         />
-        <small v-if="errors.trend_direction" class="text-red-500">{{
-          errors.trend_direction
-        }}</small>
+        <small v-if="errors.goal_type" class="text-red-500">{{ errors.goal_type }}</small>
+        <small class="text-xs text-muted-color block mt-1">
+          Détermine comment la tendance est calculée automatiquement.
+        </small>
       </div>
 
       <!-- Seuils -->
       <div class="mb-4">
-        <label for="threshold_min" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="threshold_min" class="block text-sm font-medium mb-2 text-color-secondary"
           >Seuil minimum</label
         >
         <InputNumber
@@ -127,7 +130,7 @@
       </div>
 
       <div class="mb-4">
-        <label for="threshold_max" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="threshold_max" class="block text-sm font-medium mb-2 text-color-secondary"
           >Seuil maximum</label
         >
         <InputNumber
@@ -142,7 +145,7 @@
 
       <!-- Source des données -->
       <div class="mb-4 col-span-1 md:col-span-2">
-        <label for="data_source" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="data_source" class="block text-sm font-medium mb-2 text-color-secondary"
           >Source des données</label
         >
         <InputText
@@ -155,7 +158,7 @@
 
       <!-- Méthode de calcul -->
       <div class="mb-4 col-span-1 md:col-span-2">
-        <label for="calculation_method" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="calculation_method" class="block text-sm font-medium mb-2 text-color-secondary"
           >Méthode de calcul</label
         >
         <Textarea
@@ -169,7 +172,7 @@
 
       <!-- Description -->
       <div class="mb-4 col-span-1 md:col-span-2">
-        <label for="description" class="block text-sm font-medium mb-2 text-gray-700"
+        <label for="description" class="block text-sm font-medium mb-2 text-color-secondary"
           >Description</label
         >
         <Textarea
@@ -184,14 +187,14 @@
       <!-- Actif -->
       <div class="mb-4 col-span-1 md:col-span-2 flex items-center gap-2">
         <Checkbox v-model="formData.is_active" :binary="true" inputId="is_active" />
-        <label for="is_active" class="text-sm font-medium text-gray-700 cursor-pointer"
+        <label for="is_active" class="text-sm font-medium text-color-secondary cursor-pointer"
           >Indicateur actif</label
         >
       </div>
     </div>
 
     <!-- Actions -->
-    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+    <div class="flex justify-end gap-3 pt-4 border-t border-surface-border">
       <Button label="Annuler" icon="pi pi-times" text severity="secondary" @click="onCancel" />
       <Button type="submit" :label="submitButtonText" icon="pi pi-save" :loading="loading" />
     </div>
@@ -225,6 +228,7 @@ interface IndicatorFormData {
   data_source: string
   frequency: string
   trend_direction: string
+  goal_type: 'maximize' | 'minimize' | 'target'
   is_active: boolean
 }
 
@@ -253,7 +257,8 @@ const props = withDefaults(defineProps<Props>(), {
     calculation_method: '',
     data_source: '',
     frequency: 'monthly',
-    trend_direction: 'positive',
+    trend_direction: 'neutral', // default, calculated backend
+    goal_type: 'maximize',
     is_active: true,
   }),
   submitButtonText: 'Enregistrer',
@@ -274,13 +279,14 @@ const formData = ref<IndicatorFormData>({
   indicator_category_id: props.initialData.indicator_category_id || null,
   manager_id: props.initialData.manager_id || null,
   unit: props.initialData.unit || '',
-  target_value: props.initialData.target_value || null,
-  threshold_min: props.initialData.threshold_min || null,
-  threshold_max: props.initialData.threshold_max || null,
+  target_value: props.initialData.target_value ?? null,
+  threshold_min: props.initialData.threshold_min ?? null,
+  threshold_max: props.initialData.threshold_max ?? null,
   calculation_method: props.initialData.calculation_method || '',
   data_source: props.initialData.data_source || '',
   frequency: props.initialData.frequency || 'monthly',
-  trend_direction: props.initialData.trend_direction || 'positive',
+  trend_direction: props.initialData.trend_direction || 'neutral',
+  goal_type: props.initialData.goal_type || 'maximize',
   is_active: props.initialData.is_active ?? true,
 })
 
@@ -290,7 +296,7 @@ const errors = ref<Record<string, string>>({})
 const schema = z.object({
   name: z.string().min(1, 'Le nom est requis').max(255, 'Le nom est trop long'),
   frequency: z.string().min(1, 'La fréquence est requise'),
-  trend_direction: z.string().min(1, 'Le sens de tendance est requis'),
+  goal_type: z.string().min(1, "L'objectif est requis"),
 })
 
 // Options
@@ -316,10 +322,10 @@ const frequencyOptions = [
   { value: 'yearly', label: 'Annuelle' },
 ]
 
-const trendDirectionOptions = [
-  { value: 'positive', label: 'Positive (meilleur si valeur augmente)' },
-  { value: 'negative', label: 'Négative (meilleur si valeur diminue)' },
-  { value: 'neutral', label: 'Neutre (valeur cible est optimale)' },
+const goalTypeOptions = [
+  { value: 'maximize', label: 'Maximiser (Mieux si ça monte)' },
+  { value: 'minimize', label: 'Minimiser (Mieux si ça descend)' },
+  { value: 'target', label: 'Cibler (Mieux si proche de la cible)' },
 ]
 
 // Méthodes
@@ -380,13 +386,14 @@ watch(
         indicator_category_id: newVal.indicator_category_id || null,
         manager_id: newVal.manager_id || null,
         unit: newVal.unit || '',
-        target_value: newVal.target_value || null,
-        threshold_min: newVal.threshold_min || null,
-        threshold_max: newVal.threshold_max || null,
+        target_value: newVal.target_value ?? null,
+        threshold_min: newVal.threshold_min ?? null,
+        threshold_max: newVal.threshold_max ?? null,
         calculation_method: newVal.calculation_method || '',
         data_source: newVal.data_source || '',
         frequency: newVal.frequency || 'monthly',
-        trend_direction: newVal.trend_direction || 'positive',
+        trend_direction: newVal.trend_direction || 'neutral',
+        goal_type: newVal.goal_type || 'maximize',
         is_active: newVal.is_active ?? true,
       }
     }

@@ -33,9 +33,13 @@
             >
           </div>
           <Tag
-            :severity="getTrendSeverity(indicator.trend_direction)"
+            :severity="getTrendSeverity(indicator.trend_direction, indicator.goal_type)"
             :value="getTrendLabel(indicator.trend_direction)"
-          />
+          >
+            <template #icon>
+              <font-awesome-icon :icon="getTrendIcon(indicator.trend_direction)" class="mr-2" />
+            </template>
+          </Tag>
         </div>
 
         <!-- Chart -->
@@ -80,20 +84,36 @@ onMounted(() => {
 
 const getTrendLabel = (value: string) => {
   const map: Record<string, string> = {
-    positive: 'Positive',
-    negative: 'Négative',
-    neutral: 'Neutre',
+    positive: 'Hausse',
+    negative: 'Baisse',
+    neutral: 'Stable',
   }
   return map[value] || value
 }
 
-const getTrendSeverity = (value: string): string => {
-  const map: Record<string, string> = {
-    positive: 'success',
-    negative: 'danger',
-    neutral: 'info',
+const getTrendSeverity = (
+  direction: string | undefined | null,
+  goalType: string | undefined | null,
+): string => {
+  if (!direction || !goalType) return 'info'
+  if (direction === 'neutral') return 'info'
+
+  if (goalType === 'maximize') {
+    return direction === 'positive' ? 'success' : 'danger'
+  } else if (goalType === 'minimize') {
+    return direction === 'positive' ? 'danger' : 'success'
   }
-  return map[value] || 'info'
+  return 'info'
+}
+
+const getTrendIcon = (value: string | undefined | null) => {
+  if (!value) return 'minus'
+  const map: Record<string, string> = {
+    positive: 'arrow-trend-up',
+    negative: 'arrow-trend-down',
+    neutral: 'minus',
+  }
+  return map[value] || 'minus'
 }
 
 // Chart Data Generator

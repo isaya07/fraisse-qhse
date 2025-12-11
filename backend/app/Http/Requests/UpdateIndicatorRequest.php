@@ -36,7 +36,8 @@ class UpdateIndicatorRequest extends FormRequest
             'calculation_method' => 'nullable|string|max:100',
             'data_source' => 'nullable|string|max:255',
             'frequency' => 'sometimes|in:daily,weekly,monthly,quarterly,yearly',
-            'trend_direction' => 'sometimes|in:positive,negative,neutral',
+            'trend_direction' => 'nullable|in:positive,negative,neutral',
+            'goal_type' => 'sometimes|in:maximize,minimize,target',
             'created_by' => 'sometimes|exists:users,id',
             'is_active' => 'sometimes|boolean',
         ];

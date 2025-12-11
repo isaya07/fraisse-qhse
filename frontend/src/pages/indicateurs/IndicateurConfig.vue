@@ -1,16 +1,24 @@
 <template>
   <div class="p-4">
+    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-      <h2>Configuration des Indicateurs</h2>
+      <div class="flex items-center gap-4">
+        <Button text rounded severity="secondary" @click="goBack">
+          <template #icon>
+            <font-awesome-icon icon="arrow-left" />
+          </template>
+        </Button>
+        <h2 class="mt-0!">Configuration des indicateurs</h2>
+      </div>
       <div class="flex gap-2">
         <Button
-          label="Retour au tableau de bord"
-          @click="goToDashboard"
+          label="Gérer les types"
+          @click="showTypeManager = true"
           severity="secondary"
           outlined
         >
           <template #icon>
-            <font-awesome-icon icon="chart-line" class="mr-2" />
+            <font-awesome-icon icon="tags" class="mr-2" />
           </template>
         </Button>
         <Button label="Nouvel indicateur" @click="createNewIndicator" severity="primary">
@@ -80,7 +88,7 @@
         <Column field="name" header="Nom" sortable style="min-width: 14rem">
           <template #body="{ data }">
             <div class="font-medium">{{ data.name }}</div>
-            <div class="text-sm text-gray-500 truncate max-w-xs">{{ data.description }}</div>
+            <div class="text-sm text-color-secondary truncate max-w-xs">{{ data.description }}</div>
           </template>
         </Column>
 
@@ -107,7 +115,7 @@
                 >{{ data.manager.first_name }} {{ data.manager.last_name }}</span
               >
             </div>
-            <span v-else class="text-gray-400">-</span>
+            <span v-else class="text-color-secondary">-</span>
           </template>
         </Column>
 
@@ -125,8 +133,12 @@
           <template #body="{ data }">
             <Tag
               :value="getTrendLabel(data.trend_direction)"
-              :severity="getTrendSeverity(data.trend_direction)"
-            />
+              :severity="getTrendSeverity(data.trend_direction, data.goal_type)"
+            >
+              <template #icon>
+                <font-awesome-icon :icon="getTrendIcon(data.trend_direction)" class="mr-2" />
+              </template>
+            </Tag>
           </template>
         </Column>
 
@@ -174,6 +186,7 @@
         </Column>
       </DataTable>
     </div>
+    <IndicatorTypeManager v-model:visible="showTypeManager" />
   </div>
 </template>
 
@@ -182,6 +195,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useIndicatorStore } from '@/stores/indicators'
 import { useIndicatorCategoryStore } from '@/stores/indicatorCategories'
+import IndicatorTypeManager from '@/components/indicators/IndicatorTypeManager.vue'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
@@ -215,6 +229,7 @@ const trendFilter = ref(null)
 const statusFilter = ref(null)
 const itemsPerPage = ref(10)
 const currentPage = ref(0)
+const showTypeManager = ref(false)
 
 // Accès au store
 const indicators = computed(() => indicatorStore.indicators)
@@ -267,20 +282,37 @@ const getFrequencyLabel = (value: string) => {
 
 const getTrendLabel = (value: string) => {
   const map: Record<string, string> = {
-    positive: 'Positive',
-    negative: 'Négative',
-    neutral: 'Neutre',
+    positive: 'Hausse',
+    negative: 'Baisse',
+    neutral: 'Stable',
   }
   return map[value] || value
 }
 
-const getTrendSeverity = (value: string): string => {
-  const map: Record<string, string> = {
-    positive: 'success',
-    negative: 'danger',
-    neutral: 'info',
+const getTrendSeverity = (
+  direction: string | undefined | null,
+  goalType: string | undefined | null,
+): string => {
+  if (!direction || !goalType) return 'info'
+  if (direction === 'neutral') return 'info'
+
+  if (goalType === 'maximize') {
+    return direction === 'positive' ? 'success' : 'danger'
+  } else if (goalType === 'minimize') {
+    return direction === 'positive' ? 'danger' : 'success'
   }
-  return map[value] || 'info'
+  // Target or other
+  return 'info'
+}
+
+const getTrendIcon = (value: string | undefined | null) => {
+  if (!value) return 'minus'
+  const map: Record<string, string> = {
+    positive: 'arrow-trend-up',
+    negative: 'arrow-trend-down',
+    neutral: 'minus',
+  }
+  return map[value] || 'minus'
 }
 
 // Actions
@@ -331,6 +363,8 @@ const confirmDelete = (indicator: Indicator) => {
     },
   })
 }
+
+const goBack = () => router.back()
 
 // Watchers
 watch([searchQuery, categoryFilter, trendFilter, statusFilter], () => {

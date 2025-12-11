@@ -9,7 +9,7 @@
         </Button>
         <div>
           <h2>{{ session.training?.title }}</h2>
-          <div class="flex items-center gap-2 text-sm text-gray-500">
+          <div class="flex items-center gap-2 text-sm text-color-secondary">
             <font-awesome-icon icon="calendar" />
             <span>{{ formatDate(session.start_date) }} - {{ formatDate(session.end_date) }}</span>
             <span class="mx-2">|</span>
@@ -36,19 +36,19 @@
           <template #content>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <span class="block text-sm text-gray-500">Organisme</span>
+                <span class="block text-sm text-color-secondary">Organisme</span>
                 <span class="font-medium">{{ session.organization?.name || '-' }}</span>
               </div>
               <div>
-                <span class="block text-sm text-gray-500">Lieu</span>
+                <span class="block text-sm text-color-secondary">Lieu</span>
                 <span class="font-medium">{{ session.location }}</span>
               </div>
               <div>
-                <span class="block text-sm text-gray-500">Formateur</span>
+                <span class="block text-sm text-color-secondary">Formateur</span>
                 <span class="font-medium">{{ session.instructor || '-' }}</span>
               </div>
               <div>
-                <span class="block text-sm text-gray-500">Coût</span>
+                <span class="block text-sm text-color-secondary">Coût</span>
                 <span class="font-medium">{{
                   session.cost ? formatCurrency(session.cost) : '-'
                 }}</span>
@@ -89,10 +89,10 @@
               <div
                 v-for="doc in session.documents"
                 :key="doc.id"
-                class="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
+                class="flex items-center justify-between p-2 hover:bg-surface-50 dark:hover:bg-surface-800 rounded"
               >
                 <div class="flex items-center gap-2 overflow-hidden">
-                  <font-awesome-icon icon="file" class="text-gray-400" />
+                  <font-awesome-icon icon="file" class="text-color-secondary" />
                   <span class="truncate text-sm">{{ doc.title }}</span>
                 </div>
                 <Button text rounded size="small" severity="secondary">
@@ -102,7 +102,7 @@
                 </Button>
               </div>
             </div>
-            <div v-else class="text-center py-4 text-gray-500 text-sm">Aucun document associé.</div>
+            <div v-else class="text-center py-4 text-color-secondary text-sm">Aucun document associé.</div>
           </template>
         </Card>
 
@@ -112,13 +112,13 @@
           <template #content>
             <div class="flex flex-col gap-3">
               <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">Inscrits</span>
+                <span class="text-sm text-color-secondary">Inscrits</span>
                 <span class="font-medium"
                   >{{ session.participations?.length || 0 }} /
                   {{ session.max_participants || '∞' }}</span
                 >
               </div>
-              <div class="w-full bg-gray-100 rounded-full h-2">
+              <div class="w-full bg-surface-100 dark:bg-surface-700 rounded-full h-2">
                 <div
                   class="bg-blue-500 h-2 rounded-full"
                   :style="{ width: getParticipationPercentage() + '%' }"
@@ -131,7 +131,7 @@
     </div>
   </div>
   <div v-else class="flex justify-center py-12">
-    <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+    <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
   </div>
 </template>
 

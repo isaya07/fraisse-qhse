@@ -1,13 +1,13 @@
 <template>
-  <div class="p-6 border rounded-lg bg-gray-50">
-    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+  <div class="p-6 border border-surface-border rounded-lg bg-surface-50 dark:bg-surface-800">
+    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-color">
       <i class="pi pi-file text-blue-500"></i>
       Module Documents
     </h2>
 
     <div class="flex flex-col gap-4">
       <div class="field">
-        <label for="basePath" class="block text-sm font-medium mb-2 text-gray-700">
+        <label for="basePath" class="block text-sm font-medium mb-2 text-color-secondary">
           Chemin de base (sur le serveur)
         </label>
         <InputText
@@ -16,13 +16,13 @@
           placeholder="ex: documents"
           class="w-full"
         />
-        <small class="text-gray-500"
+        <small class="text-color-secondary"
           >Dossier où seront stockés les fichiers (relatif à storage/app/public)</small
         >
       </div>
 
       <div class="field">
-        <label for="namingConvention" class="block text-sm font-medium mb-2 text-gray-700">
+        <label for="namingConvention" class="block text-sm font-medium mb-2 text-color-secondary">
           Convention de nommage
         </label>
         <InputText
@@ -31,19 +31,26 @@
           placeholder="ex: {date}_{original_name}"
           class="w-full"
         />
-        <small class="text-gray-500">
+        <small class="text-color-secondary">
           Variables disponibles: {original_name}, {date}, {timestamp}
         </small>
       </div>
     </div>
-
-    <div class="flex justify-end mt-6 pt-4 border-t">
+    <div class="flex justify-end mt-6 pt-4">
       <Button
         label="Enregistrer les modifications"
-        icon="pi pi-save"
         @click="saveSettings"
         :loading="loading"
-      />
+      >
+        <template #icon>
+          <font-awesome-icon icon="save" class="mr-2" />
+        </template>
+      </Button>
+    </div>
+
+    <!-- Category Management Section -->
+    <div class="mt-8 pt-6 border-t border-surface-border">
+      <CategoryManagement />
     </div>
   </div>
 </template>
@@ -54,6 +61,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useToast } from 'primevue/usetoast'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
+import CategoryManagement from '@/components/settings/CategoryManagement.vue'
 
 const settingsStore = useSettingsStore()
 const toast = useToast()

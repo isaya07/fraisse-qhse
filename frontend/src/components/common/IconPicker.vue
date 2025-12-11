@@ -1,67 +1,69 @@
 <template>
   <div class="icon-picker">
     <div
-      ref="triggerRef"
-      class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
-      @click="toggleOverlay"
-      :class="{ 'border-blue-500 ring-2 ring-blue-200': isOpen }"
+      class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
+      @click="visible = true"
+      :class="{ 'border-primary-500 ring-2 ring-primary-200 dark:ring-primary-900/50': visible }"
     >
-      <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-gray-600">
+      <div
+        class="w-8 h-8 flex items-center justify-center bg-surface-100 dark:bg-surface-700 rounded text-color-secondary"
+      >
         <font-awesome-icon :icon="modelValue || 'circle-question'" />
       </div>
-      <span class="flex-1 text-gray-700">{{ modelValue || 'Sélectionner une icône' }}</span>
-      <i class="pi pi-chevron-down text-gray-400"></i>
+      <span class="flex-1 text-color-secondary">{{ modelValue || 'Sélectionner une icône' }}</span>
+      <i class="pi pi-chevron-down text-color-secondary"></i>
     </div>
 
-    <Teleport to="body">
-      <div v-if="isOpen">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 z-[9998]" @click="closeOverlay"></div>
+    <Dialog
+      v-model:visible="visible"
+      modal
+      header="Choisir une icône"
+      :style="{ width: '50rem' }"
+      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+    >
+      <div class="flex flex-col gap-4">
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search" />
+          <InputText
+            v-model="searchQuery"
+            placeholder="Rechercher une icône..."
+            class="w-full"
+            autofocus
+          />
+        </span>
 
-        <!-- Dropdown -->
-        <div
-          class="fixed z-[9999] bg-white border rounded shadow-lg p-3 max-h-60 overflow-y-auto"
-          :style="dropdownStyle"
-        >
-          <div class="mb-3">
-            <span class="p-input-icon-left w-full">
-              <i class="pi pi-search" />
-              <InputText
-                v-model="searchQuery"
-                placeholder="Rechercher..."
-                class="w-full p-inputtext-sm"
-                autofocus
-              />
-            </span>
+        <div class="h-[30rem] overflow-y-auto custom-scrollbar p-1">
+          <div v-if="filteredIcons.length === 0" class="text-center py-8 text-color-secondary">
+            <p>Aucune icône trouvée pour "{{ searchQuery }}"</p>
           </div>
 
-          <div class="grid grid-cols-5 gap-2">
+          <div v-else class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
             <div
               v-for="icon in filteredIcons"
               :key="icon"
-              class="aspect-square flex items-center justify-center rounded cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
-              :class="{ 'bg-blue-100 text-blue-600 ring-2 ring-blue-300': modelValue === icon }"
+              class="aspect-square flex flex-col items-center justify-center rounded cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700 text-color transition-colors gap-1 p-1"
+              :class="{
+                'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300 ring-2 ring-primary-200 dark:ring-primary-500/50':
+                  modelValue === icon,
+              }"
               @click="selectIcon(icon)"
               :title="icon"
             >
-              <font-awesome-icon :icon="icon" />
+              <font-awesome-icon :icon="icon" class="text-xl" />
             </div>
-          </div>
-
-          <div v-if="filteredIcons.length === 0" class="text-center py-4 text-gray-500 text-sm">
-            Aucune icône trouvée
           </div>
         </div>
       </div>
-    </Teleport>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import InputText from 'primevue/inputtext'
+import Dialog from 'primevue/dialog'
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: String,
     default: '',
@@ -70,10 +72,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const isOpen = ref(false)
+const visible = ref(false)
 const searchQuery = ref('')
-const triggerRef = ref<HTMLElement | null>(null)
-const dropdownStyle = ref({})
 
 // Common icons list - can be expanded
 const icons = [
@@ -81,6 +81,7 @@ const icons = [
   'folder-open',
   'file',
   'file-alt',
+  'file-lines',
   'clipboard',
   'clipboard-list',
   'clipboard-check',
@@ -161,6 +162,7 @@ const icons = [
   'list',
   'list-ul',
   'list-ol',
+  'list-check',
   'th',
   'th-large',
   'th-list',
@@ -191,43 +193,8 @@ const filteredIcons = computed(() => {
   return icons.filter((icon) => icon.toLowerCase().includes(query))
 })
 
-const updatePosition = () => {
-  if (triggerRef.value && isOpen.value) {
-    const rect = triggerRef.value.getBoundingClientRect()
-    dropdownStyle.value = {
-      top: `${rect.bottom + 5}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
-    }
-  }
-}
-
-const toggleOverlay = async () => {
-  if (isOpen.value) {
-    closeOverlay()
-  } else {
-    isOpen.value = true
-    searchQuery.value = ''
-    await nextTick()
-    updatePosition()
-    window.addEventListener('scroll', updatePosition, true)
-    window.addEventListener('resize', updatePosition)
-  }
-}
-
-const closeOverlay = () => {
-  isOpen.value = false
-  window.removeEventListener('scroll', updatePosition, true)
-  window.removeEventListener('resize', updatePosition)
-}
-
 const selectIcon = (icon: string) => {
   emit('update:modelValue', icon)
-  closeOverlay()
+  visible.value = false
 }
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', updatePosition, true)
-  window.removeEventListener('resize', updatePosition)
-})
 </script>

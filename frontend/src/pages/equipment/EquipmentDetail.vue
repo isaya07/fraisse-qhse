@@ -5,8 +5,8 @@
       <div class="flex items-center gap-4">
         <Button icon="pi pi-arrow-left" text rounded @click="router.back()" />
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">{{ equipment.name }}</h1>
-          <p class="text-gray-500">
+          <h1 class="text-2xl font-bold text-color">{{ equipment.name }}</h1>
+          <p class="text-color-secondary">
             {{ equipment.category?.name }} • {{ equipment.brand }} {{ equipment.model }}
           </p>
         </div>
@@ -44,9 +44,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Info Card -->
       <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="surface-card rounded-lg shadow p-6">
           <div class="flex justify-between items-start mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Informations</h2>
+            <h2 class="text-lg font-semibold text-color">Informations</h2>
             <span
               class="px-2 py-1 rounded text-xs font-bold"
               :class="getStatusBadge(equipment.status)"
@@ -55,29 +55,29 @@
             </span>
           </div>
 
-          <div v-if="equipment.image_path" class="mb-6 rounded-lg overflow-hidden h-48 bg-gray-100">
+          <div v-if="equipment.image_path" class="mb-6 rounded-lg overflow-hidden h-48 bg-surface-100 dark:bg-surface-800">
             <img :src="equipment.image_path" class="w-full h-full object-cover" />
           </div>
 
           <div class="space-y-4">
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Numéro de série</label>
-              <p class="text-gray-800 font-mono">{{ equipment.serial_number }}</p>
+              <label class="text-xs font-bold text-color-secondary uppercase">Numéro de série</label>
+              <p class="text-color font-mono">{{ equipment.serial_number }}</p>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Référence Interne</label>
-              <p class="text-gray-800">{{ equipment.internal_ref || '-' }}</p>
+              <label class="text-xs font-bold text-color-secondary uppercase">Référence Interne</label>
+              <p class="text-color">{{ equipment.internal_ref || '-' }}</p>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Localisation</label>
+              <label class="text-xs font-bold text-color-secondary uppercase">Localisation</label>
               <div class="flex items-center gap-2">
-                <font-awesome-icon icon="map-marker-alt" class="text-gray-400" />
-                <p class="text-gray-800">{{ getLocationLabel(equipment.location) }}</p>
+                <font-awesome-icon icon="map-marker-alt" class="text-color-secondary" />
+                <p class="text-color">{{ getLocationLabel(equipment.location) }}</p>
               </div>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Fréquence de contrôle</label>
-              <p class="font-medium text-gray-800">
+              <label class="text-xs font-bold text-color-secondary uppercase">Fréquence de contrôle</label>
+              <p class="font-medium text-color">
                 {{
                   equipment.maintenance_frequency_months
                     ? `${equipment.maintenance_frequency_months} mois`
@@ -86,7 +86,7 @@
               </p>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase"
+              <label class="text-xs font-bold text-color-secondary uppercase"
                 >Prochaine vérification</label
               >
               <p
@@ -94,7 +94,7 @@
                 :class="
                   nextVerificationDate && isExpired(nextVerificationDate)
                     ? 'text-red-600'
-                    : 'text-gray-800'
+                    : 'text-color'
                 "
               >
                 {{ nextVerificationDate ? formatDate(nextVerificationDate) : 'Non planifiée' }}
@@ -106,14 +106,14 @@
               </p>
             </div>
             <div>
-              <label class="text-xs font-bold text-gray-500 uppercase">Date d'achat</label>
-              <p class="text-gray-800">{{ formatDate(equipment.purchase_date) }}</p>
+              <label class="text-xs font-bold text-color-secondary uppercase">Date d'achat</label>
+              <p class="text-color">{{ formatDate(equipment.purchase_date) }}</p>
             </div>
             <div v-if="equipment.expiration_date">
-              <label class="text-xs font-bold text-gray-500 uppercase">Date d'expiration</label>
+              <label class="text-xs font-bold text-color-secondary uppercase">Date d'expiration</label>
               <p
                 class="font-medium"
-                :class="isExpired(equipment.expiration_date) ? 'text-red-600' : 'text-gray-800'"
+                :class="isExpired(equipment.expiration_date) ? 'text-red-600' : 'text-color'"
               >
                 {{ formatDate(equipment.expiration_date) }}
                 <font-awesome-icon
@@ -129,9 +129,9 @@
         <!-- Current Assignment -->
         <div
           v-if="equipment.current_assignment"
-          class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500"
+          class="surface-card rounded-lg shadow p-6 border-l-4 border-blue-500"
         >
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Affectation en cours</h2>
+          <h2 class="text-lg font-semibold text-color mb-4">Affectation en cours</h2>
           <div class="flex items-center gap-4 mb-4">
             <div
               class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl"
@@ -139,18 +139,18 @@
               <font-awesome-icon icon="user" />
             </div>
             <div>
-              <p class="font-bold text-gray-800">
+              <p class="font-bold text-color">
                 {{ equipment.current_assignment.user?.first_name }}
                 {{ equipment.current_assignment.user?.last_name }}
               </p>
-              <p class="text-sm text-gray-500">
+              <p class="text-sm text-color-secondary">
                 Depuis le {{ formatDateTime(equipment.current_assignment.assigned_at) }}
               </p>
             </div>
           </div>
           <div
             v-if="equipment.current_assignment.notes"
-            class="bg-gray-50 p-3 rounded text-sm text-gray-600 italic"
+            class="bg-surface-100 dark:bg-surface-800 p-3 rounded text-sm text-color-secondary italic"
           >
             "{{ equipment.current_assignment.notes }}"
           </div>
@@ -160,9 +160,9 @@
       <!-- History & Logs -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Maintenance History -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="surface-card rounded-lg shadow p-6">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Historique de Maintenance</h2>
+            <h2 class="text-lg font-semibold text-color">Historique de Maintenance</h2>
             <Button
               label="Ajouter"
               icon="pi pi-plus"
@@ -172,45 +172,46 @@
             />
           </div>
 
-          <div v-if="store.maintenanceLogs.length === 0" class="text-center py-8 text-gray-500">
+          <div v-if="store.maintenanceLogs.length === 0" class="text-center py-8 text-color-secondary">
             <p>Aucune maintenance enregistrée</p>
           </div>
           <div v-else class="space-y-4">
-            <div
-              v-for="log in store.maintenanceLogs"
-              :key="log.id"
-              class="border-b border-gray-100 last:border-0 pb-4 last:pb-0"
-            >
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2">
+              <div
+                v-for="log in store.maintenanceLogs"
+                :key="log.id"
+                class="border-b border-surface-border last:border-0 pb-4 last:pb-0"
+              >
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="px-2 py-0.5 rounded text-xs font-bold uppercase"
+                      :class="getLogTypeBadge(log.type)"
+                    >
+                      {{ getLogTypeLabel(log.type) }}
+                    </span>
+                    <span class="text-sm text-color-secondary">{{ formatDate(log.date) }}</span>
+                  </div>
                   <span
-                    class="px-2 py-0.5 rounded text-xs font-bold uppercase"
-                    :class="getLogTypeBadge(log.type)"
+                    class="text-xs px-2 py-1 rounded font-medium"
+                    :class="getResultBadge(log.result)"
                   >
-                    {{ getLogTypeLabel(log.type) }}
+                    {{ getResultLabel(log.result) }}
                   </span>
-                  <span class="text-sm text-gray-500">{{ formatDate(log.date) }}</span>
                 </div>
-                <span
-                  class="text-xs px-2 py-1 rounded font-medium"
-                  :class="getResultBadge(log.result)"
-                >
-                  {{ getResultLabel(log.result) }}
-                </span>
-              </div>
-              <p class="text-gray-800 mb-2">{{ log.description }}</p>
-              <div class="flex justify-between items-center text-sm text-gray-500">
-                <span>Par: {{ log.performer }}</span>
-                <span v-if="log.cost">{{ log.cost }} €</span>
+                <p class="text-color mb-2">{{ log.description }}</p>
+                <div class="flex justify-between items-center text-sm text-color-secondary">
+                  <span>Par: {{ log.performer }}</span>
+                  <span v-if="log.cost">{{ log.cost }} €</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Assignment History (Placeholder) -->
-        <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Historique des Affectations</h2>
-          <p class="text-gray-500 italic">Fonctionnalité à venir...</p>
+        <div class="surface-card rounded-lg shadow p-6">
+          <h2 class="text-lg font-semibold text-color mb-4">Historique des Affectations</h2>
+          <p class="text-color-secondary italic">Fonctionnalité à venir...</p>
         </div>
       </div>
     </div>
@@ -259,7 +260,7 @@
     </Dialog>
   </div>
   <div v-else class="flex justify-center py-12">
-    <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+    <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
   </div>
 </template>
 

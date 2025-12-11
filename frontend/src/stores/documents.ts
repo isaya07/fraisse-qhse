@@ -7,9 +7,10 @@ export interface DocumentFormData {
   title: string
   description: string
   document_folder_id: number | null
-  category: string
+  category_id: number | null
   version: string
   status: string
+  expires_date?: Date | null
 }
 
 interface DocumentState {

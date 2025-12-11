@@ -2,9 +2,12 @@
   <div class="flex items-center justify-center h-screen">
     <Card class="px-6 py-20 md:px-20 lg:px-80">
       <template #title>
-        <div class="flex items-center gap-4 pb-8">
-          <font-awesome-icon :icon="['fas', 'shield-alt']" size="3x" class="mr-2" />
-          <span class="text-3xl font-bold">QHSE Manager</span>
+        <div class="flex items-center gap-4 pb-8 text-primary">
+          <FraisseLogo size="64" />
+          <div class="flex flex-col justify-center leading-none">
+            <span class="text-2xl font-bold text-color">FRAISSE & FILS</span>
+            <span class="text-xl text-primary font-bold tracking-wider">QHSE Manager</span>
+          </div>
         </div>
       </template>
       <template #content>
@@ -17,7 +20,7 @@
                   id="email"
                   type="email"
                   size="large"
-                  class="w-full px-3 py-2 shadow-sm rounded-lg"
+                  class="w-full"
                   fluid
                 />
                 <label for="email">Email</label>
@@ -34,7 +37,7 @@
                   size="large"
                   :toggleMask="true"
                   :feedback="false"
-                  input-class="w-full px-3 py-2 shadow-sm rounded-lg"
+                  input-class="w-full"
                   fluid
                 />
                 <label for="password">Mot de passe</label>
@@ -53,11 +56,11 @@
                 type="submit"
                 size="large"
                 fluid
-                class="w-full py-2 rounded-lg flex justify-center items-center gap-2"
+                class="w-full"
+                :loading="loading"
               >
                 <template #icon>
-                  <font-awesome-icon v-if="loading" :icon="['fas', 'spinner']" spin class="mr-2" />
-                  <font-awesome-icon v-else :icon="['fas', 'sign-in-alt']" class="mr-2" />
+                   <font-awesome-icon :icon="['fas', 'sign-in-alt']" class="mr-2" />
                 </template>
               </Button>
             </div>
@@ -75,6 +78,7 @@ import Form from '@primevue/forms/form'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import { Password } from 'primevue'
+import FraisseLogo from '@/components/FraisseLogo.vue'
 
 const router = useRouter()
 const store = useAppStore()

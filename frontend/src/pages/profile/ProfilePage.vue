@@ -1,11 +1,11 @@
 <template>
   <div class="p-4">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Mon Profil</h1>
+    <h1 class="text-2xl font-bold text-color mb-6">Mon Profil</h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Informations personnelles -->
-      <div class="card">
-        <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
+      <div class="card surface-card p-4 border-round shadow-2">
+        <h2 class="text-xl font-semibold mb-4 text-color">Informations personnelles</h2>
         <Form
           v-slot="$form"
           :resolver="profileResolver"
@@ -25,7 +25,7 @@
                 />
                 <label for="username">Nom d'utilisateur</label>
               </FloatLabel>
-              <small class="text-gray-500">Le nom d'utilisateur ne peut pas être modifié.</small>
+              <small class="text-color-secondary">Le nom d'utilisateur ne peut pas être modifié.</small>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -81,8 +81,8 @@
       </div>
 
       <!-- Changement de mot de passe -->
-      <div class="card">
-        <h2 class="text-xl font-semibold mb-4">Changer le mot de passe</h2>
+      <div class="card surface-card p-4 border-round shadow-2">
+        <h2 class="text-xl font-semibold mb-4 text-color">Changer le mot de passe</h2>
         <Form v-slot="$form" :resolver="passwordResolver" @submit="onPasswordSubmit">
           <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2">

@@ -61,8 +61,8 @@
                       :class="getFileIconColor(data.filename)"
                     />
                     <div class="flex flex-col">
-                      <span class="font-medium">{{ data.title }}</span>
-                      <span class="text-xs text-gray-500">{{ data.filename }}</span>
+                      <span class="font-medium text-color">{{ data.title }}</span>
+                      <span class="text-xs text-color-secondary">{{ data.filename }}</span>
                     </div>
                   </div>
                 </template>
@@ -71,15 +71,25 @@
               <Column field="category" header="Type" sortable style="width: 120px">
                 <template #body="{ data }">
                   <Tag
-                    :value="getCategoryLabel(data.category)"
-                    :severity="getCategorySeverity(data.category)"
-                  />
+                    v-if="data.category"
+                    :value="data.category.name"
+                    :style="{ backgroundColor: data.category.color || 'var(--surface-500)', color: '#fff' }"
+                  >
+                    <template #icon>
+                      <font-awesome-icon
+                        v-if="data.category.icon"
+                        :icon="['fas', data.category.icon]"
+                        class="mr-1"
+                      />
+                    </template>
+                  </Tag>
+                  <span v-else class="text-color-secondary">Non défini</span>
                 </template>
               </Column>
 
               <Column field="version" header="Ver." style="width: 80px">
                 <template #body="{ data }">
-                  <span class="bg-gray-100 px-2 py-1 rounded text-xs">{{ data.version }}</span>
+                  <span class="bg-surface-100 dark:bg-surface-700 text-color-secondary px-2 py-1 rounded text-xs">{{ data.version }}</span>
                 </template>
               </Column>
 
@@ -94,7 +104,9 @@
 
               <Column field="updated_at" header="Modifié le" style="width: 120px">
                 <template #body="{ data }">
+                  <span class="text-color-secondary">
                   {{ formatDate(data.updated_at) }}
+                  </span>
                 </template>
               </Column>
 
@@ -246,7 +258,9 @@ const confirmDelete = (doc: Document) => {
     header: 'Confirmation de suppression',
     icon: 'exclamation-triangle',
     rejectLabel: 'Annuler',
+    acceptLabel: 'Supprimer',
     acceptClass: 'p-button-danger',
+    rejectClass: 'p-button-secondary',
     accept: async () => {
       try {
         await documentStore.deleteDocument(doc.id)
@@ -313,7 +327,7 @@ const getFileIcon = (filename: string) => {
 }
 
 const getFileIconColor = (filename: string) => {
-  if (!filename) return 'text-gray-500'
+  if (!filename) return 'text-color-secondary'
   const ext = (filename || '').split('.').pop()?.toLowerCase()
   switch (ext) {
     case 'pdf':
@@ -327,30 +341,10 @@ const getFileIconColor = (filename: string) => {
     case 'jpg':
     case 'png':
     case 'jpeg':
-      return 'text-purple-500'
+      return 'text-primary'
     default:
-      return 'text-gray-500'
+      return 'text-color-secondary'
   }
-}
-
-const getCategoryLabel = (value: string) => {
-  const map: Record<string, string> = {
-    procedure: 'Procédure',
-    form: 'Formulaire',
-    consigne: 'Consigne',
-    other: 'Autre',
-  }
-  return map[value] || value
-}
-
-const getCategorySeverity = (value: string): string => {
-  const map: Record<string, string> = {
-    procedure: 'info',
-    form: 'warn',
-    consigne: 'danger',
-    other: 'secondary',
-  }
-  return map[value] || 'secondary'
 }
 
 const getStatusLabel = (value: string) => {

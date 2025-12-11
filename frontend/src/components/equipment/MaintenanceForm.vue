@@ -2,7 +2,7 @@
   <div class="maintenance-form">
     <div class="grid grid-cols-1 gap-4">
       <div class="field">
-        <label for="type" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="type" class="block text-sm font-medium text-color-secondary mb-1"
           >Type d'intervention *</label
         >
         <Select
@@ -18,7 +18,7 @@
       </div>
 
       <div class="field">
-        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+        <label for="date" class="block text-sm font-medium text-color-secondary mb-1">Date *</label>
         <DatePicker
           id="date"
           v-model="form.date"
@@ -30,7 +30,7 @@
       </div>
 
       <div class="field">
-        <label for="description" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="description" class="block text-sm font-medium text-color-secondary mb-1"
           >Description *</label
         >
         <Textarea
@@ -45,7 +45,7 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div class="field">
-          <label for="performer" class="block text-sm font-medium text-gray-700 mb-1"
+          <label for="performer" class="block text-sm font-medium text-color-secondary mb-1"
             >Intervenant *</label
           >
           <InputText
@@ -58,7 +58,7 @@
         </div>
 
         <div class="field">
-          <label for="cost" class="block text-sm font-medium text-gray-700 mb-1">Coût (€)</label>
+          <label for="cost" class="block text-sm font-medium text-color-secondary mb-1">Coût (€)</label>
           <InputNumber
             id="cost"
             v-model="form.cost"
@@ -71,7 +71,7 @@
       </div>
 
       <div class="field">
-        <label for="result" class="block text-sm font-medium text-gray-700 mb-1">Résultat *</label>
+        <label for="result" class="block text-sm font-medium text-color-secondary mb-1">Résultat *</label>
         <Select
           id="result"
           v-model="form.result"
@@ -85,7 +85,7 @@
       </div>
 
       <div class="field">
-        <label for="next_maintenance_date" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="next_maintenance_date" class="block text-sm font-medium text-color-secondary mb-1"
           >Prochaine maintenance</label
         >
         <DatePicker

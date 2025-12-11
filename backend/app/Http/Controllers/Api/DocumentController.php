@@ -7,12 +7,22 @@ use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
 use App\Models\Document;
 use App\Models\Setting;
+use App\Services\DocumentStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
     use AuthorizesRequests;
+
+    protected $storageService;
+
+    public function __construct(DocumentStorageService $storageService)
+    {
+        $this->storageService = $storageService;
+    }
 
     /**
      * Display a listing of the resource.
@@ -21,14 +31,14 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        $query = Document::with(['creator', 'approver'])
-            ->select('id', 'title', 'filename', 'filepath', 'version', 'category', 'status', 'created_by', 'approved_by', 'published_date', 'expires_date', 'created_at', 'updated_at');
+        $query = Document::with(['creator', 'approver', 'category'])
+            ->select('id', 'title', 'filename', 'filepath', 'version', 'category_id', 'status', 'created_by', 'approved_by', 'published_date', 'expires_date', 'created_at', 'updated_at', 'document_folder_id');
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('filename', 'like', "%{$search}%");
+                    ->orWhere('filename', 'like', "%{$search}%");
             });
         }
 
@@ -36,8 +46,8 @@ class DocumentController extends Controller
             $query->where('document_folder_id', $request->document_folder_id);
         }
 
-        if ($request->has('category') && $request->category) {
-            $query->where('category', $request->category);
+        if ($request->has('category_id') && $request->category_id) {
+            $query->where('category_id', $request->category_id);
         }
 
         if ($request->has('status') && $request->status) {
@@ -64,28 +74,39 @@ class DocumentController extends Controller
 
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                
-                // Get settings
-                $basePath = Setting::where('key', 'document_base_path')->value('value') ?? 'documents';
+
+                // Get settings for naming convention only (path is now handled by service)
                 $namingConvention = Setting::where('key', 'document_naming_convention')->value('value') ?? '{original_name}';
 
                 // Generate filename
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 $extension = $file->getClientOriginalExtension();
-                
+
                 $filename = str_replace(
                     ['{original_name}', '{date}', '{timestamp}'],
                     [$originalName, date('Y-m-d'), time()],
                     $namingConvention
                 );
-                
+
                 // Ensure extension is present
                 if (!str_ends_with($filename, '.' . $extension)) {
                     $filename .= '.' . $extension;
                 }
 
-                // Store file
-                $path = $file->storeAs($basePath, $filename, 'public');
+                // Ensure unique filename in the specific folder
+                $folderId = $request->input('document_folder_id');
+                $folderPath = $this->storageService->getFolderPath($folderId);
+
+                // Check if file exists and rename if needed
+                $i = 1;
+                $baseFilename = pathinfo($filename, PATHINFO_FILENAME);
+                while (Storage::disk('public')->exists($folderPath . '/' . $filename)) {
+                    $filename = $baseFilename . '_' . $i . '.' . $extension;
+                    $i++;
+                }
+
+                // Store file using service logic
+                $path = $file->storeAs($folderPath, $filename, 'public');
 
                 $validated['filename'] = $filename;
                 $validated['filepath'] = $path;
@@ -111,8 +132,8 @@ class DocumentController extends Controller
             return response()->json($document->load('creator', 'approver'), 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            if (isset($path) && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            if (isset($path) && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
             }
             return response()->json(['message' => 'Failed to create document: ' . $e->getMessage()], 500);
         }
@@ -123,7 +144,7 @@ class DocumentController extends Controller
      */
     public function show($id)
     {
-        $document = Document::with(['creator', 'approver'])->findOrFail($id);
+        $document = Document::with(['creator', 'approver', 'category', 'actions'])->findOrFail($id);
 
         $this->authorize('view', $document);
 
@@ -141,35 +162,58 @@ class DocumentController extends Controller
 
         $validated = $request->validated();
 
+        // Handle file upload if present
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            
-            // Get settings
-            $basePath = Setting::where('key', 'document_base_path')->value('value') ?? 'documents';
-            $namingConvention = Setting::where('key', 'document_naming_convention')->value('value') ?? '{original_name}';
 
-            // Generate filename
+            // Generate filename (same logic as store)
+            $namingConvention = Setting::where('key', 'document_naming_convention')->value('value') ?? '{original_name}';
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $extension = $file->getClientOriginalExtension();
-            
+
             $filename = str_replace(
                 ['{original_name}', '{date}', '{timestamp}'],
                 [$originalName, date('Y-m-d'), time()],
                 $namingConvention
             );
-            
-            // Ensure extension is present
+
             if (!str_ends_with($filename, '.' . $extension)) {
                 $filename .= '.' . $extension;
             }
 
+            // Folder path
+            $folderId = $request->input('document_folder_id', $document->document_folder_id);
+            $folderPath = $this->storageService->getFolderPath($folderId);
+
             // Store file
-            $path = $file->storeAs($basePath, $filename, 'public');
+            $path = $file->storeAs($folderPath, $filename, 'public');
 
             $validated['filename'] = $filename;
             $validated['filepath'] = $path;
             $validated['file_size'] = $file->getSize();
             $validated['mime_type'] = $file->getMimeType();
+
+            // Delete old file if strictly necessary (optional, often kept for history/versions but here we are replacing the main file ref)
+            // But wait, we keep versions history usually. 
+            // In this specific update method, if we upload a file, we are replacing the "current" file.
+            // The previous file is NOT automatically moved to version history here unless we explicitly did so.
+            // The standard flow is -> create version. 
+            // Update is mostly for metadata. If file is sent in update, it replaces current.
+        }
+
+        // Handle folder change (Move document)
+        if (isset($validated['document_folder_id']) && $validated['document_folder_id'] != $document->document_folder_id) {
+            // If we just uploaded a new file, it's already in the target folder thanks to logic above.
+            // If NO new file, we must move the existing one.
+            if (!$request->hasFile('file')) {
+                // Move existing file
+                $this->storageService->moveDocument($document, $validated['document_folder_id']);
+                // moveDocument updates the model 'filepath' and 'filename' (if collision) and 'document_folder_id'
+                // So we should remove them from $validated to avoid double update or overwriting with old values
+                unset($validated['filepath']);
+                unset($validated['filename']);
+                // document_folder_id is already set in moveDocument, but update() will set it again, which is fine.
+            }
         }
 
         $document->update($validated);
@@ -185,6 +229,11 @@ class DocumentController extends Controller
         $document = Document::findOrFail($id);
 
         $this->authorize('delete', $document);
+
+        // Delete physical file
+        if (Storage::disk('public')->exists($document->filepath)) {
+            Storage::disk('public')->delete($document->filepath);
+        }
 
         $document->delete();
 
@@ -224,10 +273,10 @@ class DocumentController extends Controller
     public function approve(Request $request, $id)
     {
         $document = Document::findOrFail($id);
-        
+
         // Check if user has permission (admin or manager)
         if (!in_array($request->user()->role, ['admin', 'manager'])) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $document->update([
@@ -258,7 +307,7 @@ class DocumentController extends Controller
 
         // Check if user has permission (admin or manager)
         if (!in_array($request->user()->role, ['admin', 'manager'])) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $document->update(['status' => 'rejected']);
@@ -283,11 +332,11 @@ class DocumentController extends Controller
         $document = Document::findOrFail($id);
         $this->authorize('view', $document);
 
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($document->filepath)) {
+        if (!Storage::disk('public')->exists($document->filepath)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($document->filepath, $document->filename);
+        return Storage::disk('public')->download($document->filepath, $document->filename);
     }
 
     /**
@@ -310,17 +359,27 @@ class DocumentController extends Controller
         }
 
         $file = $request->file('file');
-        $basePath = 'documents/' . date('Y/m');
+
+        // Use service to determine path (store versions in specific folder or same folder)
+        // Decision: Store in same folder as document for now, relying on filename uniqueness or we can append _versions
+        // Let's keep it simple: store in same folder as current doc (or maybe a _versions subfolder)
+        // Implementation: reuse document folder path
+        $folderPath = $this->storageService->getFolderPath($document->document_folder_id);
+        // Maybe subfolder?
+        $folderPath .= '/_versions'; // Clean separation
+
         $filename = $file->getClientOriginalName();
-        
+        $baseFilename = pathinfo($filename, PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+
         // Ensure unique filename
         $i = 1;
-        while (\Illuminate\Support\Facades\Storage::disk('public')->exists($basePath . '/' . $filename)) {
-            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . $i . '.' . $file->getClientOriginalExtension();
+        while (Storage::disk('public')->exists($folderPath . '/' . $filename)) {
+            $filename = $baseFilename . '_' . $i . '.' . $extension;
             $i++;
         }
 
-        $path = $file->storeAs($basePath, $filename, 'public');
+        $path = $file->storeAs($folderPath, $filename, 'public');
 
         DB::beginTransaction();
         try {
@@ -351,7 +410,7 @@ class DocumentController extends Controller
             return response()->json($document->fresh(['versions', 'creator']));
         } catch (\Exception $e) {
             DB::rollBack();
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            Storage::disk('public')->delete($path);
             return response()->json(['message' => 'Failed to add version'], 500);
         }
     }

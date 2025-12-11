@@ -25,7 +25,7 @@
       <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
         <!-- Fichier -->
         <div class="field">
-          <label class="block text-sm font-medium mb-2 text-gray-700">Nouveau Fichier *</label>
+          <label class="block text-sm font-medium mb-2 text-color-secondary">Nouveau Fichier *</label>
           <FileUpload
             name="file"
             :auto="true"
@@ -38,7 +38,7 @@
               <div class="flex items-center justify-center flex-col">
                 <font-awesome-icon
                   :icon="['fas', 'cloud-upload-alt']"
-                  class="text-6xl text-gray-300 mb-4"
+                  class="text-6xl text-color-secondary mb-4"
                 />
                 <p class="mt-4 mb-0">Glisser-déposer le fichier ici.</p>
               </div>
@@ -47,7 +47,7 @@
 
           <div
             v-if="selectedFile"
-            class="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded"
+            class="mt-2 flex items-center gap-2 text-sm text-color-secondary bg-surface-50 dark:bg-surface-800 p-2 rounded"
           >
             <font-awesome-icon :icon="['fas', 'check-circle']" class="text-green-500" />
             <span class="font-semibold">{{ selectedFile.name }}</span>
@@ -70,7 +70,7 @@
 
         <!-- Version -->
         <div class="field">
-          <label for="version" class="block text-sm font-medium mb-2 text-gray-700"
+          <label for="version" class="block text-sm font-medium mb-2 text-color-secondary"
             >Numéro de version *</label
           >
           <InputText
@@ -85,7 +85,7 @@
 
         <!-- Changelog -->
         <div class="field">
-          <label for="changelog" class="block text-sm font-medium mb-2 text-gray-700"
+          <label for="changelog" class="block text-sm font-medium mb-2 text-color-secondary"
             >Commentaire (Changelog)</label
           >
           <Textarea
@@ -98,7 +98,7 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+        <div class="flex justify-end gap-3 pt-4 border-t border-surface-border">
           <Button label="Annuler" text severity="secondary" @click="$emit('update:visible', false)">
             <template #icon>
               <font-awesome-icon :icon="['fas', 'times']" />

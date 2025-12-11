@@ -44,6 +44,7 @@ interface IndicatorData {
   data_source: string
   frequency: string
   trend_direction: string
+  goal_type: 'maximize' | 'minimize' | 'target'
   is_active: boolean
 }
 
@@ -59,9 +60,9 @@ const submitIndicator = async (data: IndicatorData) => {
     // Créer l'indicateur
     await indicatorStore.createIndicator({
       ...data,
-      target_value: data.target_value || undefined,
-      threshold_min: data.threshold_min || undefined,
-      threshold_max: data.threshold_max || undefined,
+      target_value: data.target_value,
+      threshold_min: data.threshold_min,
+      threshold_max: data.threshold_max,
     })
 
     toast.add({

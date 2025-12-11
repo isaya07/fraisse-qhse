@@ -1,6 +1,6 @@
 <template>
-  <div class="p-6 border rounded-lg bg-gray-50">
-    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+  <div class="p-6 border border-surface-border rounded-lg bg-surface-50 dark:bg-surface-800">
+    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-color">
       <font-awesome-icon :icon="['fas', 'bell']" class="text-blue-500" />
       Module Notifications
     </h2>
@@ -8,13 +8,13 @@
     <div class="flex flex-col gap-6">
       <div class="field-checkbox flex items-center gap-2">
         <Checkbox id="email_enabled" v-model="form.email_enabled" :binary="true" />
-        <label for="email_enabled" class="font-medium text-gray-700"
+        <label for="email_enabled" class="font-medium text-color-secondary"
           >Recevoir le résumé quotidien par email</label
         >
       </div>
 
       <div class="field" v-if="form.email_enabled">
-        <label for="email_time" class="block text-sm font-medium text-gray-700 mb-1"
+        <label for="email_time" class="block text-sm font-medium text-color-secondary mb-1"
           >Heure d'envoi</label
         >
         <DatePicker
@@ -30,17 +30,17 @@
             <font-awesome-icon :icon="['fas', 'clock']" />
           </template>
         </DatePicker>
-        <small class="text-gray-500"
+        <small class="text-color-secondary"
           >L'heure à laquelle vous souhaitez recevoir le récapitulatif.</small
         >
       </div>
 
-      <div class="border-t pt-4">
-        <h3 class="text-lg font-semibold mb-4">Seuils d'alerte (jours avant échéance)</h3>
+      <div class="border-t border-surface-border pt-4">
+        <h3 class="text-lg font-semibold mb-4 text-color">Seuils d'alerte (jours avant échéance)</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="field">
-            <label for="action_threshold" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="action_threshold" class="block text-sm font-medium text-color-secondary mb-1"
               >Actions</label
             >
             <InputNumber
@@ -55,7 +55,7 @@
           </div>
 
           <div class="field">
-            <label for="equipment_threshold" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="equipment_threshold" class="block text-sm font-medium text-color-secondary mb-1"
               >Équipements</label
             >
             <InputNumber
@@ -70,7 +70,7 @@
           </div>
 
           <div class="field">
-            <label for="document_threshold" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="document_threshold" class="block text-sm font-medium text-color-secondary mb-1"
               >Documents (Expiration)</label
             >
             <InputNumber
@@ -85,7 +85,7 @@
           </div>
 
           <div class="field">
-            <label for="training_threshold" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="training_threshold" class="block text-sm font-medium text-color-secondary mb-1"
               >Formations</label
             >
             <InputNumber
@@ -100,7 +100,7 @@
           </div>
 
           <div class="field">
-            <label for="planning_threshold" class="block text-sm font-medium text-gray-700 mb-1"
+            <label for="planning_threshold" class="block text-sm font-medium text-color-secondary mb-1"
               >Planning (Visites/Causeries)</label
             >
             <InputNumber
@@ -116,10 +116,9 @@
         </div>
       </div>
 
-      <div class="flex justify-end mt-6 pt-4 border-t">
+      <div class="flex justify-end mt-6 pt-4 border-t border-surface-border">
         <Button
           label="Enregistrer les modifications"
-          icon="pi pi-save"
           @click="save"
           :loading="loading"
         >

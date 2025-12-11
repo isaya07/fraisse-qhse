@@ -33,7 +33,8 @@ class StoreIndicatorRequest extends FormRequest
             'calculation_method' => 'nullable|string|max:100',
             'data_source' => 'nullable|string|max:255',
             'frequency' => 'required|in:daily,weekly,monthly,quarterly,yearly',
-            'trend_direction' => 'required|in:positive,negative,neutral',
+            'trend_direction' => 'nullable|in:positive,negative,neutral',
+            'goal_type' => 'required|in:maximize,minimize,target',
             'is_active' => 'required|boolean',
         ];
     }

@@ -10,11 +10,11 @@
     </div>
 
     <div v-if="isLoading" class="flex justify-center items-center py-12">
-      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+      <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
     </div>
 
     <div v-else-if="!currentIndicator && !error" class="flex justify-center items-center py-12">
-      <p class="text-lg text-gray-600">Indicateur non trouvé</p>
+      <p class="text-lg text-color-secondary">Indicateur non trouvé</p>
     </div>
 
     <div v-else-if="error" class="flex justify-center items-center py-12">
@@ -57,6 +57,7 @@ interface IndicatorData {
   data_source: string
   frequency: string
   trend_direction: string
+  goal_type: 'maximize' | 'minimize' | 'target'
   is_active: boolean
 }
 
@@ -79,7 +80,8 @@ const formData = ref<IndicatorData>({
   calculation_method: '',
   data_source: '',
   frequency: 'monthly',
-  trend_direction: 'positive',
+  trend_direction: 'neutral',
+  goal_type: 'maximize',
   is_active: true,
 })
 
@@ -118,6 +120,7 @@ const loadIndicator = async () => {
         data_source: indicator.data_source || '',
         frequency: indicator.frequency,
         trend_direction: indicator.trend_direction,
+        goal_type: indicator.goal_type || 'maximize',
         is_active: indicator.is_active,
       }
     } else {
@@ -146,9 +149,9 @@ const submitIndicator = async (data: IndicatorData) => {
     // Mettre à jour l'indicateur
     await indicatorStore.updateIndicator(id, {
       ...data,
-      target_value: data.target_value || undefined,
-      threshold_min: data.threshold_min || undefined,
-      threshold_max: data.threshold_max || undefined,
+      target_value: data.target_value,
+      threshold_min: data.threshold_min,
+      threshold_max: data.threshold_max,
     })
 
     toast.add({

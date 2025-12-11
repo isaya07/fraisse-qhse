@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 gap-4">
     <div class="field">
-      <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+      <label for="date" class="block text-sm font-medium text-color-secondary mb-1">Date *</label>
       <DatePicker
         id="date"
         v-model="form.date"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="field">
-      <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Lieu *</label>
+      <label for="location" class="block text-sm font-medium text-color-secondary mb-1">Lieu *</label>
       <InputText
         id="location"
         v-model="form.location"
@@ -24,7 +24,7 @@
     </div>
 
     <div class="field">
-      <label for="auditor" class="block text-sm font-medium text-gray-700 mb-1">Auditeur *</label>
+      <label for="auditor" class="block text-sm font-medium text-color-secondary mb-1">Auditeur *</label>
       <Select
         id="auditor"
         v-model="form.auditor_id"
@@ -40,7 +40,7 @@
     </div>
 
     <div class="field">
-      <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
+      <label for="status" class="block text-sm font-medium text-color-secondary mb-1">Statut *</label>
       <Select
         id="status"
         v-model="form.status"
@@ -52,7 +52,7 @@
     </div>
 
     <div class="field">
-      <label for="score" class="block text-sm font-medium text-gray-700 mb-1">Score (/100)</label>
+      <label for="score" class="block text-sm font-medium text-color-secondary mb-1">Score (/100)</label>
       <InputNumber id="score" v-model="form.score" :min="0" :max="100" class="w-full" />
     </div>
 

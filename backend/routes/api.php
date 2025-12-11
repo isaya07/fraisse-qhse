@@ -24,9 +24,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('documents/{id}/approve', [DocumentController::class, 'approve']);
     Route::post('documents/{id}/reject', [DocumentController::class, 'reject']);
     Route::get('documents/{id}/download', [DocumentController::class, 'download']);
-    Route::post('documents/{id}/versions', [DocumentController::class, 'addVersion']);
-    Route::get('documents/{id}/versions', [DocumentController::class, 'getVersions']);
+    // Gestion des versions de documents
+    Route::prefix('documents/{document}')->group(function () {
+        Route::get('/versions', [\App\Http\Controllers\Api\DocumentVersionController::class, 'index']);
+        Route::post('/versions', [\App\Http\Controllers\Api\DocumentVersionController::class, 'store']);
+    });
+    Route::get('/versions/{version}', [\App\Http\Controllers\Api\DocumentVersionController::class, 'show']);
+    Route::post('/versions/{version}/restore', [\App\Http\Controllers\Api\DocumentVersionController::class, 'restore']);
+    Route::get('/versions/{version}/download', [\App\Http\Controllers\Api\DocumentVersionController::class, 'download']);
     Route::apiResource('documents', DocumentController::class);
+
+    // Gestion des catégories
+    Route::apiResource('categories', \App\Http\Controllers\Api\CategoryController::class);
+
 
     // Gestion des dossiers de documents
     Route::apiResource('document-folders', \App\Http\Controllers\Api\DocumentFolderController::class);
@@ -38,11 +48,20 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gestion des actions
     Route::get('action-types', [\App\Http\Controllers\Api\ActionTypeController::class, 'index']);
     Route::apiResource('actions', ActionController::class);
+    Route::post('/actions/{id}/documents', [ActionController::class, 'attachDocument']);
+    Route::delete('/actions/{id}/documents/{documentId}', [ActionController::class, 'detachDocument']);
+    Route::post('/actions/{id}/indicators', [ActionController::class, 'attachIndicator']);
+    Route::delete('/actions/{id}/indicators/{indicatorId}', [ActionController::class, 'detachIndicator']);
+    Route::post('/actions/{id}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
+    Route::delete('/comments/{comment}', [\App\Http\Controllers\Api\CommentController::class, 'destroy']);
+    Route::post('/actions/{id}/update-progress', [ActionController::class, 'updateProgress']);
 
     // Gestion des indicateurs
-    Route::get('indicator-categories', [IndicatorController::class, 'categories']);
+    Route::apiResource('indicator-categories', \App\Http\Controllers\Api\IndicatorCategoryController::class);
     Route::post('indicators/{id}/values', [IndicatorController::class, 'addValue']);
     Route::apiResource('indicators', IndicatorController::class);
+    Route::put('indicator-values/{id}', [\App\Http\Controllers\Api\IndicatorValueController::class, 'update']);
+    Route::delete('indicator-values/{id}', [\App\Http\Controllers\Api\IndicatorValueController::class, 'destroy']);
 
     // Gestion des formations
     Route::apiResource('training-categories', \App\Http\Controllers\Api\TrainingCategoryController::class);
