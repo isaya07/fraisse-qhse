@@ -12,7 +12,7 @@
           v-if="item.to"
           :to="item.to"
           class="menu-link"
-          exact-active-class="active-route"
+          :class="{ 'active-route': isMenuItemActive(item) }"
         >
           <font-awesome-icon :icon="item.icon" class="menu-icon" />
           <span class="menu-label">{{ item.label }}</span>
@@ -103,7 +103,12 @@ const model = ref<MenuItem[]>([
 ])
 
 const isMenuItemActive = (item: MenuItem) => {
-  return item.to ? route.path === item.to : false
+  if (!item.to) return false
+  if (item.to === '/') return route.path === '/'
+  return (
+    route.path.startsWith(item.to) &&
+    (route.path.length === item.to.length || route.path[item.to.length] === '/')
+  )
 }
 </script>
 
@@ -163,8 +168,8 @@ const isMenuItemActive = (item: MenuItem) => {
 }
 
 :deep(.dark) .active-route {
-    color: var(--primary-color);
-    background-color: rgba(255, 255, 255, 0.05);
+  color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /*
@@ -186,7 +191,6 @@ const isMenuItemActive = (item: MenuItem) => {
   background-color: var(--primary-color);
   color: var(--primary-contrast-color);
 }
-
 
 .menu-icon {
   margin-right: 0.75rem;

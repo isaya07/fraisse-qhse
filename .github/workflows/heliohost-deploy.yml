@@ -1,0 +1,55 @@
+name: Prepare HelioHost Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Prepare Backend Assets
+        run: |
+          # Remove existing assets in backend public if any (optional)
+          rm -rf backend/public/assets
+
+          # Copy built frontend assets to backend public
+          cp -r frontend/dist/* backend/public/
+
+          # Ensure .htaccess or index.php are not overwritten if they exist in dist (Vue shouldn't have index.php)
+          # Specifically for Laravel, we want to keep index.php but serve index.html for Vue routes?
+          # Actually, the user wants the build to govern. 
+          # BUT Laravel needs index.php to run.
+          # Vue build usually produces index.html.
+          # If we overwrite index.html, we need Laravel to serve it or rewrite to it.
+          # Let's assume the user handles the serving logic in Laravel routes as discussed.
+
+      - name: Deploy Backend folder to 'deploy' branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: deploy
+          FOLDER: backend
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE: "Deploy: Build Frontend and Push Backend ({sha})"
