@@ -55,17 +55,24 @@
             </span>
           </div>
 
-          <div v-if="equipment.image_path" class="mb-6 rounded-lg overflow-hidden h-48 bg-surface-100 dark:bg-surface-800">
+          <div
+            v-if="equipment.image_path"
+            class="mb-6 rounded-lg overflow-hidden h-48 bg-surface-100 dark:bg-surface-800"
+          >
             <img :src="equipment.image_path" class="w-full h-full object-cover" />
           </div>
 
           <div class="space-y-4">
             <div>
-              <label class="text-xs font-bold text-color-secondary uppercase">Numéro de série</label>
+              <label class="text-xs font-bold text-color-secondary uppercase"
+                >Numéro de série</label
+              >
               <p class="text-color font-mono">{{ equipment.serial_number }}</p>
             </div>
             <div>
-              <label class="text-xs font-bold text-color-secondary uppercase">Référence Interne</label>
+              <label class="text-xs font-bold text-color-secondary uppercase"
+                >Référence Interne</label
+              >
               <p class="text-color">{{ equipment.internal_ref || '-' }}</p>
             </div>
             <div>
@@ -76,7 +83,9 @@
               </div>
             </div>
             <div>
-              <label class="text-xs font-bold text-color-secondary uppercase">Fréquence de contrôle</label>
+              <label class="text-xs font-bold text-color-secondary uppercase"
+                >Fréquence de contrôle</label
+              >
               <p class="font-medium text-color">
                 {{
                   equipment.maintenance_frequency_months
@@ -110,7 +119,9 @@
               <p class="text-color">{{ formatDate(equipment.purchase_date) }}</p>
             </div>
             <div v-if="equipment.expiration_date">
-              <label class="text-xs font-bold text-color-secondary uppercase">Date d'expiration</label>
+              <label class="text-xs font-bold text-color-secondary uppercase"
+                >Date d'expiration</label
+              >
               <p
                 class="font-medium"
                 :class="isExpired(equipment.expiration_date) ? 'text-red-600' : 'text-color'"
@@ -172,37 +183,39 @@
             />
           </div>
 
-          <div v-if="store.maintenanceLogs.length === 0" class="text-center py-8 text-color-secondary">
+          <div
+            v-if="store.maintenanceLogs.length === 0"
+            class="text-center py-8 text-color-secondary"
+          >
             <p>Aucune maintenance enregistrée</p>
           </div>
           <div v-else class="space-y-4">
-              <div
-                v-for="log in store.maintenanceLogs"
-                :key="log.id"
-                class="border-b border-surface-border last:border-0 pb-4 last:pb-0"
-              >
-                <div class="flex justify-between items-start mb-2">
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="px-2 py-0.5 rounded text-xs font-bold uppercase"
-                      :class="getLogTypeBadge(log.type)"
-                    >
-                      {{ getLogTypeLabel(log.type) }}
-                    </span>
-                    <span class="text-sm text-color-secondary">{{ formatDate(log.date) }}</span>
-                  </div>
+            <div
+              v-for="log in store.maintenanceLogs"
+              :key="log.id"
+              class="border-b border-surface-border last:border-0 pb-4 last:pb-0"
+            >
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
                   <span
-                    class="text-xs px-2 py-1 rounded font-medium"
-                    :class="getResultBadge(log.result)"
+                    class="px-2 py-0.5 rounded text-xs font-bold uppercase"
+                    :class="getLogTypeBadge(log.type)"
                   >
-                    {{ getResultLabel(log.result) }}
+                    {{ getLogTypeLabel(log.type) }}
                   </span>
+                  <span class="text-sm text-color-secondary">{{ formatDate(log.date) }}</span>
                 </div>
-                <p class="text-color mb-2">{{ log.description }}</p>
-                <div class="flex justify-between items-center text-sm text-color-secondary">
-                  <span>Par: {{ log.performer }}</span>
-                  <span v-if="log.cost">{{ log.cost }} €</span>
-                </div>
+                <span
+                  class="text-xs px-2 py-1 rounded font-medium"
+                  :class="getResultBadge(log.result)"
+                >
+                  {{ getResultLabel(log.result) }}
+                </span>
+              </div>
+              <p class="text-color mb-2">{{ log.description }}</p>
+              <div class="flex justify-between items-center text-sm text-color-secondary">
+                <span>Par: {{ log.performer }}</span>
+                <span v-if="log.cost">{{ log.cost }} €</span>
               </div>
             </div>
           </div>

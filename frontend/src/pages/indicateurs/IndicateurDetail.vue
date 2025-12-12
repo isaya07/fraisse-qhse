@@ -562,7 +562,7 @@ const submitEditValue = async () => {
     if (!id) return
 
     // Format date as YYYY-MM-DD
-    const dateStr = editValueForm.value.date.toISOString().split('T')[0]
+    const dateStr = editValueForm.value.date.toISOString().split('T')[0] ?? ''
 
     await store.updateIndicatorValue(id, editValueForm.value.id, {
       value: editValueForm.value.value,

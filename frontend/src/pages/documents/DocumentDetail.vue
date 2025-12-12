@@ -528,7 +528,7 @@ const getStatusSeverity = (value: string | undefined): string => {
   return map[value] || 'secondary'
 }
 
-const getPriorityLabel = (value: string | undefined) => {
+const getPriorityLabel = (value: string | undefined): string => {
   if (!value) return '-'
   const map: Record<string, string> = {
     low: 'Basse',

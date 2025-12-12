@@ -49,10 +49,11 @@ export interface Document {
   approved_by?: number
   published_date?: string
   expires_date?: string
-  created: string
-  modified: string
+  created_at: string
+  updated_at: string
   creator?: User
   approver?: User
+  actions?: Action[]
 }
 
 export interface Comment {

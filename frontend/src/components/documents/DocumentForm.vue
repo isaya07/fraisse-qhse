@@ -29,7 +29,9 @@
               :icon="['fas', 'cloud-upload-alt']"
               class="text-6xl text-color-secondary mb-4"
             />
-            <p class="mt-4 mb-0 text-color-secondary">Glisser-déposer le fichier ici pour le télécharger.</p>
+            <p class="mt-4 mb-0 text-color-secondary">
+              Glisser-déposer le fichier ici pour le télécharger.
+            </p>
           </div>
         </template>
       </FileUpload>
@@ -54,7 +56,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Titre -->
       <div class="field">
-        <label for="title" class="block text-sm font-medium mb-2 text-color-secondary">Titre *</label>
+        <label for="title" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Titre *</label
+        >
         <InputText
           id="title"
           v-model="formData.title"
@@ -67,7 +71,9 @@
 
       <!-- Version -->
       <div class="field">
-        <label for="version" class="block text-sm font-medium mb-2 text-color-secondary">Version *</label>
+        <label for="version" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Version *</label
+        >
         <InputText
           id="version"
           v-model="formData.version"
@@ -81,7 +87,9 @@
 
       <!-- Dossier -->
       <div class="field">
-        <label for="folder" class="block text-sm font-medium mb-2 text-color-secondary">Dossier</label>
+        <label for="folder" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Dossier</label
+        >
         <TreeSelect
           v-model="selectedFolder"
           :options="folderOptions"
@@ -111,20 +119,17 @@
         >
           <template #option="{ option }">
             <div class="flex items-center gap-2">
-              <font-awesome-icon
-                v-if="option.icon"
-                :icon="['fas', option.icon]"
-              />
+              <font-awesome-icon v-if="option.icon" :icon="['fas', option.icon]" />
               <span>{{ option.text }}</span>
             </div>
           </template>
           <template #value="{ value }">
             <div v-if="value" class="flex items-center gap-2">
               <font-awesome-icon
-                v-if="categoryOptions.find(c => c.value === value)?.icon"
-                :icon="['fas', categoryOptions.find(c => c.value === value)?.icon]"
+                v-if="categoryOptions.find((c) => c.value === value)?.icon"
+                :icon="['fas', categoryOptions.find((c) => c.value === value)?.icon]"
               />
-              <span>{{ categoryOptions.find(c => c.value === value)?.text }}</span>
+              <span>{{ categoryOptions.find((c) => c.value === value)?.text }}</span>
             </div>
           </template>
         </Select>
@@ -133,7 +138,9 @@
 
       <!-- Statut -->
       <div class="field">
-        <label for="status" class="block text-sm font-medium mb-2 text-color-secondary">Statut *</label>
+        <label for="status" class="block text-sm font-medium mb-2 text-color-secondary"
+          >Statut *</label
+        >
         <Select
           id="status"
           v-model="formData.status"
@@ -263,7 +270,7 @@ const schema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(255, 'Le titre est trop long'),
   description: z.string().optional(),
   document_folder_id: z.number().nullable(),
-  category_id: z.number({ required_error: 'Le type de document est requis', invalid_type_error: 'Le type de document est requis' }),
+  category_id: z.number(),
   version: z.string().min(1, 'La version est requise'),
   status: z.string().min(1, 'Le statut est requis'),
   expires_date: z.date().nullable().optional(),
@@ -271,7 +278,7 @@ const schema = z.object({
 
 // Options
 const folderOptions = computed<TreeNode[]>(() => {
- const mapFolderToNode = (folder: DocumentFolder): TreeNode => ({
+  const mapFolderToNode = (folder: DocumentFolder): TreeNode => ({
     key: folder.id.toString(),
     label: folder.name,
     data: folder.id,
@@ -281,10 +288,10 @@ const folderOptions = computed<TreeNode[]>(() => {
 })
 
 const categoryOptions = computed(() => {
-  return categoryStore.categories.map(cat => ({
+  return categoryStore.categories.map((cat) => ({
     value: cat.id,
     text: cat.name,
-    icon: cat.icon
+    icon: cat.icon,
   }))
 })
 
@@ -311,15 +318,13 @@ const clearFile = () => {
 
 const selectedFolder = computed({
   get: () => {
-    return formData.document_folder_id
-      ? { [formData.document_folder_id.toString()]: true }
-      : null
+    return formData.document_folder_id ? { [formData.document_folder_id.toString()]: true } : null
   },
   set: (value: any) => {
     if (value && typeof value === 'object') {
       const keys = Object.keys(value)
       if (keys.length > 0) {
-        formData.document_folder_id = parseInt(keys[0])
+        formData.document_folder_id = parseInt(keys[0] as string)
       } else {
         formData.document_folder_id = null
       }
