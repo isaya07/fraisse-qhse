@@ -1,1 +1,0 @@
-import{aM as M,aL as s}from"./index-oOuEsLBu.js";function f(n,o,a){const t=M(n,a?.in);if(isNaN(o))return s(n,NaN);if(!o)return t;const r=t.getDate(),e=s(n,t.getTime());e.setMonth(t.getMonth()+o+1,0);const i=e.getDate();return r>=i?e:(t.setFullYear(e.getFullYear(),e.getMonth(),r),t)}export{f as a};
