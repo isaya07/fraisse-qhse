@@ -9,7 +9,7 @@ const API_CONFIG = {
     apiUrl: import.meta.env.VITE_API_URL_DEV,
   },
   production: {
-    apiUrl: import.meta.env.VITE_API_URL_PROD, // Utilisation d'une URL relative en production pour que le serveur web la gère
+    apiUrl: import.meta.env.VITE_API_URL_PROD || '/api', // Utilisation d'une URL relative en production pour que le serveur web la gère
   },
 }
 
