@@ -29,6 +29,17 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, bcmath, soap, gd, exif, zip
+          coverage: none
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader --no-dev
+
       - name: Prepare Backend Assets
         run: |
           # Remove existing assets in backend public if any (optional)
@@ -37,13 +48,10 @@ jobs:
           # Copy built frontend assets to backend public
           cp -r frontend/dist/* backend/public/
 
-          # Ensure .htaccess or index.php are not overwritten if they exist in dist (Vue shouldn't have index.php)
-          # Specifically for Laravel, we want to keep index.php but serve index.html for Vue routes?
-          # Actually, the user wants the build to govern. 
-          # BUT Laravel needs index.php to run.
-          # Vue build usually produces index.html.
-          # If we overwrite index.html, we need Laravel to serve it or rewrite to it.
-          # Let's assume the user handles the serving logic in Laravel routes as discussed.
+          # IMPORTANT: Allow committing vendor directory for No-SSH deployment
+          if [ -f backend/.gitignore ]; then
+            sed -i '/\/vendor/d' backend/.gitignore
+          fi
 
       - name: Deploy Backend folder to 'deploy' branch
         uses: s0/git-publish-subdir-action@develop

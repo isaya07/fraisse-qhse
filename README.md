@@ -187,7 +187,7 @@ base_dir/
 
 ### Backend
 
-- **[Laravel 11.x](https://laravel.com/)** - Framework PHP moderne avec gestion des dépendances Composer
+- **[Laravel 12.x](https://laravel.com/)** - Framework PHP moderne avec gestion des dépendances Composer
 - **[PHP 8.2+](https://www.php.net/)** - Langage de programmation serveur
 - **[MariaDB 10+](https://mariadb.org/)** - Système de gestion de base de données
 - **[Laravel Sanctum](https://laravel.com/docs/11.x/sanctum)** - Authentification API sécurisée
