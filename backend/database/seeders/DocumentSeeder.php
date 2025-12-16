@@ -22,7 +22,7 @@ class DocumentSeeder extends Seeder
             ['title' => 'Livret d\'accueil 2024', 'category' => 'other', 'folder' => 'Livrets d\'accueil'],
             ['title' => 'Modèle Contrat CDI', 'category' => 'form', 'folder' => 'Contrats'],
             ['title' => 'Demande de congés', 'category' => 'form', 'folder' => 'Ressources Humaines'],
-            
+
             // Sécurité
             ['title' => 'Procédure Travail en Hauteur', 'category' => 'procedure', 'folder' => 'Procédures'],
             ['title' => 'Procédure Espace Confiné', 'category' => 'procedure', 'folder' => 'Procédures'],
@@ -45,12 +45,19 @@ class DocumentSeeder extends Seeder
             ['title' => 'Contrôle technique - Fourgon AB-123-CD', 'category' => 'other', 'folder' => 'Véhicules'],
         ];
 
+        $categories = \App\Models\Category::all();
+
         foreach ($documents as $docData) {
             $folder = $folders->firstWhere('name', $docData['folder']);
-            
+
+            // Map old category string to new Category ID
+            // Default mapping based on migration: 'procedure', 'form', 'consigne', 'other'
+            $categorySlug = $docData['category'] ?? 'other';
+            $category = $categories->firstWhere('slug', $categorySlug);
+
             Document::factory()->create([
                 'title' => $docData['title'],
-                'category' => $docData['category'],
+                'category_id' => $category ? $category->id : null,
                 'document_folder_id' => $folder ? $folder->id : null,
                 'created_by' => $users->random()->id,
                 'approved_by' => $users->random()->id,
