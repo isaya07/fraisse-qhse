@@ -17,17 +17,17 @@ class ActionFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->sentence(4),
+            'title' => $this->faker->sentence(4),
             'action_type_id' => null, // Will be set via relationship
-            'priority' => fake()->randomElement(['low', 'medium', 'high', 'critical']),
-            'status' => fake()->randomElement(['open', 'in_progress', 'completed', 'cancelled']),
+            'priority' => $this->faker->randomElement(['low', 'medium', 'high', 'critical']),
+            'status' => $this->faker->randomElement(['open', 'in_progress', 'completed', 'cancelled']),
             'assigned_to' => null, // Will be set via relationship
             'created_by' => null, // Will be set via relationship
-            'due_date' => fake()->optional()->date(),
-            'completed_date' => fake()->optional()->date(),
-            'progress' => fake()->numberBetween(0, 100),
-            'related_to' => fake()->optional()->randomElement(['document', 'indicator']),
-            'related_id' => fake()->optional()->randomNumber(),
+            'due_date' => $this->faker->optional()->date(),
+            'completed_date' => $this->faker->optional()->date(),
+            'progress' => $this->faker->numberBetween(0, 100),
+            'related_to' => $this->faker->optional()->randomElement(['document', 'indicator']),
+            'related_id' => $this->faker->optional()->randomNumber(),
         ];
     }
 }
