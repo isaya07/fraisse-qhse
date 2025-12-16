@@ -4,20 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('training_organizations', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('contact_info')->nullable();
-            $table->string('address')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('training_organizations')) {
+            Schema::create('training_organizations', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('contact_info')->nullable();
+                $table->string('address')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

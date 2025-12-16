@@ -11,7 +11,9 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('indicators', function (Blueprint $table) {
-            $table->enum('goal_type', ['maximize', 'minimize', 'target'])->default('maximize')->after('trend_direction');
+            if (!Schema::hasColumn('indicators', 'goal_type')) {
+                $table->enum('goal_type', ['maximize', 'minimize', 'target'])->default('maximize')->after('trend_direction');
+            }
         });
     }
 
