@@ -17,17 +17,17 @@ class IndicatorFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->sentence(3),
-            'code' => fake()->unique()->lexify('IND-?????'),
+            'name' => $this->faker->sentence(3),
+            'code' => $this->faker->unique()->lexify('IND-?????'),
             'indicator_category_id' => null, // Will be set via relationship
-            'unit' => fake()->randomElement(['%', 'hours', 'incidents', 'score']),
-            'target_value' => fake()->randomFloat(2, 80, 100),
-            'threshold_min' => fake()->randomFloat(2, 70, 80),
-            'threshold_max' => fake()->randomFloat(2, 90, 100),
-            'calculation_method' => fake()->optional()->randomElement(['average', 'sum', 'ratio']),
-            'data_source' => fake()->optional()->word(),
-            'frequency' => fake()->randomElement(['daily', 'weekly', 'monthly', 'quarterly', 'yearly']),
-            'trend_direction' => fake()->randomElement(['positive', 'negative', 'neutral']),
+            'unit' => $this->faker->randomElement(['%', 'hours', 'incidents', 'score']),
+            'target_value' => $this->faker->randomFloat(2, 80, 100),
+            'threshold_min' => $this->faker->randomFloat(2, 70, 80),
+            'threshold_max' => $this->faker->randomFloat(2, 90, 100),
+            'calculation_method' => $this->faker->optional()->randomElement(['average', 'sum', 'ratio']),
+            'data_source' => $this->faker->optional()->word(),
+            'frequency' => $this->faker->randomElement(['daily', 'weekly', 'monthly', 'quarterly', 'yearly']),
+            'trend_direction' => $this->faker->randomElement(['positive', 'negative', 'neutral']),
             'created_by' => null, // Will be set via relationship
             'is_active' => fake()->boolean(),
         ];

@@ -17,18 +17,18 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->sentence(4),
-            'filename' => fake()->word() . '.pdf',
-            'filepath' => 'documents/' . fake()->uuid() . '.pdf',
-            'file_size' => fake()->randomNumber(6), // e.g., 123456
+            'title' => $this->faker->sentence(4),
+            'filename' => $this->faker->word() . '.pdf',
+            'filepath' => 'documents/' . $this->faker->uuid() . '.pdf',
+            'file_size' => $this->faker->randomNumber(6), // e.g., 123456
             'mime_type' => 'application/pdf',
-            'version' => fake()->semver(),
-            'category' => fake()->optional()->randomElement(['procedure', 'form', 'instruction', 'record']),
-            'status' => fake()->randomElement(['draft', 'pending_approval', 'approved', 'rejected', 'archived']),
+            'version' => $this->faker->semver(),
+            'category' => $this->faker->optional()->randomElement(['procedure', 'form', 'instruction', 'record']),
+            'status' => $this->faker->randomElement(['draft', 'pending_approval', 'approved', 'rejected', 'archived']),
             'created_by' => null, // Will be set via relationship
             'approved_by' => null, // Will be set via relationship
-            'published_date' => fake()->optional()->date(),
-            'expires_date' => fake()->optional()->date(),
+            'published_date' => $this->faker->optional()->date(),
+            'expires_date' => $this->faker->optional()->date(),
         ];
     }
 }
