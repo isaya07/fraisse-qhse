@@ -23,7 +23,7 @@ class DocumentFactory extends Factory
             'file_size' => $this->faker->randomNumber(6), // e.g., 123456
             'mime_type' => 'application/pdf',
             'version' => $this->faker->semver(),
-            'category' => $this->faker->optional()->randomElement(['procedure', 'form', 'instruction', 'record']),
+            'category_id' => $this->faker->numberBetween(1, 4), // Assuming default categories are seeded 1-4
             'status' => $this->faker->randomElement(['draft', 'pending_approval', 'approved', 'rejected', 'archived']),
             'created_by' => null, // Will be set via relationship
             'approved_by' => null, // Will be set via relationship
