@@ -12,6 +12,7 @@ return array(
     'App\\Http\\Controllers\\Api\\AuthController' => $baseDir . '/app/Http/Controllers/Api/AuthController.php',
     'App\\Http\\Controllers\\Api\\CategoryController' => $baseDir . '/app/Http/Controllers/Api/CategoryController.php',
     'App\\Http\\Controllers\\Api\\CommentController' => $baseDir . '/app/Http/Controllers/Api/CommentController.php',
+    'App\\Http\\Controllers\\Api\\ConsoleController' => $baseDir . '/app/Http/Controllers/Api/ConsoleController.php',
     'App\\Http\\Controllers\\Api\\DeployController' => $baseDir . '/app/Http/Controllers/Api/DeployController.php',
     'App\\Http\\Controllers\\Api\\DocumentController' => $baseDir . '/app/Http/Controllers/Api/DocumentController.php',
     'App\\Http\\Controllers\\Api\\DocumentFolderController' => $baseDir . '/app/Http/Controllers/Api/DocumentFolderController.php',

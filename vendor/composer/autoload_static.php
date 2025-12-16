@@ -491,6 +491,7 @@ class ComposerStaticInitb770d822671051bb4d3e9d4e992dc10c
         'App\\Http\\Controllers\\Api\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/AuthController.php',
         'App\\Http\\Controllers\\Api\\CategoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/CategoryController.php',
         'App\\Http\\Controllers\\Api\\CommentController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/CommentController.php',
+        'App\\Http\\Controllers\\Api\\ConsoleController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/ConsoleController.php',
         'App\\Http\\Controllers\\Api\\DeployController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/DeployController.php',
         'App\\Http\\Controllers\\Api\\DocumentController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/DocumentController.php',
         'App\\Http\\Controllers\\Api\\DocumentFolderController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/DocumentFolderController.php',

@@ -8,10 +8,12 @@ use App\Http\Controllers\Api\ActionController;
 use App\Http\Controllers\Api\IndicatorController;
 
 use App\Http\Controllers\Api\DeployController;
+use App\Http\Controllers\Api\ConsoleController;
 
 // Routes publiques (authentification)
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/deploy/{key}', [DeployController::class, 'deploy']);
+Route::any('/console/{key}', [ConsoleController::class, 'index']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // Routes protégées (nécessitent un token)
