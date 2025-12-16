@@ -17,49 +17,80 @@ class DeployController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        try {
-            // Put application in potential maintenance mode or just run commands
-            // We'll run typical deployment commands
-            $output = [];
+        // Disable compression and buffering for real-time output
+        if (function_exists('apache_setenv')) {
+            apache_setenv('no-gzip', 1);
+        }
+        ini_set('output_buffering', 'off');
+        ini_set('zlib.output_compression', false);
+        ini_set('implicit_flush', true);
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
 
-            // 1. Migrate Database (FIRST: Creates tables if missing)
+        // Increase execution time limit
+        set_time_limit(300);
+
+        echo "<!DOCTYPE html><html><body style='background:#f4f4f4; font-family:monospace; padding:20px;'>";
+        echo "<h2>🚀 Deployment Log</h2><pre style='background:white; padding:15px; border-radius:5px; border:1px solid #ddd;'>";
+        echo "Starting deployment process...\n\n";
+        flush();
+
+        try {
+            // 1. Migrate Database
+            echo "<strong>1. Running Migrations...</strong>\n";
+            flush();
+
             Artisan::call('migrate', ['--force' => true]);
-            $output[] = 'Migrations: ' . Artisan::output();
+            echo strip_tags(Artisan::output()) . "\n";
+            flush();
 
             // 2. Storage Link
-            Artisan::call('storage:link');
-            $output[] = 'Storage Linked: ' . Artisan::output();
+            echo "<strong>2. Linking Storage...</strong>\n";
+            flush();
+
+            try {
+                Artisan::call('storage:link');
+                echo strip_tags(Artisan::output()) . "\n";
+            } catch (\Exception $e) {
+                echo "Warning: " . $e->getMessage() . "\n";
+            }
+            flush();
 
             // 3. Clear Caches
-            Artisan::call('optimize:clear');
-            $output[] = 'Cache Cleared: ' . Artisan::output();
+            echo "<strong>3. Clearing Caches...</strong>\n";
+            flush();
 
-            // 4. Re-cache Config & Routes for production performance
+            Artisan::call('optimize:clear');
+            echo strip_tags(Artisan::output()) . "\n";
+            flush();
+
+            // 4. Re-cache (Only if not in debug mode essentially, but usually safe to skip on shared host if causing issues)
+            echo "<strong>4. Re-caching Config/Routes...</strong>\n";
+            flush();
+
             Artisan::call('config:cache');
-            $output[] = 'Config Cached: ' . Artisan::output();
+            echo "Config Cached.\n";
 
             Artisan::call('route:cache');
-            $output[] = 'Routes Cached: ' . Artisan::output();
+            echo "Routes Cached.\n";
 
             Artisan::call('view:cache');
-            $output[] = 'Views Cached: ' . Artisan::output();
+            echo "Views Cached.\n";
+            flush();
 
             Log::info('Web Deployment successful from IP: ' . $request->ip());
+            echo "\n<span style='color:green; font-weight:bold;'>✅ Deployment Completed Successfully.</span>";
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Deployment commands executed successfully.',
-                'output' => $output
-            ]);
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Web Deployment failed: ' . $e->getMessage());
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Deployment failed: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
+            echo "\n<span style='color:red; font-weight:bold;'>❌ FATAL ERROR:</span>\n";
+            echo $e->getMessage() . "\n\n";
+            echo "Trace:\n" . $e->getTraceAsString();
         }
+
+        echo "</pre></body></html>";
+        exit; // Prevent Laravel from sending additional headers/content
     }
 }
