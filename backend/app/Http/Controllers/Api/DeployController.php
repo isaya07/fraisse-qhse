@@ -22,17 +22,17 @@ class DeployController extends Controller
             // We'll run typical deployment commands
             $output = [];
 
-            // 1. Storage Link
+            // 1. Migrate Database (FIRST: Creates tables if missing)
+            Artisan::call('migrate', ['--force' => true]);
+            $output[] = 'Migrations: ' . Artisan::output();
+
+            // 2. Storage Link
             Artisan::call('storage:link');
             $output[] = 'Storage Linked: ' . Artisan::output();
 
-            // 2. Clear Caches
+            // 3. Clear Caches
             Artisan::call('optimize:clear');
             $output[] = 'Cache Cleared: ' . Artisan::output();
-
-            // 3. Migrate Database
-            Artisan::call('migrate', ['--force' => true]);
-            $output[] = 'Migrations: ' . Artisan::output();
 
             // 4. Re-cache Config & Routes for production performance
             Artisan::call('config:cache');
