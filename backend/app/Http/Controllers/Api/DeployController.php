@@ -88,7 +88,8 @@ class DeployController extends Controller
         }
 
         // Get all files and ran migrations
-        $files = $migrator->getMigrationFiles($migrator->getPaths());
+        // Fix: getPaths() is not always available/public. Use explicit default path.
+        $files = $migrator->getMigrationFiles([database_path('migrations')]);
         $ran = $migrator->getRepository()->getRan();
 
         // Calculate pending
