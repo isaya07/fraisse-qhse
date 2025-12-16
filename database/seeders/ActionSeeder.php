@@ -27,12 +27,15 @@ class ActionSeeder extends Seeder
             ['title' => 'Maintenance pont élévateur', 'description' => 'Maintenance préventive atelier mécanique', 'priority' => 'medium', 'status' => 'open'],
         ];
 
+        $actionTypes = \App\Models\ActionType::all();
+
         foreach ($actions as $actData) {
             Action::factory()->create([
                 'title' => $actData['title'],
                 'description' => $actData['description'],
                 'priority' => $actData['priority'],
                 'status' => $actData['status'],
+                'action_type_id' => $actionTypes->isNotEmpty() ? $actionTypes->random()->id : null,
                 'created_by' => $users->random()->id,
                 'assigned_to' => $users->random()->id,
                 'due_date' => now()->addDays(rand(1, 60)),
