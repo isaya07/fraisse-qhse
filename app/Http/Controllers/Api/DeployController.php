@@ -48,6 +48,10 @@ class DeployController extends Controller
                         $output = "Storage link already exists or error: " . $e->getMessage();
                     }
                     break;
+                case 'seed':
+                    Artisan::call('db:seed', ['--force' => true]);
+                    $output = Artisan::output();
+                    break;
                 case 'optimize':
                     Artisan::call('optimize:clear');
                     $output = Artisan::output();
@@ -74,7 +78,7 @@ class DeployController extends Controller
                 'status' => 'error',
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
-            ], 500);
+            ], 200);
         }
     }
 
@@ -142,7 +146,7 @@ class DeployController extends Controller
                     'status' => 'error',
                     'message' => "Error on $migrationName: " . $e->getMessage(),
                     'trace' => $e->getTraceAsString()
-                ], 500);
+                ], 200);
             }
         }
 
@@ -192,6 +196,7 @@ class DeployController extends Controller
         const baseUrl = "$url";
         const steps = [
             { id: 'migrate', label: 'Migration de la base de données' },
+            { id: 'seed', label: 'Seeding (Données de test/init)' },
             { id: 'storage', label: 'Lien symbolique Storage' },
             { id: 'optimize', label: 'Nettoyage (Optimize:clear)' },
             { id: 'cache', label: 'Mise en cache (Config/Route/View)' }
