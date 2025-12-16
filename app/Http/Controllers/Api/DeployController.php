@@ -17,80 +17,157 @@ class DeployController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        // Disable compression and buffering for real-time output
-        if (function_exists('apache_setenv')) {
-            apache_setenv('no-gzip', 1);
-        }
-        ini_set('output_buffering', 'off');
-        ini_set('zlib.output_compression', false);
-        ini_set('implicit_flush', true);
-        while (ob_get_level() > 0) {
-            ob_end_flush();
+        // Increase execution time limit for individual steps
+        set_time_limit(120);
+
+        // Check if a specific step is requested
+        if ($request->has('step')) {
+            return $this->runStep($request->input('step'));
         }
 
-        // Increase execution time limit
-        set_time_limit(300);
+        // Otherwise, render the client-side runner
+        return $this->renderRunner($key);
+    }
 
-        echo "<!DOCTYPE html><html><body style='background:#f4f4f4; font-family:monospace; padding:20px;'>";
-        echo "<h2>🚀 Deployment Log</h2><pre style='background:white; padding:15px; border-radius:5px; border:1px solid #ddd;'>";
-        echo "Starting deployment process...\n\n";
-        flush();
-
+    private function runStep($step)
+    {
         try {
-            // 1. Migrate Database
-            echo "<strong>1. Running Migrations...</strong>\n";
-            flush();
-
-            Artisan::call('migrate', ['--force' => true]);
-            echo strip_tags(Artisan::output()) . "\n";
-            flush();
-
-            // 2. Storage Link
-            echo "<strong>2. Linking Storage...</strong>\n";
-            flush();
-
-            try {
-                Artisan::call('storage:link');
-                echo strip_tags(Artisan::output()) . "\n";
-            } catch (\Exception $e) {
-                echo "Warning: " . $e->getMessage() . "\n";
+            $output = '';
+            switch ($step) {
+                case 'migrate':
+                    Artisan::call('migrate', ['--force' => true]);
+                    $output = Artisan::output();
+                    break;
+                case 'storage':
+                    try {
+                        Artisan::call('storage:link');
+                        $output = Artisan::output();
+                    } catch (\Exception $e) {
+                        $output = "Storage link already exists or error: " . $e->getMessage();
+                    }
+                    break;
+                case 'optimize':
+                    Artisan::call('optimize:clear');
+                    $output = Artisan::output();
+                    break;
+                case 'cache':
+                    Artisan::call('config:cache');
+                    $output .= Artisan::output();
+                    Artisan::call('route:cache');
+                    $output .= Artisan::output();
+                    Artisan::call('view:cache');
+                    $output .= Artisan::output();
+                    break;
+                default:
+                    return response()->json(['status' => 'error', 'message' => 'Unknown step'], 400);
             }
-            flush();
 
-            // 3. Clear Caches
-            echo "<strong>3. Clearing Caches...</strong>\n";
-            flush();
-
-            Artisan::call('optimize:clear');
-            echo strip_tags(Artisan::output()) . "\n";
-            flush();
-
-            // 4. Re-cache (Only if not in debug mode essentially, but usually safe to skip on shared host if causing issues)
-            echo "<strong>4. Re-caching Config/Routes...</strong>\n";
-            flush();
-
-            Artisan::call('config:cache');
-            echo "Config Cached.\n";
-
-            Artisan::call('route:cache');
-            echo "Routes Cached.\n";
-
-            Artisan::call('view:cache');
-            echo "Views Cached.\n";
-            flush();
-
-            Log::info('Web Deployment successful from IP: ' . $request->ip());
-            echo "\n<span style='color:green; font-weight:bold;'>✅ Deployment Completed Successfully.</span>";
-
+            return response()->json([
+                'status' => 'success',
+                'message' => "Step '$step' completed.",
+                'output' => strip_tags($output)
+            ]);
         } catch (\Throwable $e) {
-            Log::error('Web Deployment failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
 
-            echo "\n<span style='color:red; font-weight:bold;'>❌ FATAL ERROR:</span>\n";
-            echo $e->getMessage() . "\n\n";
-            echo "Trace:\n" . $e->getTraceAsString();
+    private function renderRunner($key)
+    {
+        $url = url("/api/deploy/{$key}");
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Runner</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f4f4f4; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { margin-top: 0; color: #2c3e50; }
+        .log-window { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; height: 400px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px; border: 1px solid #333; }
+        .btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { background: #2980b9; }
+        .status { margin-top: 10px; font-weight: bold; }
+        .error { color: #ff5555; }
+        .success { color: #50fa7b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Déploiement QHSE</h1>
+        <div id="log" class="log-window">Prêt à déployer...</div>
+        <button id="startBtn" class="btn" onclick="startDeploy()">Lancer le Déploiement</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const baseUrl = "$url";
+        const steps = [
+            { id: 'migrate', label: 'Migration de la base de données' },
+            { id: 'storage', label: 'Lien symbolique Storage' },
+            { id: 'optimize', label: 'Nettoyage (Optimize:clear)' },
+            { id: 'cache', label: 'Mise en cache (Config/Route/View)' }
+        ];
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            let color = type === 'error' ? '#ff5555' : (type === 'success' ? '#50fa7b' : '#00ff00');
+            logDiv.innerHTML += `<div style="color:\${color}">[\${timestamp}] \${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        echo "</pre></body></html>";
-        exit; // Prevent Laravel from sending additional headers/content
+        async function startDeploy() {
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.innerText = 'Déploiement en cours...';
+            document.getElementById('log').innerHTML = ''; // Clear log
+            
+            log('Démarrage du processus...', 'info');
+
+            for (const step of steps) {
+                log(`Exécution de : \${step.label}...`, 'info');
+                
+                try {
+                    const response = await fetch(`\${baseUrl}?step=\${step.id}`);
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        log(`> \${data.output}`, 'success');
+                        log(`Validation : \${step.label} ✅`, 'success');
+                    } else {
+                        throw new Error(data.message || 'Erreur inconnue');
+                    }
+                } catch (error) {
+                    log(`ERREUR CRITIQUE sur \${step.label} : \${error.message}`, 'error');
+                    document.getElementById('status').innerText = 'Déploiement ÉCHOUÉ';
+                    document.getElementById('status').style.color = 'red';
+                    btn.disabled = false;
+                    btn.innerText = 'Réessayer';
+                    return; // Stop execution
+                }
+                
+                // Small delay for UI smoothness
+                await new Promise(r => setTimeout(r, 500));
+            }
+
+            log('🏁 Déploiement terminé avec succès !', 'success');
+            document.getElementById('status').innerText = 'Déploiement RÉUSSI';
+            document.getElementById('status').style.color = 'green';
+            btn.innerText = 'Déploiement Terminé';
+        }
+    </script>
+</body>
+</html>
+HTML;
+        return response($html);
     }
 }
