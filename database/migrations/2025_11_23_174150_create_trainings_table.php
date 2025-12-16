@@ -4,23 +4,24 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('trainings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('training_category_id')->constrained()->onDelete('cascade');
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->integer('duration_hours')->nullable();
-            $table->integer('validity_months')->nullable();
-            $table->integer('required_frequency_months')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('trainings')) {
+            Schema::create('trainings', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('training_category_id')->constrained()->onDelete('cascade');
+                $table->string('title');
+                $table->text('description')->nullable();
+                $table->integer('duration_hours')->nullable();
+                $table->integer('validity_months')->nullable();
+                $table->integer('required_frequency_months')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

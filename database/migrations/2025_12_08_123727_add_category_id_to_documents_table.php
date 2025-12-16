@@ -13,7 +13,9 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->foreignId('category_id')->nullable()->after('version')->constrained('categories')->onDelete('set null');
+            if (!Schema::hasColumn('documents', 'category_id')) {
+                $table->foreignId('category_id')->nullable()->after('version')->constrained('categories')->onDelete('set null');
+            }
         });
 
         // Data Migration Script
@@ -73,7 +75,9 @@ return new class extends Migration {
         // To be safe, we will drop it in a separate step or just ignore it.
         // Let's drop it to force usage of new column
         Schema::table('documents', function (Blueprint $table) {
-            $table->dropColumn('category');
+            if (Schema::hasColumn('documents', 'category')) {
+                $table->dropColumn('category');
+            }
         });
     }
 

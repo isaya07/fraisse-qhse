@@ -33,11 +33,13 @@ class DeployController extends Controller
     {
         try {
             $output = '';
+
+            // Special handling for migration chunking
+            if ($step === 'migrate') {
+                return $this->runMigrationChunk();
+            }
+
             switch ($step) {
-                case 'migrate':
-                    Artisan::call('migrate', ['--force' => true]);
-                    $output = Artisan::output();
-                    break;
                 case 'storage':
                     try {
                         Artisan::call('storage:link');
@@ -76,6 +78,83 @@ class DeployController extends Controller
         }
     }
 
+    private function runMigrationChunk()
+    {
+        $migrator = app('migrator');
+
+        // Ensure connection/repository exists
+        if (!$migrator->repositoryExists()) {
+            $migrator->getRepository()->createRepository();
+        }
+
+        // Get all files and ran migrations
+        $files = $migrator->getMigrationFiles($migrator->getPaths());
+        $ran = $migrator->getRepository()->getRan();
+
+        // Calculate pending
+        $pending = array_diff(array_keys($files), $ran);
+        $totalPending = count($pending);
+
+        if ($totalPending === 0) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Toutes les migrations sont déjà appliquées.',
+                'output' => 'Nothing to migrate.',
+                'remaining' => 0
+            ]);
+        }
+
+        // Chunking: Logic to run only first 2
+        // Taking a small number to avoid timeout
+        $chunkSize = 3;
+        $toRun = array_slice($pending, 0, $chunkSize);
+
+        $outputBuffer = [];
+
+        foreach ($toRun as $migrationName) {
+            $file = $files[$migrationName];
+            try {
+                // Manually calling Artisan migrate path is simpler than using Migrator directly 
+                // because Migrator requires "resolving" the file etc.
+                // But 'migrate --path' requires relative path.
+
+                // Construct relative path: database/migrations/filename.php
+                // Be careful about absolute paths returned by getMigrationFiles
+
+                // Let's assume standard structure: basename of file is the key? No, key is migration name.
+                // Value is full path.
+
+                $fullPath = $files[$migrationName];
+                // Convert to relative path for Artisan
+                $relativePath = str_replace(base_path() . '/', '', $fullPath);
+
+                Artisan::call('migrate', [
+                    '--path' => $relativePath,
+                    '--force' => true
+                ]);
+
+                $outputBuffer[] = "Migrated: $migrationName";
+
+            } catch (\Exception $e) {
+                // If one fails, stop and return error
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Error on $migrationName: " . $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ], 500);
+            }
+        }
+
+        $remaining = $totalPending - count($toRun);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Exécuté " . count($toRun) . " migration(s). Reste : $remaining",
+            'output' => implode("\n", $outputBuffer),
+            'remaining' => $remaining
+        ]);
+    }
+
     private function renderRunner($key)
     {
         $url = url("/api/deploy/{$key}");
@@ -102,7 +181,7 @@ class DeployController extends Controller
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Déploiement QHSE</h1>
+        <h1>🚀 Déploiement par Étapes (Chunked)</h1>
         <div id="log" class="log-window">Prêt à déployer...</div>
         <button id="startBtn" class="btn" onclick="startDeploy()">Lancer le Déploiement</button>
         <div id="status" class="status"></div>
@@ -129,33 +208,46 @@ class DeployController extends Controller
             const btn = document.getElementById('startBtn');
             btn.disabled = true;
             btn.innerText = 'Déploiement en cours...';
-            document.getElementById('log').innerHTML = ''; // Clear log
+            document.getElementById('log').innerHTML = ''; 
             
             log('Démarrage du processus...', 'info');
 
             for (const step of steps) {
                 log(`Exécution de : \${step.label}...`, 'info');
                 
-                try {
-                    const response = await fetch(`\${baseUrl}?step=\${step.id}`);
-                    const data = await response.json();
-
-                    if (data.status === 'success') {
-                        log(`> \${data.output}`, 'success');
-                        log(`Validation : \${step.label} ✅`, 'success');
-                    } else {
-                        throw new Error(data.message || 'Erreur inconnue');
+                let done = false;
+                
+                while (!done) {
+                    try {
+                        const response = await fetch(`\${baseUrl}?step=\${step.id}`);
+                        const data = await response.json();
+    
+                        if (data.status === 'success') {
+                            log(`> \${data.output}`, 'success');
+                            
+                            // Handling Migration Chunking
+                            if (step.id === 'migrate' && data.remaining && data.remaining > 0) {
+                                log(`... Pause pour éviter le timeout. Reste : \${data.remaining} migrations ...`, 'info');
+                                await new Promise(r => setTimeout(r, 1000)); // Pause
+                                continue; // Loop again for next chunk
+                            }
+                            
+                            log(`Validation : \${step.label} ✅`, 'success');
+                            done = true; // Move to next step
+                            
+                        } else {
+                            throw new Error(data.message || 'Erreur inconnue');
+                        }
+                    } catch (error) {
+                        log(`ERREUR CRITIQUE sur \${step.label} : \${error.message}`, 'error');
+                        document.getElementById('status').innerText = 'Déploiement ÉCHOUÉ';
+                        document.getElementById('status').style.color = 'red';
+                        btn.disabled = false;
+                        btn.innerText = 'Réessayer';
+                        return; 
                     }
-                } catch (error) {
-                    log(`ERREUR CRITIQUE sur \${step.label} : \${error.message}`, 'error');
-                    document.getElementById('status').innerText = 'Déploiement ÉCHOUÉ';
-                    document.getElementById('status').style.color = 'red';
-                    btn.disabled = false;
-                    btn.innerText = 'Réessayer';
-                    return; // Stop execution
                 }
                 
-                // Small delay for UI smoothness
                 await new Promise(r => setTimeout(r, 500));
             }
 
