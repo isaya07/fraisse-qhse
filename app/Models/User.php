@@ -50,4 +50,42 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    /**
+     * Get the actions assigned to the user.
+     */
+    public function assignedActions()
+    {
+        return $this->hasMany(Action::class, 'assigned_to');
+    }
+
+    /**
+     * Get the user's notification settings.
+     */
+    public function notificationSettings()
+    {
+        return $this->hasOne(NotificationSetting::class);
+    }
+
+    /**
+     * Get the equipment assignments for the user.
+     */
+    public function equipmentAssignments()
+    {
+        return $this->hasMany(EquipmentAssignment::class);
+    }
+
+    /**
+     * Get currently assigned equipment.
+     */
+    public function currentEquipment()
+    {
+        return $this->hasManyThrough(
+            Equipment::class,
+            EquipmentAssignment::class,
+            'user_id', // Foreign key on EquipmentAssignment table...
+            'id', // Foreign key on Equipment table...
+            'id', // Local key on User table...
+            'equipment_id' // Local key on EquipmentAssignment table...
+        )->whereNull('equipment_assignments.returned_at');
+    }
 }

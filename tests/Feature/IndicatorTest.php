@@ -19,7 +19,7 @@ class IndicatorTest extends TestCase
         $response = $this->actingAs($user)->getJson('/api/indicators');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure(['data']);
+            ->assertJsonStructure(['data']);
     }
 
     public function test_authenticated_users_can_create_indicators()
@@ -31,6 +31,7 @@ class IndicatorTest extends TestCase
             'code' => 'IND-001',
             'frequency' => 'monthly',
             'trend_direction' => 'positive',
+            'goal_type' => 'maximize',
             'created_by' => $user->id,
             'is_active' => true,
         ];
@@ -38,8 +39,8 @@ class IndicatorTest extends TestCase
         $response = $this->actingAs($user)->postJson('/api/indicators', $indicatorData);
 
         $response->assertStatus(201)
-                 ->assertJsonFragment(['name' => 'New Indicator']);
-        
+            ->assertJsonFragment(['name' => 'New Indicator']);
+
         $this->assertDatabaseHas('indicators', ['code' => 'IND-001']);
     }
 
@@ -53,7 +54,7 @@ class IndicatorTest extends TestCase
         $response = $this->actingAs($user)->putJson("/api/indicators/{$indicator->id}", $updateData);
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['name' => 'Updated Name']);
+            ->assertJsonFragment(['name' => 'Updated Name']);
     }
 
     public function test_users_cannot_update_others_indicators()

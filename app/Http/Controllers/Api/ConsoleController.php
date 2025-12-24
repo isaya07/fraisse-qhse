@@ -211,7 +211,19 @@ class ConsoleController extends Controller
                     body: JSON.stringify({ command: cmd })
                 });
 
-                const data = await response.json();
+                const rawText = await response.text();
+                let data;
+
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    // Not JSON (e.g., HTML Error Page, 500, Maintenance Mode)
+                    appendToOutput('SERVER ERROR (Non-JSON Response):', 'error');
+                    // Remove HTML tags for cleaner display
+                    const cleanText = rawText.replace(/<[^>]*>?/gm, '');
+                    appendToOutput(cleanText.substring(0, 500) + (cleanText.length > 500 ? '...' : ''), 'error');
+                    return;
+                }
 
                 if (data.status === 'success') {
                     appendToOutput(data.output, 'response');

@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\ConsoleController;
 
 // Routes publiques (authentification)
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::get('/deploy/{key}', [DeployController::class, 'deploy']);
 Route::any('/console/{key}', [ConsoleController::class, 'index']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -20,6 +20,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::middleware('auth:sanctum')->group(function () {
     // Informations utilisateur
     Route::get('/user', [AuthController::class, 'user']);
+
+    // Dashboard
+    Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'getStats']);
 
     // Gestion des utilisateurs
     Route::apiResource('users', UserController::class)->except(['create', 'edit']);
@@ -79,6 +82,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('equipment', \App\Http\Controllers\Api\EquipmentController::class);
     Route::post('equipment/{equipment}/assign', [\App\Http\Controllers\Api\EquipmentController::class, 'assign']);
     Route::post('equipment/{equipment}/return', [\App\Http\Controllers\Api\EquipmentController::class, 'returnEquipment']);
+    Route::post('equipment/{id}/documents', [\App\Http\Controllers\Api\EquipmentController::class, 'attachDocument']);
+    Route::delete('equipment/{id}/documents/{documentId}', [\App\Http\Controllers\Api\EquipmentController::class, 'detachDocument']);
     Route::apiResource('maintenance-logs', \App\Http\Controllers\Api\MaintenanceLogController::class);
 
     // Notification Module
@@ -88,6 +93,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::get('/notifications/settings', [\App\Http\Controllers\Api\NotificationController::class, 'getSettings']);
     Route::put('/notifications/settings', [\App\Http\Controllers\Api\NotificationController::class, 'updateSettings']);
+    Route::post('/notifications/generate-alerts', [\App\Http\Controllers\Api\NotificationController::class, 'generateAlerts']);
+    Route::post('/notifications/send-emails', [\App\Http\Controllers\Api\NotificationController::class, 'sendEmails']);
 
     // Planning Module
     Route::apiResource('planning/events', \App\Http\Controllers\Api\PlanningController::class)->only(['index']);

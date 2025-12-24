@@ -127,6 +127,14 @@ class DocumentController extends Controller
                 'changelog' => 'Initial version',
             ]);
 
+            if ($request->has('equipment_id')) {
+                $document->equipment()->attach($request->equipment_id);
+            }
+
+            if ($request->has('action_id')) {
+                $document->actions()->attach($request->action_id);
+            }
+
             DB::commit();
 
             return response()->json($document->load('creator', 'approver'), 201);

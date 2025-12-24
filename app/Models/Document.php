@@ -53,6 +53,11 @@ class Document extends Model
         return $this->belongsToMany(Action::class, 'action_documents');
     }
 
+    public function equipment()
+    {
+        return $this->belongsToMany(Equipment::class, 'document_equipment');
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
