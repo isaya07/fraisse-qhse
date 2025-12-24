@@ -145,72 +145,14 @@
         </Card>
 
         <!-- Documents -->
-        <Card>
-          <template #title>
-            <div class="flex items-center justify-between">
-              <h4>Documents liés</h4>
-              <Button
-                text
-                rounded
-                v-tooltip="'Ajouter un document'"
-                @click="openLinkDocumentDialog"
-              >
-                <template #icon>
-                  <font-awesome-icon icon="plus" />
-                </template>
-              </Button>
-            </div>
-          </template>
-          <template #content>
-            <div v-if="action.documents && action.documents.length > 0" class="flex flex-col gap-2">
-              <div
-                v-for="doc in action.documents"
-                :key="doc.id"
-                class="flex items-center justify-between p-3 border rounded-xl hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors group"
-              >
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary"
-                  >
-                    <font-awesome-icon icon="file-lines" class="text-xl" />
-                  </div>
-                  <div>
-                    <div class="font-medium text-color">{{ doc.title }}</div>
-                    <div class="text-xs text-color-secondary">{{ doc.filename }}</div>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <Button
-                    text
-                    rounded
-                    severity="secondary"
-                    size="small"
-                    @click="downloadDocument(doc.id, doc.filename)"
-                    v-tooltip.top="'Télécharger'"
-                  >
-                    <template #icon>
-                      <font-awesome-icon icon="download" />
-                    </template>
-                  </Button>
-                  <Button
-                    text
-                    rounded
-                    severity="danger"
-                    size="small"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity"
-                    @click="unlinkDocument(doc.id)"
-                    v-tooltip.top="'Délier'"
-                  >
-                    <template #icon>
-                      <font-awesome-icon icon="xmark" />
-                    </template>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-color-secondary italic">Aucun document lié.</p>
-          </template>
-        </Card>
+        <LinkedDocuments
+          :documents="action.documents || []"
+          :loading="loading"
+          @request-create="onDocumentSubmit"
+          @request-link="onLinkDocument"
+          @request-download="downloadDocument"
+          @request-unlink="onUnlinkDocument"
+        />
 
         <!-- Indicators -->
         <Card>
@@ -344,7 +286,7 @@
                     :label="getInitials(comment.user)"
                     shape="circle"
                     size="normal"
-                    class="flex-shrink-0"
+                    class="shrink-0"
                     :style="{
                       backgroundColor: stringToColor(comment.user?.username || ''),
                       color: '#fff',
@@ -366,7 +308,7 @@
                         rounded
                         severity="danger"
                         size="small"
-                        class="!w-6 !h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        class="w-6! h-6! opacity-0 group-hover:opacity-100 transition-opacity"
                         @click="confirmDeleteComment(comment.id)"
                         v-tooltip.top="'Supprimer'"
                       >
@@ -422,63 +364,6 @@
       <Button label="Retour à la liste" @click="goBack" severity="secondary" class="mt-4" />
     </div>
 
-    <!-- Link Document Dialog -->
-    <Dialog
-      v-model:visible="linkDocumentDialogVisible"
-      header="Lier un document"
-      :style="{ width: '40rem' }"
-      modal
-    >
-      <div class="flex flex-col gap-4">
-        <div class="relative w-full">
-          <div class="absolute top-1/2 -translate-y-1/2 left-3 text-surface-500 z-10">
-            <font-awesome-icon icon="magnifying-glass" />
-          </div>
-          <InputText
-            v-model="documentSearchQuery"
-            placeholder="Rechercher un document..."
-            class="w-full !pl-12"
-            autofocus
-          />
-        </div>
-        <Listbox
-          v-model="selectedDocument"
-          :options="filteredDocuments"
-          optionLabel="title"
-          class="w-full h-96"
-          :virtualScrollerOptions="{ itemSize: 50 }"
-          listStyle="height: 100%"
-        >
-          <template #option="slotProps">
-            <div class="flex align-items-center gap-2">
-              <font-awesome-icon icon="file-lines" class="text-color-secondary" />
-              <div>
-                <div class="font-medium">{{ slotProps.option.title }}</div>
-                <div class="text-xs text-color-secondary">{{ slotProps.option.filename }}</div>
-              </div>
-            </div>
-          </template>
-        </Listbox>
-      </div>
-      <template #footer>
-        <Button label="Annuler" text @click="linkDocumentDialogVisible = false">
-          <template #icon>
-            <font-awesome-icon icon="xmark" class="mr-2" />
-          </template>
-        </Button>
-        <Button
-          label="Lier"
-          @click="confirmLinkDocument"
-          :disabled="!selectedDocument"
-          :loading="linkingDocument"
-        >
-          <template #icon>
-            <font-awesome-icon icon="check" class="mr-2" />
-          </template>
-        </Button>
-      </template>
-    </Dialog>
-
     <!-- Link Indicator Dialog -->
     <Dialog
       v-model:visible="linkIndicatorDialogVisible"
@@ -494,7 +379,7 @@
           <InputText
             v-model="indicatorSearchQuery"
             placeholder="Rechercher un indicateur..."
-            class="w-full !pl-12"
+            class="w-full pl-12!"
             autofocus
           />
         </div>
@@ -551,9 +436,12 @@ import { useIndicatorStore } from '@/stores/indicators'
 import Dialog from 'primevue/dialog'
 import Listbox from 'primevue/listbox'
 import InputText from 'primevue/inputtext'
-import type { User, Document, Indicator, Comment } from '@/stores/app'
+import type { User, Indicator, Comment } from '@/stores/app'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
+import { useApi } from '@/composables/useApi'
+import LinkedDocuments from '@/components/common/LinkedDocuments.vue'
+import { format } from 'date-fns'
 
 const route = useRoute()
 const router = useRouter()
@@ -562,6 +450,7 @@ const appStore = useAppStore()
 const documentStore = useDocumentStore()
 const indicatorStore = useIndicatorStore()
 const toast = useToast()
+const { post } = useApi()
 
 const actionId = Number(route.params.id)
 const loading = ref(true)
@@ -571,45 +460,57 @@ const progressUpdateValue = ref(0)
 const action = computed(() => actionStore.currentAction)
 
 // Documents Linking
-const linkDocumentDialogVisible = ref(false)
-const selectedDocument = ref<Document | null>(null)
-const documentSearchQuery = ref('')
-const linkingDocument = ref(false)
+const onDocumentSubmit = async (data: Record<string, unknown>) => {
+  loading.value = true
+  try {
+    const formData = new FormData()
+    // Append all text fields
+    Object.keys(data).forEach((key) => {
+      if (key !== 'file' && data[key] !== null && data[key] !== undefined) {
+        if (data[key] instanceof Date) {
+          formData.append(key, format(data[key], 'yyyy-MM-dd'))
+        } else {
+          formData.append(key, String(data[key])) // ✅ Convert to string
+        }
+      }
+    })
+    // Append file
+    if (data.file) {
+      formData.append('file', data.file as Blob) // ✅ Type assertion
+    }
+    // Append action_id
+    formData.append('action_id', actionId.toString())
 
-const openLinkDocumentDialog = () => {
-  selectedDocument.value = null
-  documentSearchQuery.value = ''
-  documentStore.fetchDocuments(1, 100) // Adjust limit as needed or implement server-side search
-  linkDocumentDialogVisible.value = true
+    const response = await post('/documents', formData)
+
+    if (response.success) {
+      toast.add({ severity: 'success', summary: 'Succès', detail: 'Document ajouté', life: 3000 })
+      await actionStore.fetchActionById(actionId)
+    } else {
+      throw new Error(response.error || "Erreur lors de l'ajout")
+    }
+  } catch (error: unknown) {
+    console.error(error)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: error instanceof Error ? error.message : "Échec de l'upload", // ✅ Type guard
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
-const filteredDocuments = computed(() => {
-  if (!documentStore.documents) return []
-  // Exclude already linked documents
-  const linkedIds = action.value?.documents?.map((d) => d.id) || []
-  let docs = documentStore.documents.filter((d) => !linkedIds.includes(d.id))
-
-  if (documentSearchQuery.value) {
-    const query = documentSearchQuery.value.toLowerCase()
-    docs = docs.filter(
-      (d) => d.title.toLowerCase().includes(query) || d.filename.toLowerCase().includes(query),
-    )
-  }
-  return docs
-})
-
-const confirmLinkDocument = async () => {
-  if (!selectedDocument.value) return
-  linkingDocument.value = true
+const onLinkDocument = async (doc: { id: number }) => {
   try {
-    await actionStore.linkDocument(actionId, selectedDocument.value.id)
+    await actionStore.linkDocument(actionId, doc.id)
     toast.add({
       severity: 'success',
       summary: 'Succès',
       detail: 'Document lié avec succès',
       life: 3000,
     })
-    linkDocumentDialogVisible.value = false
   } catch {
     toast.add({
       severity: 'error',
@@ -617,14 +518,12 @@ const confirmLinkDocument = async () => {
       detail: 'Erreur lors de la liaison du document',
       life: 3000,
     })
-  } finally {
-    linkingDocument.value = false
   }
 }
 
-const unlinkDocument = async (docId: number) => {
+const onUnlinkDocument = async (doc: { id: number }) => {
   try {
-    await actionStore.unlinkDocument(actionId, docId)
+    await actionStore.unlinkDocument(actionId, doc.id)
     toast.add({
       severity: 'success',
       summary: 'Succès',
@@ -641,9 +540,9 @@ const unlinkDocument = async (docId: number) => {
   }
 }
 
-const downloadDocument = async (id: number, filename: string) => {
+const downloadDocument = async (doc: { id: number; filename: string }) => {
   try {
-    await documentStore.downloadDocument(id, filename)
+    await documentStore.downloadDocument(doc.id, doc.filename)
     toast.add({
       severity: 'success',
       summary: 'Succès',

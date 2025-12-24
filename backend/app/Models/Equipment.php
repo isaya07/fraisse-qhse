@@ -50,4 +50,9 @@ class Equipment extends Model
     {
         return $this->hasMany(MaintenanceLog::class);
     }
+
+    public function documents()
+    {
+        return $this->belongsToMany(Document::class, 'document_equipment');
+    }
 }

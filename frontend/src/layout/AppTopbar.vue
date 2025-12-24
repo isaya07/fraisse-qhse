@@ -1,9 +1,9 @@
 <template>
   <div class="layout-topbar">
     <div class="layout-topbar-logo-container">
-      <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
-        <font-awesome-icon :icon="['fas', 'bars']" />
-      </button>
+      <Button class="layout-menu-button layout-topbar-action" @click="toggleMenu" unstyled>
+        <font-awesome-icon :icon="['fas', 'bars']" size="lg" />
+      </Button>
       <router-link to="/" class="layout-topbar-logo">
         <FraisseLogo size="42" class="mr-2" />
         <div class="flex flex-col justify-center leading-none">
@@ -15,21 +15,28 @@
 
     <div class="layout-topbar-actions">
       <div class="layout-config-menu flex gap-2 items-center">
-        <button
-          v-if="currentUser"
-          type="button"
-          class="layout-topbar-action notification-button"
-          @click="toggleNotificationPanel"
-          title="Notifications"
-        >
-          <OverlayBadge
-            :value="notificationStore.unreadCount > 0 ? notificationStore.unreadCount : undefined"
-            severity="danger"
-            size="small"
+        <div class="relative">
+          <Button
+            v-if="currentUser"
+            type="button"
+            class="layout-topbar-action"
+            @click="toggleNotificationPanel"
+            v-tooltip.bottom="'Notifications'"
+            unstyled
           >
-            <font-awesome-icon :icon="['fas', 'bell']" />
-          </OverlayBadge>
-        </button>
+            <OverlayBadge
+              :value="
+                notificationStore.unreadCount > 0
+                  ? String(notificationStore.unreadCount)
+                  : undefined
+              "
+              severity="danger"
+              size="small"
+            >
+              <font-awesome-icon :icon="['fas', 'bell']" size="lg" />
+            </OverlayBadge>
+          </Button>
+        </div>
 
         <Popover ref="notificationPanel" class="w-80 sm:w-96">
           <div class="flex flex-col gap-4">
@@ -57,7 +64,9 @@
                 :key="notification.id"
                 class="p-3 rounded-lg cursor-pointer border-l-4 border-primary transition-colors"
                 :class="[
-                  notification.read_at ? 'opacity-60 bg-surface-0 dark:bg-surface-800' : 'bg-primary-50 dark:bg-primary-900/20'
+                  notification.read_at
+                    ? 'opacity-60 bg-surface-0 dark:bg-surface-800'
+                    : 'bg-primary-50 dark:bg-primary-900/20',
                 ]"
                 @click="markAsRead(notification.id)"
               >
@@ -84,23 +93,28 @@
           </div>
         </Popover>
 
-        <button
+        <Button
           type="button"
           class="layout-topbar-action theme-toggle"
           @click="toggleDarkMode"
-          title="Changer de thème"
+          v-tooltip.bottom="'Changer de thème'"
+          unstyled
         >
-          <font-awesome-icon :icon="['fas', appStore.theme === 'dark' ? 'sun' : 'moon']" />
-        </button>
+          <font-awesome-icon
+            :icon="['fas', appStore.theme === 'dark' ? 'sun' : 'moon']"
+            size="lg"
+          />
+        </Button>
       </div>
 
       <!-- Menu mobile utilisateur -->
       <div v-if="currentUser" class="user-menu-container">
-        <button
+        <Button
           class="user-profile-button"
           @click="toggleUserMenu"
           aria-haspopup="true"
           aria-controls="user_menu"
+          unstyled
         >
           <div class="user-avatar">
             <span>{{ getUserInitials() }}</span>
@@ -109,7 +123,7 @@
             >{{ currentUser?.first_name }} {{ currentUser?.last_name }}</span
           >
           <font-awesome-icon :icon="['fas', 'chevron-down']" class="ml-2 text-xs hidden md:block" />
-        </button>
+        </Button>
 
         <Popover ref="userMenuVisible" id="user_menu">
           <div class="user-popover-content">
@@ -147,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
@@ -219,16 +233,27 @@ let pollingInterval: number | null | ReturnType<typeof setInterval> = null
 
 onMounted(() => {
   if (currentUser.value) {
-    notificationStore.fetchUnreadCount()
-    notificationStore.fetchNotifications(true) // Fetch unread initially for the popup
+    initNotifications()
+  }
+})
 
-    // Poll for notifications every minute
+watch(currentUser, (newUser) => {
+  if (newUser) {
+    initNotifications()
+  }
+})
+
+const initNotifications = () => {
+  notificationStore.fetchUnreadCount()
+  notificationStore.fetchNotifications(true)
+
+  if (!pollingInterval) {
     pollingInterval = setInterval(() => {
       notificationStore.fetchUnreadCount()
       notificationStore.fetchNotifications(true)
     }, 60000)
   }
-})
+}
 
 onUnmounted(() => {
   if (pollingInterval) {

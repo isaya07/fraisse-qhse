@@ -26,7 +26,9 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-color-secondary text-sm font-medium mb-1">Sessions à venir</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1"
+                >Sessions à venir</span
+              >
               <span class="text-3xl font-bold text-color">{{ upcomingSessionsCount }}</span>
             </div>
             <div
@@ -42,7 +44,9 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-color-secondary text-sm font-medium mb-1">Formations actives</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1"
+                >Formations actives</span
+              >
               <span class="text-3xl font-bold text-color">{{ activeTrainingsCount }}</span>
             </div>
             <div
@@ -58,7 +62,9 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-color-secondary text-sm font-medium mb-1">Participants ce mois</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1"
+                >Participants ce mois</span
+              >
               <span class="text-3xl font-bold text-color">{{ participantsThisMonth }}</span>
             </div>
             <div
@@ -74,7 +80,9 @@
         <template #content>
           <div class="flex items-center justify-between">
             <div>
-              <span class="block text-color-secondary text-sm font-medium mb-1">Renouvellements</span>
+              <span class="block text-color-secondary text-sm font-medium mb-1"
+                >Renouvellements</span
+              >
               <span class="text-3xl font-bold text-color">{{ renewalsNeeded.length }}</span>
             </div>
             <div
@@ -157,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore } from '@/stores/training'
 import Card from 'primevue/card'

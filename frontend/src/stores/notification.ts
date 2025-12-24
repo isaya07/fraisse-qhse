@@ -23,7 +23,7 @@ export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
   const settings = ref<NotificationSettings | null>(null)
   const loading = ref(false)
-  const { get, put } = useApi()
+  const { get, put, post } = useApi()
 
   async function fetchNotifications(unreadOnly = false) {
     loading.value = true
@@ -33,7 +33,7 @@ export const useNotificationStore = defineStore('notification', () => {
         url += '?unread=true'
       }
 
-      const response = await get<any>(url)
+      const response = await get<{ data: Notification[] }>(url)
       if (response.success && response.data) {
         notifications.value = response.data.data || []
       }
@@ -105,6 +105,26 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  async function generateAlerts() {
+    try {
+      const response = await post<{ message: string }>('/notifications/generate-alerts', {})
+      return response.success
+    } catch (error) {
+      console.error('Error generating alerts:', error)
+      return false
+    }
+  }
+
+  async function sendEmails() {
+    try {
+      const response = await post<{ message: string }>('/notifications/send-emails', {})
+      return response.success
+    } catch (error) {
+      console.error('Error sending emails:', error)
+      return false
+    }
+  }
+
   return {
     notifications,
     unreadCount,
@@ -116,5 +136,7 @@ export const useNotificationStore = defineStore('notification', () => {
     markAllAsRead,
     fetchSettings,
     updateSettings,
+    generateAlerts,
+    sendEmails,
   }
 })

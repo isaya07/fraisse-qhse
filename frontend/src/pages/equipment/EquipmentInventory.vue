@@ -1,58 +1,60 @@
 <template>
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-color mb-4 md:mb-0">Inventaire Équipements</h1>
+      <h2>Inventaire Équipements</h2>
       <Button label="Nouvel équipement" icon="pi pi-plus" @click="openEquipmentDialog" />
     </div>
 
     <!-- Filters -->
-    <div class="surface-card p-4 rounded-lg shadow mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="field">
-          <label class="block text-sm font-medium text-color-secondary mb-1">Recherche</label>
-          <span class="p-input-icon-left w-full">
-            <i class="pi pi-search" />
-            <InputText v-model="filters.search" placeholder="Nom, série, réf..." class="w-full" />
-          </span>
+    <Card class="mb-6">
+      <template #content>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="field">
+            <label class="block text-sm font-medium text-color-secondary mb-1">Recherche</label>
+            <span class="p-input-icon-left w-full">
+              <i class="pi pi-search" />
+              <InputText v-model="filters.search" placeholder="Nom, série, réf..." class="w-full" />
+            </span>
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium text-color-secondary mb-1">Catégorie</label>
+            <Select
+              v-model="filters.category_id"
+              :options="store.categories"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Toutes les catégories"
+              showClear
+              class="w-full"
+            />
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium text-color-secondary mb-1">Statut</label>
+            <Select
+              v-model="filters.status"
+              :options="statusOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Tous les statuts"
+              showClear
+              class="w-full"
+            />
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium text-color-secondary mb-1">Localisation</label>
+            <Select
+              v-model="filters.location"
+              :options="locationOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Toutes les localisations"
+              showClear
+              class="w-full"
+            />
+          </div>
         </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color-secondary mb-1">Catégorie</label>
-          <Dropdown
-            v-model="filters.category_id"
-            :options="store.categories"
-            optionLabel="name"
-            optionValue="id"
-            placeholder="Toutes les catégories"
-            showClear
-            class="w-full"
-          />
-        </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color-secondary mb-1">Statut</label>
-          <Dropdown
-            v-model="filters.status"
-            :options="statusOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Tous les statuts"
-            showClear
-            class="w-full"
-          />
-        </div>
-        <div class="field">
-          <label class="block text-sm font-medium text-color-secondary mb-1">Localisation</label>
-          <Dropdown
-            v-model="filters.location"
-            :options="locationOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Toutes les localisations"
-            showClear
-            class="w-full"
-          />
-        </div>
-      </div>
-    </div>
+      </template>
+    </Card>
 
     <!-- Equipment Grid -->
     <div v-if="store.loading" class="flex justify-center py-12">
@@ -66,75 +68,81 @@
       <p class="text-color-secondary text-lg">Aucun équipement trouvé</p>
     </div>
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div
+      <Card
         v-for="item in filteredEquipment"
         :key="item.id"
         class="surface-card rounded-lg shadow hover:shadow-md transition-all cursor-pointer border border-surface-border flex flex-col"
         @click="viewEquipment(item)"
       >
-        <!-- Header / Image Placeholder -->
-        <div
-          class="h-32 bg-surface-100 dark:bg-surface-800 rounded-t-lg flex items-center justify-center relative overflow-hidden"
-        >
-          <img v-if="item.image_path" :src="item.image_path" class="w-full h-full object-cover" />
-          <div v-else class="text-color-secondary flex flex-col items-center">
-            <font-awesome-icon :icon="item.category?.icon || 'tools'" class="text-3xl mb-2" />
-            <span class="text-xs">{{ item.category?.name }}</span>
-          </div>
-
-          <!-- Status Badge -->
+        <template #content>
+          <!-- Header / Image Placeholder -->
           <div
-            class="absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold shadow-sm"
-            :class="getStatusBadge(item.status)"
+            class="h-32 bg-surface-100 dark:bg-surface-800 rounded-t-lg flex items-center justify-center relative overflow-hidden"
           >
-            {{ getStatusLabel(item.status) }}
-          </div>
-        </div>
-
-        <!-- Content -->
-        <div class="p-4 flex-1 flex flex-col">
-          <h3 class="font-bold text-color mb-1 truncate" :title="item.name">{{ item.name }}</h3>
-          <p class="text-sm text-color-secondary mb-2 truncate">
-            Ref: {{ item.internal_ref || item.serial_number }}
-          </p>
-
-          <div class="mt-auto space-y-2">
-            <div class="flex items-center text-sm text-color-secondary">
-              <font-awesome-icon icon="map-marker-alt" class="w-4 mr-2 text-color-secondary" />
-              <span>{{ getLocationLabel(item.location) }}</span>
+            <img v-if="item.image_path" :src="item.image_path" class="w-full h-full object-cover" />
+            <div v-else class="text-color-secondary flex flex-col items-center">
+              <font-awesome-icon :icon="item.category?.icon || 'tools'" class="text-3xl mb-2" />
+              <span class="text-xs">{{ item.category?.name }}</span>
             </div>
 
-            <div v-if="item.current_assignment" class="flex items-center text-sm text-blue-600">
-              <font-awesome-icon icon="user" class="w-4 mr-2" />
-              <span class="truncate">
-                {{ item.current_assignment.user?.first_name }}
-                {{ item.current_assignment.user?.last_name }}
-              </span>
-            </div>
-
+            <!-- Status Badge -->
             <div
-              v-if="item.expiration_date"
-              class="flex items-center text-sm"
-              :class="isExpired(item.expiration_date) ? 'text-red-600 font-bold' : 'text-color-secondary'"
+              class="absolute top-2 right-2 px-2 py-1 rounded text-xs font-bold shadow-sm"
+              :class="getStatusBadge(item.status)"
             >
-              <font-awesome-icon
-                icon="clock"
-                class="w-4 mr-2"
-                :class="isExpired(item.expiration_date) ? 'text-red-500' : 'text-color-secondary'"
-              />
-              <span>Exp: {{ formatDate(item.expiration_date) }}</span>
-            </div>
-
-            <div
-              v-if="item.maintenance_frequency_months"
-              class="flex items-center text-sm text-color-secondary"
-            >
-              <font-awesome-icon icon="calendar-check" class="w-4 mr-2 text-color-secondary" />
-              <span>Freq: {{ item.maintenance_frequency_months }} mois</span>
+              {{ getStatusLabel(item.status) }}
             </div>
           </div>
-        </div>
-      </div>
+
+          <!-- Content -->
+          <div class="p-4 flex-1 flex flex-col">
+            <h4 class="font-bold text-color mb-1 truncate" :title="item.name">{{ item.name }}</h4>
+            <p class="text-sm text-color-secondary mb-2 truncate">
+              Ref: {{ item.internal_ref || item.serial_number }}
+            </p>
+
+            <div class="mt-auto space-y-2">
+              <div class="flex items-center text-sm text-color-secondary">
+                <font-awesome-icon icon="map-marker-alt" class="w-4 mr-2 text-color-secondary" />
+                <span>{{ getLocationLabel(item.location) }}</span>
+              </div>
+
+              <div v-if="item.current_assignment" class="flex items-center text-sm text-blue-600">
+                <font-awesome-icon icon="user" class="w-4 mr-2" />
+                <span class="truncate">
+                  {{ item.current_assignment.user?.first_name }}
+                  {{ item.current_assignment.user?.last_name }}
+                </span>
+              </div>
+
+              <div
+                v-if="item.expiration_date"
+                class="flex items-center text-sm"
+                :class="
+                  isExpired(item.expiration_date)
+                    ? 'text-red-600 font-bold'
+                    : 'text-color-secondary'
+                "
+              >
+                <font-awesome-icon
+                  icon="clock"
+                  class="w-4 mr-2"
+                  :class="isExpired(item.expiration_date) ? 'text-red-500' : 'text-color-secondary'"
+                />
+                <span>Exp: {{ formatDate(item.expiration_date) }}</span>
+              </div>
+
+              <div
+                v-if="item.maintenance_frequency_months"
+                class="flex items-center text-sm text-color-secondary"
+              >
+                <font-awesome-icon icon="calendar-check" class="w-4 mr-2 text-color-secondary" />
+                <span>Freq: {{ item.maintenance_frequency_months }} mois</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Dialog -->
@@ -156,10 +164,9 @@ import { useEquipmentStore, type Equipment } from '@/stores/equipment'
 import EquipmentForm from '@/components/equipment/EquipmentForm.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
 import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 
 const route = useRoute()
 const router = useRouter()

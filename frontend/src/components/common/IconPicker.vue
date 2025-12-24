@@ -82,6 +82,7 @@ const icons = [
   'file',
   'file-alt',
   'file-lines',
+  'file-circle-check',
   'clipboard',
   'clipboard-list',
   'clipboard-check',

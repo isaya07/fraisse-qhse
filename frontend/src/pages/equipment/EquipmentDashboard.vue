@@ -1,177 +1,193 @@
 <template>
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h1 class="text-2xl font-bold text-color mb-4 md:mb-0">Gestion des Équipements & EPI</h1>
+      <h2>Gestion des Équipements & EPI</h2>
       <div class="flex gap-2">
         <Button label="Nouvel équipement" icon="pi pi-plus" @click="openEquipmentDialog" />
       </div>
     </div>
 
     <!-- KPIs -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div class="surface-card rounded-lg shadow p-4 border-l-4 border-blue-500">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-color-secondary text-sm font-medium">Total Équipements</p>
-            <h3 class="text-2xl font-bold text-color mt-1">{{ store.equipmentList.length }}</h3>
-          </div>
-          <div class="bg-blue-100 p-2 rounded-full text-blue-600">
-            <font-awesome-icon icon="tools" />
-          </div>
-        </div>
-      </div>
-
-      <div class="surface-card rounded-lg shadow p-4 border-l-4 border-green-500">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-color-secondary text-sm font-medium">Disponibles</p>
-            <h3 class="text-2xl font-bold text-color mt-1">{{ availableCount }}</h3>
-          </div>
-          <div class="bg-green-100 p-2 rounded-full text-green-600">
-            <font-awesome-icon icon="check-circle" />
-          </div>
-        </div>
-      </div>
-
-      <div class="surface-card rounded-lg shadow p-4 border-l-4 border-orange-500">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-color-secondary text-sm font-medium">En Maintenance</p>
-            <h3 class="text-2xl font-bold text-color mt-1">{{ maintenanceCount }}</h3>
-          </div>
-          <div class="bg-orange-100 p-2 rounded-full text-orange-600">
-            <font-awesome-icon icon="wrench" />
-          </div>
-        </div>
-      </div>
-
-      <div class="surface-card rounded-lg shadow p-4 border-l-4 border-red-500">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-color-secondary text-sm font-medium">EPI Expirés / À contrôler</p>
-            <h3 class="text-2xl font-bold text-color mt-1">{{ expiredCount }}</h3>
-          </div>
-          <div class="bg-red-100 p-2 rounded-full text-red-600">
-            <font-awesome-icon icon="exclamation-triangle" />
-          </div>
-        </div>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <StatTile
+        title="Total Équipements"
+        :value="store.equipmentList.length"
+        icon="tools"
+        color="blue"
+        :loading="store.loading"
+      />
+      <StatTile
+        title="Disponibles"
+        :value="availableCount"
+        icon="check-circle"
+        color="green"
+        :loading="store.loading"
+      />
+      <StatTile
+        title="En Maintenance"
+        :value="maintenanceCount"
+        icon="wrench"
+        color="orange"
+        :loading="store.loading"
+      />
+      <StatTile
+        title="EPI Expirés / À contrôler"
+        :value="expiredCount"
+        icon="exclamation-triangle"
+        color="red"
+        :loading="store.loading"
+      />
     </div>
 
-    <!-- Categories Grid -->
-    <h2 class="text-xl font-semibold text-color mb-4">Parcourir par catégorie</h2>
+    <!-- Categories Grid (Compact Style) -->
+    <h3 class="pb-4">Parcourir par catégorie</h3>
+
     <div v-if="store.loading && !store.categories.length" class="flex justify-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
     </div>
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-      <div
+
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+      <Card
         v-for="category in store.categories"
         :key="category.id"
-        class="surface-card rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 border border-surface-border"
+        class="hover:shadow-md transition-all cursor-pointer group"
         @click="filterByCategory(category.id)"
       >
-        <div class="flex items-center gap-4">
-          <div
-            class="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl"
-            :style="{ backgroundColor: category.color || '#64748B' }"
-          >
-            <font-awesome-icon :icon="category.icon || 'box'" />
+        <template #content>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg shadow-sm"
+              :style="{ backgroundColor: category.color || '#64748B' }"
+            >
+              <font-awesome-icon :icon="category.icon || 'box'" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h5 class="truncate">{{ category.name }}</h5>
+              <p class="text-xs text-color-secondary">
+                {{ category.equipment_count || 0 }} éléments
+              </p>
+            </div>
+            <font-awesome-icon
+              icon="chevron-right"
+              class="text-surface-300 group-hover:text-blue-500 transition-colors text-lg"
+            />
           </div>
-          <div>
-            <h3 class="font-semibold text-color">{{ category.name }}</h3>
-            <p class="text-sm text-color-secondary">{{ category.equipment_count || 0 }} éléments</p>
-          </div>
-        </div>
-      </div>
+        </template>
+      </Card>
 
-      <!-- Add Category Card -->
+      <!-- Add Category Compact Card -->
       <div
-        class="border-2 border-dashed border-surface-border rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors min-h-[80px]"
+        class="border border-dashed border-surface-border rounded-xl flex items-center gap-3 p-3 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
         @click="openCategoryDialog"
       >
-        <font-awesome-icon icon="plus" class="text-color-secondary text-xl mb-2" />
-        <span class="text-color-secondary font-medium text-sm">Nouvelle catégorie</span>
+        <div
+          class="w-10 h-10 rounded-lg bg-surface-100 dark:bg-surface-800 flex items-center justify-center text-color-secondary group-hover:text-blue-500 transition-colors"
+        >
+          <font-awesome-icon icon="plus" />
+        </div>
+        <span
+          class="text-color-secondary font-medium text-sm group-hover:text-blue-500 transition-colors"
+          >Nouvelle catégorie</span
+        >
       </div>
     </div>
 
     <!-- Recent Activity / Alerts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Alerts Section -->
-      <div class="surface-card rounded-lg shadow p-4">
-        <h3 class="font-semibold text-color mb-4 flex items-center gap-2">
-          <font-awesome-icon icon="bell" class="text-red-500" />
-          Alertes & Rappels
-        </h3>
-        <div v-if="expiredEquipment.length === 0" class="text-center py-8 text-color-secondary">
-          <font-awesome-icon icon="check-circle" class="text-green-500 text-3xl mb-2" />
-          <p>Tout est en ordre !</p>
-        </div>
-        <div v-else class="space-y-3">
-          <div
-            v-for="item in expiredEquipment.slice(0, 5)"
-            :key="item.id"
-            class="flex items-center justify-between p-3 bg-red-50 rounded border border-red-100"
-          >
-            <div class="flex items-center gap-3">
-              <font-awesome-icon icon="exclamation-circle" class="text-red-500" />
-              <div>
-                <p class="font-medium text-color">{{ item.name }}</p>
-                <p class="text-xs text-red-600">
-                  {{ getExpirationLabel(item) }}
-                </p>
-              </div>
-            </div>
-            <Button label="Voir" size="small" severity="danger" text @click="viewEquipment(item)" />
+      <Card>
+        <template #content>
+          <h4 class="pb-2">
+            <font-awesome-icon icon="bell" class="text-red-500" />
+            Alertes & Rappels
+          </h4>
+
+          <div v-if="expiredEquipment.length === 0" class="text-center py-8 text-color-secondary">
+            <font-awesome-icon icon="check-circle" class="text-green-500 text-3xl mb-2" />
+            <p>Tout est en ordre !</p>
           </div>
-        </div>
-      </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="item in expiredEquipment.slice(0, 5)"
+              :key="item.id"
+              class="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-800"
+            >
+              <div class="flex items-center gap-3">
+                <font-awesome-icon icon="exclamation-circle" class="text-red-500" />
+                <div>
+                  <p class="font-medium text-color">{{ item.name }}</p>
+                  <p class="text-xs text-red-600 dark:text-red-400">
+                    {{ getExpirationLabel(item) }}
+                  </p>
+                </div>
+              </div>
+              <Button
+                label="Voir"
+                size="small"
+                severity="danger"
+                text
+                @click="viewEquipment(item)"
+              />
+            </div>
+          </div>
+        </template>
+      </Card>
 
       <!-- Quick Actions / Recent Logs -->
-      <div class="surface-card rounded-lg shadow p-4">
-        <h3 class="font-semibold text-color mb-4 flex items-center gap-2">
-          <font-awesome-icon icon="history" class="text-blue-500" />
-          Dernières interventions
-        </h3>
-        <div v-if="store.maintenanceLogs.length === 0" class="text-center py-8 text-color-secondary">
-          <p>Aucun historique récent</p>
-        </div>
-        <div v-else class="space-y-3">
+      <Card>
+        <template #content>
+          <h4 class="pb-2">
+            <font-awesome-icon icon="history" class="text-blue-500" />
+            Dernières interventions
+          </h4>
           <div
-            v-for="log in store.maintenanceLogs.slice(0, 5)"
-            :key="log.id"
-            class="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-800 rounded border border-surface-border"
+            v-if="store.maintenanceLogs.length === 0"
+            class="text-center py-8 text-color-secondary"
           >
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs"
-                :class="getLogColor(log.type)"
-              >
-                <font-awesome-icon :icon="getLogIcon(log.type)" />
-              </div>
-              <div>
-                <p class="font-medium text-color">
-                  {{ log.equipment?.name || 'Équipement inconnu' }}
-                </p>
-                <p class="text-xs text-color-secondary">
-                  {{ formatDate(log.date) }} - {{ log.performer }}
-                </p>
-              </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded font-medium" :class="getResultBadge(log.result)">
-              {{ getResultLabel(log.result) }}
-            </span>
+            <p>Aucun historique récent</p>
           </div>
-        </div>
-      </div>
+          <div v-else class="space-y-3">
+            <div
+              v-for="log in store.maintenanceLogs.slice(0, 5)"
+              :key="log.id"
+              class="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-800 rounded border border-surface-border"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs shadow-sm"
+                  :class="getLogColor(log.type)"
+                >
+                  <font-awesome-icon :icon="getLogIcon(log.type)" />
+                </div>
+                <div>
+                  <p class="font-medium text-color">
+                    {{ log.equipment?.name || 'Équipement inconnu' }}
+                  </p>
+                  <p class="text-xs text-color-secondary">
+                    {{ formatDate(log.date) }} - {{ log.performer }}
+                  </p>
+                </div>
+              </div>
+              <span
+                class="text-xs px-2 py-1 rounded font-medium"
+                :class="getResultBadge(log.result)"
+              >
+                {{ getResultLabel(log.result) }}
+              </span>
+            </div>
+          </div>
+        </template>
+      </Card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useEquipmentStore, type Equipment, type MaintenanceLog } from '@/stores/equipment'
+import { useEquipmentStore, type Equipment } from '@/stores/equipment'
 import Button from 'primevue/button'
+import StatTile from '@/components/common/StatTile.vue'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -236,13 +252,13 @@ const getLogIcon = (type: string) => {
 const getResultBadge = (result: string) => {
   switch (result) {
     case 'compliant':
-      return 'bg-green-100 text-green-700'
+      return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
     case 'non_compliant':
-      return 'bg-red-100 text-red-700'
+      return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
     case 'fixed':
-      return 'bg-blue-100 text-blue-700'
+      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
     default:
-      return 'bg-gray-100 text-gray-700'
+      return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
   }
 }
 

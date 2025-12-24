@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useApi } from '@/composables/useApi'
+import type { Document } from './app'
 
 export interface EquipmentCategory {
   id: number
@@ -30,6 +31,7 @@ export interface Equipment {
   current_assignment?: EquipmentAssignment
   assignments?: EquipmentAssignment[]
   maintenance_logs?: MaintenanceLog[]
+  documents?: Document[]
 }
 
 export interface EquipmentAssignment {
@@ -39,6 +41,7 @@ export interface EquipmentAssignment {
   assigned_at: string
   returned_at: string | null
   notes: string | null
+  return_notes: string | null
   user?: {
     id: number
     first_name: string

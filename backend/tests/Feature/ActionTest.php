@@ -19,16 +19,22 @@ class ActionTest extends TestCase
         $response = $this->actingAs($user)->getJson('/api/actions');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure(['data']);
+            ->assertJsonStructure(['data']);
     }
 
     public function test_authenticated_users_can_create_actions()
     {
         $user = User::factory()->create();
 
+        $actionType = \App\Models\ActionType::first() ?? \App\Models\ActionType::create([
+            'name' => 'Corrective',
+            'icon' => 'wrench',
+            'color' => '#ff0000'
+        ]);
+
         $actionData = [
             'title' => 'New Action',
-            'type' => 'corrective',
+            'action_type_id' => $actionType->id,
             'priority' => 'high',
             'status' => 'open',
             'created_by' => $user->id,
@@ -38,8 +44,8 @@ class ActionTest extends TestCase
         $response = $this->actingAs($user)->postJson('/api/actions', $actionData);
 
         $response->assertStatus(201)
-                 ->assertJsonFragment(['title' => 'New Action']);
-        
+            ->assertJsonFragment(['title' => 'New Action']);
+
         $this->assertDatabaseHas('actions', ['title' => 'New Action']);
     }
 
@@ -53,7 +59,7 @@ class ActionTest extends TestCase
         $response = $this->actingAs($user)->putJson("/api/actions/{$action->id}", $updateData);
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['title' => 'Updated Title']);
+            ->assertJsonFragment(['title' => 'Updated Title']);
     }
 
     public function test_users_cannot_update_others_actions()

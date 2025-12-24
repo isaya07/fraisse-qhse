@@ -15,6 +15,7 @@ class EquipmentAssignment extends Model
         'assigned_at',
         'returned_at',
         'notes',
+        'return_notes',
     ];
 
     protected $casts = [

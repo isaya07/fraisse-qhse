@@ -36,11 +36,15 @@
       </div>
 
       <div class="border-t border-surface-border pt-4">
-        <h3 class="text-lg font-semibold mb-4 text-color">Seuils d'alerte (jours avant échéance)</h3>
+        <h3 class="text-lg font-semibold mb-4 text-color">
+          Seuils d'alerte (jours avant échéance)
+        </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="field">
-            <label for="action_threshold" class="block text-sm font-medium text-color-secondary mb-1"
+            <label
+              for="action_threshold"
+              class="block text-sm font-medium text-color-secondary mb-1"
               >Actions</label
             >
             <InputNumber
@@ -55,7 +59,9 @@
           </div>
 
           <div class="field">
-            <label for="equipment_threshold" class="block text-sm font-medium text-color-secondary mb-1"
+            <label
+              for="equipment_threshold"
+              class="block text-sm font-medium text-color-secondary mb-1"
               >Équipements</label
             >
             <InputNumber
@@ -70,7 +76,9 @@
           </div>
 
           <div class="field">
-            <label for="document_threshold" class="block text-sm font-medium text-color-secondary mb-1"
+            <label
+              for="document_threshold"
+              class="block text-sm font-medium text-color-secondary mb-1"
               >Documents (Expiration)</label
             >
             <InputNumber
@@ -85,7 +93,9 @@
           </div>
 
           <div class="field">
-            <label for="training_threshold" class="block text-sm font-medium text-color-secondary mb-1"
+            <label
+              for="training_threshold"
+              class="block text-sm font-medium text-color-secondary mb-1"
               >Formations</label
             >
             <InputNumber
@@ -100,7 +110,9 @@
           </div>
 
           <div class="field">
-            <label for="planning_threshold" class="block text-sm font-medium text-color-secondary mb-1"
+            <label
+              for="planning_threshold"
+              class="block text-sm font-medium text-color-secondary mb-1"
               >Planning (Visites/Causeries)</label
             >
             <InputNumber
@@ -116,12 +128,37 @@
         </div>
       </div>
 
+      <div class="border-t border-surface-border pt-4">
+        <h3 class="text-lg font-semibold mb-4 text-color">Actions Manuelles (Tests & Débogage)</h3>
+        <div class="flex flex-wrap gap-4">
+          <Button
+            label="Générer les alertes maintenant"
+            severity="warn"
+            outlined
+            @click="triggerAlerts"
+            :loading="loading"
+          >
+            <template #icon>
+              <font-awesome-icon icon="sync" class="mr-2" />
+            </template>
+          </Button>
+
+          <Button
+            label="Envoyer les emails maintenant"
+            severity="help"
+            outlined
+            @click="triggerEmails"
+            :loading="loading"
+          >
+            <template #icon>
+              <font-awesome-icon icon="envelope" class="mr-2" />
+            </template>
+          </Button>
+        </div>
+      </div>
+
       <div class="flex justify-end mt-6 pt-4 border-t border-surface-border">
-        <Button
-          label="Enregistrer les modifications"
-          @click="save"
-          :loading="loading"
-        >
+        <Button label="Enregistrer les modifications" @click="save" :loading="loading">
           <template #icon>
             <font-awesome-icon icon="save" class="mr-2" />
           </template>
@@ -160,7 +197,7 @@ onMounted(async () => {
   await store.fetchSettings()
   if (store.settings) {
     // Convert time string to Date object for the time picker
-    const [hours, minutes] = store.settings.email_time.split(':').map(Number);
+    const [hours, minutes] = store.settings.email_time.split(':').map(Number)
     form.value = {
       email_enabled: store.settings.email_enabled,
       email_time: new Date(0, 0, 0, hours, minutes, 0), // Date object with time
@@ -179,10 +216,11 @@ const save = async () => {
   loading.value = true
   try {
     // Convert Date object back to time string in HH:mm:ss format
-    const timeString = form.value.email_time instanceof Date
-      ? `${String(form.value.email_time.getHours()).padStart(2, '0')}:${String(form.value.email_time.getMinutes()).padStart(2, '0')}:00`
-      : form.value.email_time;
-      
+    const timeString =
+      form.value.email_time instanceof Date
+        ? `${String(form.value.email_time.getHours()).padStart(2, '0')}:${String(form.value.email_time.getMinutes()).padStart(2, '0')}:00`
+        : form.value.email_time
+
     await store.updateSettings({
       email_enabled: form.value.email_enabled,
       email_time: timeString,
@@ -200,6 +238,64 @@ const save = async () => {
       severity: 'error',
       summary: 'Erreur',
       detail: "Erreur lors de l'enregistrement",
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const triggerAlerts = async () => {
+  loading.value = true
+  try {
+    const success = await store.generateAlerts()
+    if (success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Tâche lancée',
+        detail: 'La génération des alertes a été lancée en arrière-plan.',
+        life: 3000,
+      })
+      // Refresh notifications after a short delay to allow job to process
+      /* setTimeout(() => {
+        store.fetchUnreadCount()
+        store.fetchNotifications(true)
+      }, 1000) */
+    } else {
+      throw new Error('Echec de la demande')
+    }
+  } catch (e) {
+    console.error(e)
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de lancer la tâche',
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const triggerEmails = async () => {
+  loading.value = true
+  try {
+    const success = await store.sendEmails()
+    if (success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Tâche lancée',
+        detail: "L'envoi des emails a été lancé en arrière-plan.",
+        life: 3000,
+      })
+    } else {
+      throw new Error('Echec de la demande')
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erreur',
+      detail: 'Impossible de lancer la tâche',
       life: 3000,
     })
   } finally {

@@ -13,11 +13,7 @@
             <font-awesome-icon icon="check-double" class="mr-2" />
           </template>
         </Button>
-        <Button
-          label="Paramètres"
-          severity="secondary"
-          @click="router.push('/notifications/settings')"
-        >
+        <Button label="Paramètres" severity="secondary" @click="router.push('/settings?tab=2')">
           <template #icon>
             <font-awesome-icon icon="cog" class="mr-2" />
           </template>

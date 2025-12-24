@@ -64,7 +64,7 @@ class EquipmentController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $equipment->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user'])
+            'data' => $equipment->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user', 'documents'])
         ]);
     }
 
@@ -135,7 +135,7 @@ class EquipmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $equipment->load(['currentAssignment.user'])
+            'data' => $equipment->load(['category', 'currentAssignment.user', 'assignments.user', 'maintenanceLogs'])
         ]);
     }
 
@@ -160,7 +160,7 @@ class EquipmentController extends Controller
             // Close assignment
             $assignment->update([
                 'returned_at' => $validated['returned_at'],
-                'notes' => ($assignment->notes ? $assignment->notes . "\n" : "") . ($validated['notes'] ?? ''),
+                'return_notes' => $validated['notes'] ?? null,
             ]);
 
             // Update equipment status
@@ -172,7 +172,38 @@ class EquipmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $equipment->fresh()->load(['currentAssignment', 'category'])
+            'data' => $equipment->fresh()->load(['category', 'currentAssignment.user', 'assignments.user', 'maintenanceLogs'])
+        ]);
+    }
+    public function attachDocument(Request $request, $id)
+    {
+        $equipment = Equipment::findOrFail($id);
+
+        $request->validate([
+            'document_id' => 'required|exists:documents,id'
+        ]);
+
+        // Check if already attached
+        if (!$equipment->documents()->where('document_id', $request->document_id)->exists()) {
+            $equipment->documents()->attach($request->document_id);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document linked successfully',
+            'data' => $equipment->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user', 'documents'])
+        ]);
+    }
+
+    public function detachDocument($id, $documentId)
+    {
+        $equipment = Equipment::findOrFail($id);
+        $equipment->documents()->detach($documentId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document detached successfully',
+            'data' => $equipment->fresh()->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user', 'documents'])
         ]);
     }
 }

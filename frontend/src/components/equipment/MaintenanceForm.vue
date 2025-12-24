@@ -43,22 +43,55 @@
         <small v-if="errors.description" class="text-red-500">{{ errors.description }}</small>
       </div>
 
+      <div class="field">
+        <label class="block text-sm font-medium text-color-secondary mb-1"
+          >Type d'intervenant</label
+        >
+        <div class="flex gap-4">
+          <div class="flex items-center">
+            <RadioButton v-model="performerType" inputId="internal" value="internal" />
+            <label for="internal" class="ml-2 cursor-pointer">Interne</label>
+          </div>
+          <div class="flex items-center">
+            <RadioButton v-model="performerType" inputId="external" value="external" />
+            <label for="external" class="ml-2 cursor-pointer">Externe</label>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-4">
         <div class="field">
           <label for="performer" class="block text-sm font-medium text-color-secondary mb-1"
             >Intervenant *</label
           >
-          <InputText
-            id="performer"
-            v-model="form.performer"
-            class="w-full"
-            :class="{ 'p-invalid': errors.performer }"
-          />
+          <div v-if="performerType === 'internal'">
+            <Select
+              v-model="internalPerformerId"
+              :options="users"
+              optionLabel="fullname"
+              optionValue="id"
+              placeholder="Sélectionner un utilisateur"
+              class="w-full"
+              :class="{ 'p-invalid': errors.performer }"
+              filter
+            />
+          </div>
+          <div v-else>
+            <InputText
+              id="performer"
+              v-model="form.performer"
+              class="w-full"
+              :class="{ 'p-invalid': errors.performer }"
+              placeholder="Nom de l'entreprise ou intervenant"
+            />
+          </div>
           <small v-if="errors.performer" class="text-red-500">{{ errors.performer }}</small>
         </div>
 
         <div class="field">
-          <label for="cost" class="block text-sm font-medium text-color-secondary mb-1">Coût (€)</label>
+          <label for="cost" class="block text-sm font-medium text-color-secondary mb-1"
+            >Coût (€)</label
+          >
           <InputNumber
             id="cost"
             v-model="form.cost"
@@ -71,7 +104,9 @@
       </div>
 
       <div class="field">
-        <label for="result" class="block text-sm font-medium text-color-secondary mb-1">Résultat *</label>
+        <label for="result" class="block text-sm font-medium text-color-secondary mb-1"
+          >Résultat *</label
+        >
         <Select
           id="result"
           v-model="form.result"
@@ -85,7 +120,9 @@
       </div>
 
       <div class="field">
-        <label for="next_maintenance_date" class="block text-sm font-medium text-color-secondary mb-1"
+        <label
+          for="next_maintenance_date"
+          class="block text-sm font-medium text-color-secondary mb-1"
           >Prochaine maintenance</label
         >
         <DatePicker
@@ -111,14 +148,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useEquipmentStore } from '@/stores/equipment'
+import { useUserStore } from '@/stores/users'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
+import RadioButton from 'primevue/radiobutton'
 import { format } from 'date-fns'
 
 const props = defineProps<{
@@ -128,6 +167,10 @@ const props = defineProps<{
 const emit = defineEmits(['save', 'cancel'])
 
 const store = useEquipmentStore()
+const userStore = useUserStore()
+
+const performerType = ref<'internal' | 'external'>('internal')
+const internalPerformerId = ref<number | null>(null)
 
 const form = ref({
   type: 'periodic_check',
@@ -154,12 +197,31 @@ const resultOptions = [
   { label: 'Réparé', value: 'fixed' },
 ]
 
+const users = computed(() => {
+  return userStore.users.map((u) => ({
+    ...u,
+    fullname: `${u.first_name} ${u.last_name}`,
+  }))
+})
+
+onMounted(async () => {
+  if (userStore.users.length === 0) {
+    await userStore.fetchUsers()
+  }
+})
+
 const validate = () => {
   errors.value = {}
   if (!form.value.type) errors.value.type = 'Le type est requis'
   if (!form.value.date) errors.value.date = 'La date est requise'
   if (!form.value.description) errors.value.description = 'La description est requise'
-  if (!form.value.performer) errors.value.performer = "L'intervenant est requis"
+
+  if (performerType.value === 'internal' && !internalPerformerId.value) {
+    errors.value.performer = "L'utilisateur interne est requis"
+  } else if (performerType.value === 'external' && !form.value.performer) {
+    errors.value.performer = "Le nom de l'intervenant est requis"
+  }
+
   if (!form.value.result) errors.value.result = 'Le résultat est requis'
 
   return Object.keys(errors.value).length === 0
@@ -168,9 +230,18 @@ const validate = () => {
 const save = async () => {
   if (!validate()) return
 
+  let finalPerformer = form.value.performer
+  if (performerType.value === 'internal' && internalPerformerId.value) {
+    const user = users.value.find((u) => u.id === internalPerformerId.value)
+    if (user) {
+      finalPerformer = user.fullname
+    }
+  }
+
   const data = {
     equipment_id: props.equipmentId,
     ...form.value,
+    performer: finalPerformer,
     type: form.value.type as 'periodic_check' | 'repair' | 'calibration',
     result: form.value.result as 'compliant' | 'non_compliant' | 'fixed',
     date: format(form.value.date, 'yyyy-MM-dd'),

@@ -19,7 +19,7 @@ export const useActionTypeStore = defineStore('actionTypes', {
     async fetchTypes() {
       this.loading = true
       const { get } = useApi()
-      const result = await get('/action-types')
+      const result = await get<ActionType[]>('/action-types')
 
       if (result.success && result.data) {
         const responseData = result.data as any

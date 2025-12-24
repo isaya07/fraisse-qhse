@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import HomePage from '../pages/HomePage.vue'
 import AppLayout from '@/layout/AppLayout.vue'
 
 const router = createRouter({
@@ -12,7 +11,7 @@ const router = createRouter({
         {
           path: '/',
           name: 'home',
-          component: () => import('@/pages/HomePage.vue'),
+          component: () => import('@/pages/DashboardPage.vue'),
         },
         {
           path: '/documents',

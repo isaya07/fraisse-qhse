@@ -66,4 +66,16 @@ class NotificationController extends Controller
 
         return response()->json($settings);
     }
+
+    public function generateAlerts()
+    {
+        \App\Jobs\GenerateDailyAlerts::dispatch();
+        return response()->json(['message' => 'Génération des alertes lancée en tâche de fond.']);
+    }
+
+    public function sendEmails()
+    {
+        \App\Jobs\SendDailyNotifications::dispatch(true);
+        return response()->json(['message' => 'Envoi des emails lancé en tâche de fond (Forcé).']);
+    }
 }
