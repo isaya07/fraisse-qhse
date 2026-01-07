@@ -1,222 +1,208 @@
 <template>
-  <div class="p-4 flex flex-col" v-if="document">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
-      <div class="flex items-center gap-4">
+  <div class="h-[calc(100vh-6rem)] p-4 flex flex-col" v-if="document">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4 shrink-0">
+      <div class="flex items-center gap-3">
         <Button text rounded severity="secondary" @click="goBack">
           <template #icon>
             <font-awesome-icon icon="arrow-left" />
           </template>
         </Button>
-        <h2 class="mt-0!">{{ document.title }}</h2>
-        <Tag
-          :value="getStatusLabel(document.status)"
-          :severity="getStatusSeverity(document.status)"
-        />
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="m-0 text-2xl font-semibold">{{ document.title }}</h2>
+            <Tag
+              :value="getStatusLabel(document.status)"
+              :severity="getStatusSeverity(document.status)"
+            />
+          </div>
+          <span class="text-sm text-color-secondary">{{ document.filename }}</span>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <!-- New Version Section (only for approved documents) -->
-        <ButtonGroup>
-          <Button
-            v-if="document.status === 'approved'"
-            label="Nouvelle version"
-            severity="info"
-            @click="openNewVersionDialog"
-          >
-            <template #icon>
-              <font-awesome-icon icon="upload" />
-            </template>
-          </Button>
-          <Button label="Télécharger" severity="primary" @click="downloadFile">
-            <template #icon>
-              <font-awesome-icon icon="download" />
-            </template>
-          </Button>
-          <Button label="Modifier" severity="success" @click="editDocument">
-            <template #icon>
-              <font-awesome-icon icon="pencil" />
-            </template>
-          </Button>
-          <Button label="Supprimer" severity="danger" @click="confirmDelete">
-            <template #icon>
-              <font-awesome-icon icon="trash" />
-            </template>
-          </Button>
-        </ButtonGroup>
-      </div>
-    </div>
 
-    <div class="flex justify-end gap-2 mb-2">
-      <Button
-        v-if="document.status === 'draft' || document.status === 'rejected'"
-        label="Demander approbation"
-        severity="help"
-        @click="requestApproval"
-      >
-        <template #icon>
-          <font-awesome-icon icon="paper-plane" />
+      <div class="flex gap-2">
+        <!-- Approval Workflow -->
+        <template v-if="document.status === 'draft' || document.status === 'rejected'">
+          <Button label="Demander approbation" severity="help" @click="requestApproval">
+            <template #icon>
+              <font-awesome-icon icon="paper-plane" class="mr-2" />
+            </template>
+          </Button>
         </template>
-      </Button>
-      <template v-if="document.status === 'pending_approval' && canApprove">
-        <ButtonGroup>
+        <template v-if="document.status === 'pending_approval' && canApprove">
           <Button label="Rejeter" severity="danger" outlined @click="rejectDocument">
             <template #icon>
-              <font-awesome-icon icon="times" />
+              <font-awesome-icon icon="times" class="mr-2" />
             </template>
           </Button>
           <Button label="Approuver" severity="success" @click="approveDocument">
             <template #icon>
-              <font-awesome-icon icon="check" />
+              <font-awesome-icon icon="check" class="mr-2" />
             </template>
           </Button>
-        </ButtonGroup>
-      </template>
+        </template>
+
+        <Button
+          v-if="document.status === 'approved'"
+          label="Nouvelle version"
+          severity="info"
+          @click="openNewVersionDialog"
+        >
+          <template #icon>
+            <font-awesome-icon icon="upload" class="mr-2" />
+          </template>
+        </Button>
+        <Button label="Modifier" severity="secondary" outlined @click="editDocument">
+          <template #icon>
+            <font-awesome-icon icon="pen" class="mr-2" />
+          </template>
+        </Button>
+        <Button label="Télécharger" severity="primary" @click="downloadFile">
+          <template #icon>
+            <font-awesome-icon icon="download" class="mr-2" />
+          </template>
+        </Button>
+        <Button severity="danger" text rounded @click="confirmDelete" v-tooltip.top="'Supprimer'">
+          <template #icon>
+            <font-awesome-icon icon="trash" />
+          </template>
+        </Button>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Main Content -->
-      <div class="lg:col-span-2 flex flex-col gap-6">
-        <!-- Info Card -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 mb-2">
-              <font-awesome-icon icon="info-circle" />
-              <span>Informations Générales</span>
-            </div>
-          </template>
-          <template #content>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span class="block text-sm text-color-secondary font-bold">Type : </span>
-                <Tag
-                  v-if="document.category"
-                  :value="document.category.name"
-                  :style="{
-                    backgroundColor: document.category.color || 'var(--surface-500)',
-                    color: '#fff',
-                  }"
-                >
-                  <template #icon>
-                    <font-awesome-icon
-                      v-if="document.category.icon"
-                      :icon="['fas', document.category.icon]"
-                      class="mr-1"
-                    />
-                  </template>
-                </Tag>
-                <span v-else class="text-color-secondary">Non défini</span>
-              </div>
-              <div>
-                <span class="block text-sm text-color-secondary font-bold">Version : </span>
-                <span class="font-medium text-color">{{ document.version }}</span>
-              </div>
-              <div>
-                <span class="block text-sm text-color-secondary font-bold">Créé par : </span>
-                <span class="font-medium text-color"
-                  >{{ document.creator?.first_name }} {{ document.creator?.last_name }}</span
-                >
-              </div>
-              <div>
-                <span class="block text-sm text-color-secondary font-bold"
-                  >Date de création :
-                </span>
-                <span class="font-medium text-color">{{ formatDate(document.created_at) }}</span>
-              </div>
-              <div v-if="document.approver">
-                <span class="block text-sm text-color-secondary font-bold">Approuvé par : </span>
-                <span class="font-medium text-color"
-                  >{{ document.approver?.first_name }} {{ document.approver?.last_name }}</span
-                >
-              </div>
-              <div v-if="document.published_date">
-                <span class="block text-sm text-color-secondary font-bold"
-                  >Date de publication</span
-                >
-                <span class="font-medium text-color">{{
-                  formatDate(document.published_date)
-                }}</span>
-              </div>
-              <div v-if="document.expires_date">
-                <span class="block text-sm text-color-secondary font-bold"
-                  >Date d'expiration :
-                </span>
-                <span class="font-medium text-red-500">{{
-                  formatDate(document.expires_date)
-                }}</span>
-              </div>
-            </div>
+    <!-- Main Grid -->
+    <div class="flex-1 flex gap-4 min-h-0 overflow-hidden">
+      <!-- Left: Preview (flex-1) -->
+      <div
+        class="flex-1 flex flex-col bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl shadow-sm overflow-hidden relative"
+      >
+        <!-- Loading State -->
+        <div
+          v-if="loadingPreview"
+          class="absolute inset-0 flex items-center justify-center bg-surface-0/50 z-10"
+        >
+          <font-awesome-icon icon="spinner" spin class="text-4xl text-primary" />
+        </div>
 
-            <div class="mt-4 pt-4 border-t border-surface-border" v-if="document.description">
-              <span class="block text-sm text-color-secondary font-bold mb-1">Description : </span>
-              <p class="text-color">{{ document.description }}</p>
-            </div>
-          </template>
-        </Card>
-        <!-- Version History -->
-        <DocumentVersionHistory
-          v-if="document"
-          :document-id="document.id"
-          :current-version="document.version"
-          @restore="handleRestoreVersion"
-        />
+        <!-- PDF Preview -->
+        <iframe
+          v-if="previewUrl && previewType === 'pdf'"
+          :src="previewUrl"
+          class="w-full h-full border-none"
+          title="Document Preview"
+        ></iframe>
+
+        <!-- Image Preview -->
+        <div
+          v-else-if="previewUrl && previewType === 'image'"
+          class="w-full h-full flex items-center justify-center p-4 bg-surface-100 dark:bg-surface-900"
+        >
+          <img
+            :src="previewUrl"
+            class="max-w-full max-h-full object-contain shadow-md"
+            alt="Preview"
+          />
+        </div>
+
+        <!-- No Preview -->
+        <div
+          v-else
+          class="w-full h-full flex flex-col items-center justify-center bg-surface-50 dark:bg-surface-900 text-color-secondary p-8 text-center"
+        >
+          <FileIcon :filename="document.filename" size="xl" class="mb-4 !text-9xl opacity-50" />
+          <p class="text-xl font-medium mb-2">Aperçu non disponible</p>
+          <p class="text-sm mb-6 max-w-md">
+            Ce type de fichier ne peut pas être prévisualisé directement. Veuillez le télécharger
+            pour le consulter.
+          </p>
+          <Button label="Télécharger le fichier" @click="downloadFile">
+            <template #icon>
+              <font-awesome-icon icon="download" class="mr-2" />
+            </template>
+          </Button>
+        </div>
       </div>
 
-      <!-- Sidebar -->
-      <div class="flex flex-col gap-6">
-        <!-- File Details -->
+      <!-- Right: Info Panel (w-1/3) -->
+      <div class="w-full md:w-[450px] shrink-0 flex flex-col gap-4 overflow-y-auto">
+        <!-- Details Section -->
         <Card>
           <template #title>
-            <div class="flex items-center gap-2 mb-2">
-              <font-awesome-icon icon="file" />
-              <span>Fichier</span>
+            <div class="text-lg font-bold flex items-center gap-2">
+              <font-awesome-icon icon="circle-info" class="text-primary" />
+              Détails
             </div>
           </template>
           <template #content>
-            <div class="flex flex-col gap-3 text-sm">
-              <div class="flex justify-between">
-                <span class="text-color-secondary font-bold">Nom : </span>
-                <span class="text-color truncate" :title="document.filename">{{
-                  document.filename
-                }}</span>
+            <div class="flex flex-col gap-4">
+              <div class="grid grid-cols-2 gap-y-4 text-sm">
+                <div class="text-color-secondary">Version</div>
+                <div class="font-medium text-color">{{ document.version }}</div>
+
+                <div class="text-color-secondary">Type</div>
+                <div>
+                  <Tag
+                    v-if="document.category"
+                    :value="document.category.name"
+                    :style="{
+                      backgroundColor: document.category.color || 'var(--surface-500)',
+                      color: '#fff',
+                    }"
+                    class="text-xs"
+                  />
+                  <span v-else>-</span>
+                </div>
+
+                <div class="text-color-secondary">Créé par</div>
+                <div class="font-medium text-color">
+                  {{ document.creator?.first_name }} {{ document.creator?.last_name }}
+                </div>
+
+                <div class="text-color-secondary">Date création</div>
+                <div class="text-color">{{ formatDate(document.created_at) }}</div>
+
+                <div class="text-color-secondary">Mise à jour</div>
+                <div class="text-color">{{ formatDate(document.updated_at) }}</div>
+
+                <div class="text-color-secondary">Taille</div>
+                <div class="text-color">{{ formatFileSize(document.file_size) }}</div>
               </div>
-              <div class="flex justify-between">
-                <span class="text-color-secondary font-bold">Taille : </span>
-                <span class="text-color">{{ formatFileSize(document.file_size) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-color-secondary font-bold">Type MIME : </span>
-                <span class="text-color truncate" :title="document.mime_type">{{
-                  document.mime_type || '-'
-                }}</span>
-                <font-awesome-icon :icon="getFileIcon(document.filename)" />
+
+              <div
+                v-if="document.description"
+                class="pt-3 border-t border-surface-200 dark:border-surface-700"
+              >
+                <div class="text-color-secondary text-sm mb-1">Description</div>
+                <p class="m-0 text-sm leading-relaxed text-color">{{ document.description }}</p>
               </div>
             </div>
           </template>
         </Card>
 
-        <!-- Linked Actions -->
-        <Card>
+        <!-- Actions Linked -->
+        <Card v-if="document.actions && document.actions.length > 0">
           <template #title>
-            <div class="flex items-center gap-2 mb-2">
-              <font-awesome-icon icon="tasks" />
-              <span>Actions Liées</span>
+            <div class="text-lg font-bold flex items-center gap-2">
+              <font-awesome-icon icon="list-check" class="text-primary" />
+              Actions liées
             </div>
           </template>
           <template #content>
-            <div v-if="document.actions && document.actions.length > 0" class="flex flex-col gap-3">
+            <div class="flex flex-col gap-2">
               <div
                 v-for="action in document.actions"
                 :key="action.id"
-                class="p-3 border rounded-lg hover:bg-surface-50 cursor-pointer transition-colors"
+                class="p-3 border border-surface-200 dark:border-surface-700 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer transition-colors bg-surface-50/50 dark:bg-surface-700/20"
                 @click="router.push(`/actions/${action.id}`)"
               >
                 <div class="flex justify-between items-start mb-1">
-                  <span class="font-medium text-color text-sm line-clamp-2">{{
+                  <span class="font-medium text-sm line-clamp-2 text-color">{{
                     action.title
                   }}</span>
                   <Tag
                     :severity="getPrioritySeverity(action.priority)"
-                    class="text-xs"
-                    :value="getPriorityLabel(action.priority).charAt(0)"
+                    class="text-[10px] px-2"
+                    :value="getPriorityLabel(action.priority)"
                   />
                 </div>
                 <div class="flex justify-between items-center text-xs text-color-secondary">
@@ -225,14 +211,22 @@
                 </div>
               </div>
             </div>
-            <div v-else class="text-color-secondary text-sm italic">Aucune action liée.</div>
           </template>
         </Card>
+
+        <!-- Versions -->
+        <DocumentVersionHistory
+          v-if="document"
+          :document-id="document.id"
+          :current-version="document.version"
+          @restore="handleRestoreVersion"
+        />
       </div>
     </div>
   </div>
-  <div v-else class="flex justify-center py-12">
-    <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
+
+  <div v-else class="flex justify-center items-center h-[calc(100vh-6rem)]">
+    <font-awesome-icon icon="spinner" spin size="3x" class="text-primary opacity-50" />
   </div>
 
   <!-- Upload New Version Dialog -->
@@ -246,16 +240,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, computed, ref, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDocumentStore } from '@/stores/documents'
 import { useDocumentVersionStore } from '@/stores/documentVersions'
 import { useAppStore } from '@/stores/app'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
+import { useApi } from '@/composables/useApi'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
+import FileIcon from '@/components/common/FileIcon.vue'
 import DocumentVersionHistory from '@/components/documents/DocumentVersionHistory.vue'
 import UploadNewVersionDialog from '@/components/documents/UploadNewVersionDialog.vue'
 
@@ -266,11 +262,53 @@ const versionStore = useDocumentVersionStore()
 const appStore = useAppStore()
 const confirm = useConfirm()
 const toast = useToast()
+const { get } = useApi()
 
 const uploadDialogVisible = ref(false)
 const uploading = ref(false)
+const previewUrl = ref<string | null>(null)
+const loadingPreview = ref(false)
 
 const document = computed(() => store.currentDocument)
+
+const previewType = computed(() => {
+  if (!document.value || !document.value.filename) return 'other'
+  const ext = document.value.filename.split('.').pop()?.toLowerCase()
+  if (ext === 'pdf') return 'pdf'
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return 'image'
+  return 'other'
+})
+
+// Load Preview
+const loadPreview = async () => {
+  if (!document.value) return
+
+  // Only fetch for PDF or Images
+  if (previewType.value === 'other') return
+
+  loadingPreview.value = true
+  try {
+    // We reuse the download endpoint but asking for blob
+    const response = await get<Blob>(`/documents/${document.value.id}/download`, {
+      responseType: 'blob',
+    })
+
+    if (response.success && response.data) {
+      // Revoke old URL if exists
+      if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+
+      // Create new URL
+      const blob = new Blob([response.data], {
+        type: document.value.mime_type || 'application/pdf',
+      }) // Default to PDF if mime missing logic
+      previewUrl.value = URL.createObjectURL(blob)
+    }
+  } catch (e) {
+    console.error('Preview failed', e)
+  } finally {
+    loadingPreview.value = false
+  }
+}
 
 const goBack = () => {
   router.back()
@@ -343,7 +381,6 @@ const handleUploadVersion = async (data: {
   versionType: string
 }) => {
   if (!document.value) return
-
   uploading.value = true
   try {
     const formData = new FormData()
@@ -359,12 +396,12 @@ const handleUploadVersion = async (data: {
       detail: 'Nouvelle version créée avec succès',
       life: 3000,
     })
-
     uploadDialogVisible.value = false
 
-    // Recharger le document et les versions
+    // Refresh
     await store.fetchDocumentById(parseInt(route.params.id as string))
     await versionStore.fetchVersions(document.value.id)
+    loadPreview()
   } catch (error) {
     console.error('Error uploading version:', error)
     toast.add({
@@ -389,17 +426,15 @@ const handleRestoreVersion = (version: any) => {
     accept: async () => {
       try {
         await versionStore.restoreVersion(version.id)
-
         toast.add({
           severity: 'success',
           summary: 'Succès',
           detail: 'Version restaurée avec succès',
           life: 3000,
         })
-
-        // Recharger le document pour voir la nouvelle version courante
         if (document.value) {
           await store.fetchDocumentById(document.value.id)
+          loadPreview()
         }
       } catch (error) {
         toast.add({
@@ -483,27 +518,6 @@ const formatFileSize = (bytes: number | undefined) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const getFileIcon = (filename: string | undefined) => {
-  if (!filename) return 'file'
-  const ext = filename.split('.').pop()?.toLowerCase()
-  switch (ext) {
-    case 'pdf':
-      return 'file-pdf'
-    case 'doc':
-    case 'docx':
-      return 'file-word'
-    case 'xls':
-    case 'xlsx':
-      return 'file-excel'
-    case 'jpg':
-    case 'png':
-    case 'jpeg':
-      return 'image'
-    default:
-      return 'file'
-  }
-}
-
 const getStatusLabel = (value: string | undefined) => {
   if (!value) return '-'
   const map: Record<string, string> = {
@@ -512,6 +526,10 @@ const getStatusLabel = (value: string | undefined) => {
     approved: 'Approuvé',
     rejected: 'Rejeté',
     archived: 'Archivé',
+    open: 'Ouvert',
+    in_progress: 'En cours',
+    closed: 'Fermé',
+    done: 'Terminé',
   }
   return map[value] || value
 }
@@ -550,10 +568,24 @@ const getPrioritySeverity = (value: string | undefined): string => {
   return map[value] || 'info'
 }
 
+watch(
+  () => store.currentDocument,
+  (newDoc) => {
+    if (newDoc) {
+      loadPreview()
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(async () => {
   const id = parseInt(route.params.id as string)
   if (id) {
     await store.fetchDocumentById(id)
   }
+})
+
+onUnmounted(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
 })
 </script>

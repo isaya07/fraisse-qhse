@@ -1,30 +1,33 @@
 <template>
   <Card>
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold">Historique des versions</h3>
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-          <ToggleSwitch v-model="showArchived" @change="handleArchivedChange" inputId="showArchived" />
-          <label for="showArchived" class="text-sm cursor-pointer">Afficher archives</label>
-        </div>
-        <Tag :value="`${versions.length} version${versions.length > 1 ? 's' : ''}`" severity="info" />
-      </div>
-    </div>
     <template #title>
-      <div class="flex justify-between items-center mb-2">
-        <div class="flex items-center gap-2">
-          <font-awesome-icon icon="clock-rotate-left"/>
-          <span>Historique des versions</span>
+      <div class="flex justify-between items-center mb-0">
+        <div class="text-lg font-bold flex items-center gap-2">
+          <font-awesome-icon icon="clock-rotate-left" class="text-primary" />
+          Historique des versions
         </div>
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-2">
-            <ToggleSwitch v-model="showArchived" @change="handleArchivedChange" inputId="showArchived" />
-            <label for="showArchived" class="text-sm cursor-pointer">Afficher archives</label>
+            <ToggleSwitch
+              v-model="showArchived"
+              @change="handleArchivedChange"
+              inputId="showArchived"
+            />
+            <label
+              for="showArchived"
+              class="text-sm cursor-pointer text-color-secondary hidden sm:inline"
+              >Archives</label
+            >
           </div>
-          <Tag :value="`${versions.length} version${versions.length > 1 ? 's' : ''}`" severity="info" />
+          <Tag
+            :value="`${versions.length}`"
+            severity="info"
+            class="w-6 h-6 flex items-center justify-center p-0 rounded-full"
+          />
         </div>
       </div>
     </template>
+
     <template #content>
       <div v-if="loading" class="flex justify-center py-8">
         <font-awesome-icon icon="spinner" spin size="2x" class="text-color-secondary" />
@@ -62,7 +65,9 @@
           <template #body="{ data }">
             <div v-if="data.creator" class="flex items-center gap-2">
               <font-awesome-icon icon="user" class="text-color-secondary" />
-              <span class="text-color">{{ data.creator.first_name }} {{ data.creator.last_name }}</span>
+              <span class="text-color"
+                >{{ data.creator.first_name }} {{ data.creator.last_name }}</span
+              >
             </div>
             <span v-else class="text-color-secondary">-</span>
           </template>
@@ -137,7 +142,9 @@
         <div v-if="selectedVersion" class="py-4">
           <div class="mb-4">
             <span class="text-sm text-color-secondary">Date :</span>
-            <span class="ml-2 font-medium text-color">{{ formatDate(selectedVersion.created_at) }}</span>
+            <span class="ml-2 font-medium text-color">{{
+              formatDate(selectedVersion.created_at)
+            }}</span>
           </div>
           <div class="mb-4">
             <span class="text-sm text-color-secondary">Créateur :</span>
@@ -147,7 +154,9 @@
             >
           </div>
           <div>
-            <span class="text-sm text-color-secondary block mb-2">Description des changements :</span>
+            <span class="text-sm text-color-secondary block mb-2"
+              >Description des changements :</span
+            >
             <p class="text-color whitespace-pre-wrap">{{ selectedVersion.changelog }}</p>
           </div>
         </div>
@@ -166,6 +175,7 @@ import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -215,7 +225,7 @@ const formatFileSize = (bytes: number) => {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
 const viewChangelog = (version: DocumentVersion) => {

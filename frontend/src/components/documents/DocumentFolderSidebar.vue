@@ -1,104 +1,125 @@
 <template>
-  <Card class="h-full">
-    <template #title>
-      <div class="flex justify-between items-center px-4 py-2">
-        <h4 class="text-color m-0">Dossiers</h4>
-        <div class="flex gap-1">
-          <Button
-            text
-            rounded
-            size="small"
-            v-tooltip="'Tout afficher'"
-            @click="resetSelection()"
-            v-if="selectedFolderKey"
-          >
-            <template #icon>
-              <font-awesome-icon icon="rotate-left" />
-            </template>
-          </Button>
-          <Button
-            text
-            rounded
-            size="small"
-            v-tooltip="'Nouveau dossier'"
-            @click="openFolderDialog()"
-          >
-            <template #icon>
-              <font-awesome-icon icon="plus" />
-            </template>
-          </Button>
-        </div>
-      </div>
-    </template>
-    <template #content>
-      <div class="overflow-y-auto h-[calc(100vh-16rem)]">
-        <Tree
-          :value="folderTree"
-          selectionMode="single"
-          v-model:selectionKeys="selectedFolderKey"
-          @nodeSelect="onFolderSelect"
-          @nodeUnselect="onFolderUnselect"
-          class="w-full border-none p-0"
+  <div
+    class="h-full flex flex-col bg-surface-0 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl shadow-sm overflow-hidden"
+  >
+    <div
+      class="flex justify-between items-center px-4 py-3 border-b border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900/50"
+    >
+      <h4
+        class="m-0 font-semibold text-sm uppercase tracking-wide text-surface-500 dark:text-surface-400"
+      >
+        Dossiers
+      </h4>
+      <div class="flex gap-1">
+        <Button
+          text
+          rounded
+          size="small"
+          v-tooltip="'Tout afficher'"
+          @click="resetSelection()"
+          v-if="selectedFolderKey"
+          class="w-8 h-8"
         >
-          <template #default="slotProps">
-            <div class="flex items-center justify-between w-full group">
-              <span class="flex items-center gap-2">
-                <font-awesome-icon icon="folder" class="text-primary-500 dark:text-primary-400" />
-                <span class="text-color">{{ slotProps.node.label }}</span>
-              </span>
-              <div class="hidden group-hover:flex gap-1">
-                <Button
-                  text
-                  rounded
-                  severity="secondary"
-                  size="small"
-                  class="w-6 h-6"
-                  @click.stop="openFolderDialog(slotProps.node.data)"
-                  v-tooltip.top="'Modifier le dossier'"
-                >
-                  <template #icon>
-                    <font-awesome-icon icon="pen" class="text-xs" />
-                  </template>
-                </Button>
-                <Button
-                  text
-                  rounded
-                  severity="danger"
-                  size="small"
-                  class="w-6 h-6"
-                  @click.stop="confirmDeleteFolder(slotProps.node.data)"
-                  v-tooltip.top="'Supprimer le dossier'"
-                >
-                  <template #icon>
-                    <font-awesome-icon icon="trash" class="text-xs" />
-                  </template>
-                </Button>
-              </div>
-            </div>
+          <template #icon>
+            <font-awesome-icon icon="rotate-left" class="text-xs" />
           </template>
-        </Tree>
+        </Button>
+        <Button
+          text
+          rounded
+          size="small"
+          v-tooltip="'Nouveau dossier'"
+          @click="openFolderDialog()"
+          class="w-8 h-8"
+        >
+          <template #icon>
+            <font-awesome-icon icon="plus" class="text-xs" />
+          </template>
+        </Button>
       </div>
-    </template>
-  </Card>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-2">
+      <Tree
+        :value="folderTree"
+        selectionMode="single"
+        v-model:selectionKeys="selectedFolderKey"
+        @nodeSelect="onFolderSelect"
+        @nodeUnselect="onFolderUnselect"
+        class="w-full border-none p-0"
+      >
+        <template #default="slotProps">
+          <div class="flex items-center justify-between flex-1 group py-1 relative min-w-0">
+            <div class="flex items-center gap-2 overflow-hidden pr-16 bg-transparent">
+              <font-awesome-icon
+                :icon="slotProps.node.expanded ? 'folder-open' : 'folder'"
+                class="text-yellow-500 text-lg transition-colors"
+              />
+              <span class="text-color text-sm truncate block">{{ slotProps.node.label }}</span>
+            </div>
+            <div
+              class="absolute right-0 top-0 h-full flex items-center gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Button
+                text
+                rounded
+                severity="secondary"
+                size="small"
+                class="w-6 h-6"
+                @click.stop="openFolderDialog(slotProps.node.data)"
+                v-tooltip.top="'Modifier'"
+              >
+                <template #icon>
+                  <font-awesome-icon icon="pen" class="text-[10px]" />
+                </template>
+              </Button>
+              <Button
+                text
+                rounded
+                severity="danger"
+                size="small"
+                class="w-6 h-6"
+                @click.stop="confirmDeleteFolder(slotProps.node.data)"
+                v-tooltip.top="'Supprimer'"
+              >
+                <template #icon>
+                  <font-awesome-icon icon="trash" class="text-[10px]" />
+                </template>
+              </Button>
+            </div>
+          </div>
+        </template>
+      </Tree>
+
+      <div
+        v-if="!folderTree || folderTree.length === 0"
+        class="flex flex-col items-center justify-center h-40 text-color-secondary text-sm"
+      >
+        <font-awesome-icon icon="folder-open" class="mb-2 opacity-50 text-2xl" />
+        <span>Aucun dossier</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Dialog Dossier -->
   <Dialog
     v-model:visible="folderDialogVisible"
     :header="editingFolder ? 'Modifier le dossier' : 'Nouveau dossier'"
     :modal="true"
-    class="p-fluid"
+    class="p-fluid w-full max-w-md"
   >
     <div class="field">
-      <label for="folderName">Nom</label>
-      <InputText id="folderName" v-model="folderForm.name" required autofocus />
+      <label for="folderName" class="block mb-2 text-sm font-medium">Nom</label>
+      <InputText id="folderName" v-model="folderForm.name" required autofocus class="w-full" />
     </div>
     <div class="field mt-4">
-      <label for="parentFolder">Dossier parent</label>
+      <label for="parentFolder" class="block mb-2 text-sm font-medium">Dossier parent</label>
       <TreeSelect
         v-model="folderForm.parent_id"
         :options="folderTreeSelect"
         showClear
         placeholder="Sélectionnez un parent (ou laisser vide pour la racine)"
+        class="w-full"
       />
     </div>
     <template #footer>
@@ -121,7 +142,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useDocumentFolderStore, type DocumentFolder } from '@/stores/documentFolders'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Tree from 'primevue/tree'
 import Dialog from 'primevue/dialog'
@@ -260,7 +280,7 @@ const confirmDeleteFolder = (folder: DocumentFolder) => {
   confirm.require({
     message: `Voulez-vous vraiment supprimer le dossier "${folder.name}" ?`,
     header: 'Confirmation',
-    icon: 'exclamation-triangle',
+    icon: 'api pi-exclamation-triangle',
     accept: async () => {
       try {
         await folderStore.deleteFolder(folder.id)
@@ -298,5 +318,34 @@ onMounted(() => {
 :deep(.p-tree) {
   border: none;
   padding: 0;
+  background: transparent;
+  overflow-x: hidden !important;
+  width: 100% !important;
+}
+:deep(.p-tree .p-tree-container .p-treenode) {
+  padding: 0;
+}
+:deep(.p-treenode-content),
+:deep(.p-tree-node-content) {
+  padding: 0.2rem 0;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+:deep(.p-treenode-label),
+:deep(.p-tree-node-label) {
+  flex: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+:deep(.p-tree .p-tree-container .p-treenode .p-treenode-content:hover) {
+  background-color: var(--surface-100);
+}
+:deep(.p-tree .p-tree-container .p-treenode.p-highlight .p-treenode-content) {
+  background-color: var(--primary-50);
+  color: var(--primary-700);
 }
 </style>
