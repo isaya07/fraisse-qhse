@@ -8,6 +8,8 @@
 node_modules/
 vendor/
 frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
 backend/logs/
 backend/tmp/
 backend/webroot/files/

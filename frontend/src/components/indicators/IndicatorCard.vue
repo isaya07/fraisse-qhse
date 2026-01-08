@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
 import Chart from 'primevue/chart'
