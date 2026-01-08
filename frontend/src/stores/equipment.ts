@@ -32,6 +32,11 @@ export interface Equipment {
   assignments?: EquipmentAssignment[]
   maintenance_logs?: MaintenanceLog[]
   documents?: Document[]
+  can?: {
+    view: boolean
+    update: boolean
+    delete: boolean
+  }
 }
 
 export interface EquipmentAssignment {

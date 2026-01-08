@@ -1,11 +1,26 @@
 <template>
   <div class="p-4">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <h2>Inventaire Équipements</h2>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+      <div class="flex items-center gap-4">
+        <h2>Inventaire Équipements</h2>
+        <!-- View Toggle -->
+        <SelectButton
+          v-model="viewMode"
+          :options="viewOptions"
+          optionLabel="icon"
+          optionValue="value"
+          :allowEmpty="false"
+        >
+          <template #option="{ option }">
+            <font-awesome-icon :icon="['fas', option.icon]" />
+          </template>
+        </SelectButton>
+      </div>
+
       <Button label="Nouvel équipement" icon="pi pi-plus" @click="openEquipmentDialog" />
     </div>
 
-    <!-- Filters -->
+    <!-- Filters (keeping existing) -->
     <Card class="mb-6">
       <template #content>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -56,10 +71,12 @@
       </template>
     </Card>
 
-    <!-- Equipment Grid -->
+    <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-12">
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-color-secondary" />
     </div>
+
+    <!-- Empty State -->
     <div
       v-else-if="filteredEquipment.length === 0"
       class="text-center py-12 surface-card rounded-lg shadow"
@@ -67,6 +84,85 @@
       <font-awesome-icon icon="box-open" class="text-color-secondary text-5xl mb-4" />
       <p class="text-color-secondary text-lg">Aucun équipement trouvé</p>
     </div>
+
+    <!-- List View (DataTable) -->
+    <div v-else-if="viewMode === 'list'" class="surface-card rounded-lg shadow overflow-hidden">
+      <DataTable
+        :value="filteredEquipment"
+        paginator
+        :rows="10"
+        :rowsPerPageOptions="[10, 20, 50]"
+        responsiveLayout="scroll"
+        selectionMode="single"
+        @row-click="(e) => viewEquipment(e.data)"
+        rowHover
+      >
+        <Column field="name" header="Nom" sortable>
+          <template #body="{ data }">
+            <div class="flex flex-col">
+              <span class="font-bold text-color">{{ data.name }}</span>
+              <span class="text-sm text-color-secondary">{{
+                data.internal_ref || data.serial_number
+              }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="category.name" header="Catégorie" sortable>
+          <template #body="{ data }">
+            <div class="flex items-center gap-2">
+              <font-awesome-icon
+                v-if="data.category?.icon"
+                :icon="['fas', data.category.icon]"
+                class="text-color-secondary"
+              />
+              <span>{{ data.category?.name }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column field="status" header="Statut" sortable>
+          <template #body="{ data }">
+            <span class="px-2 py-1 rounded text-xs font-bold" :class="getStatusBadge(data.status)">
+              {{ getStatusLabel(data.status) }}
+            </span>
+          </template>
+        </Column>
+        <Column field="location" header="Localisation" sortable>
+          <template #body="{ data }">
+            <span>{{ getLocationLabel(data.location) }}</span>
+          </template>
+        </Column>
+        <Column header="Affectation">
+          <template #body="{ data }">
+            <div v-if="data.current_assignment" class="flex items-center gap-2 text-blue-600">
+              <font-awesome-icon icon="user" class="text-xs" />
+              <span class="text-sm"
+                >{{ data.current_assignment.user?.first_name }}
+                {{ data.current_assignment.user?.last_name }}</span
+              >
+            </div>
+            <span v-else class="text-color-secondary text-sm">-</span>
+          </template>
+        </Column>
+        <Column field="expiration_date" header="Expiration" sortable>
+          <template #body="{ data }">
+            <span
+              v-if="data.expiration_date"
+              :class="{ 'text-red-500 font-bold': isExpired(data.expiration_date) }"
+            >
+              {{ formatDate(data.expiration_date) }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </Column>
+        <Column header="Actions" style="width: 5rem">
+          <template #body>
+            <Button icon="pi pi-chevron-right" text rounded />
+          </template>
+        </Column>
+      </DataTable>
+    </div>
+
+    <!-- Grid View -->
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <Card
         v-for="item in filteredEquipment"
@@ -166,11 +262,24 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
+import SelectButton from 'primevue/selectbutton'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 import { format } from 'date-fns'
 
 const route = useRoute()
 const router = useRouter()
 const store = useEquipmentStore()
+
+const viewMode = ref<string>(localStorage.getItem('equipment_view_mode') || 'grid')
+const viewOptions = ref([
+  { icon: 'th-large', value: 'grid' },
+  { icon: 'list', value: 'list' },
+])
+
+watch(viewMode, (newValue) => {
+  localStorage.setItem('equipment_view_mode', newValue)
+})
 
 const equipmentDialogVisible = ref(false)
 

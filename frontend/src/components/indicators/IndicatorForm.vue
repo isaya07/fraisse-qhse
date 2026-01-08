@@ -195,8 +195,16 @@
 
     <!-- Actions -->
     <div class="flex justify-end gap-3 pt-4 border-t border-surface-border">
-      <Button label="Annuler" icon="pi pi-times" text severity="secondary" @click="onCancel" />
-      <Button type="submit" :label="submitButtonText" icon="pi pi-save" :loading="loading" />
+      <Button label="Annuler" text severity="secondary" @click="onCancel">
+        <template #icon>
+          <font-awesome-icon icon="times" class="mr-2" />
+        </template>
+      </Button>
+      <Button type="submit" :label="submitButtonText" :loading="loading">
+        <template #icon>
+          <font-awesome-icon icon="save" class="mr-2" />
+        </template>
+      </Button>
     </div>
   </form>
 </template>

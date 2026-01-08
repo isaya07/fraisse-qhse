@@ -22,9 +22,26 @@
         </div>
       </div>
       <div class="flex gap-2">
-        <Button label="Modifier" severity="secondary" outlined @click="editIndicator">
+        <Button
+          v-if="indicator?.can?.update"
+          label="Modifier"
+          severity="warning"
+          outlined
+          @click="editIndicator"
+        >
           <template #icon>
             <font-awesome-icon icon="pencil" class="mr-2" />
+          </template>
+        </Button>
+        <Button
+          v-if="indicator?.can?.delete"
+          label="Supprimer"
+          severity="danger"
+          outlined
+          @click="deleteIndicator"
+        >
+          <template #icon>
+            <font-awesome-icon icon="trash" class="mr-2" />
           </template>
         </Button>
       </div>
@@ -35,75 +52,7 @@
     </div>
 
     <div v-else-if="indicator" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Chart Section -->
-      <div class="lg:col-span-2 flex flex-col gap-6">
-        <Card>
-          <template #title>Évolution</template>
-          <template #content>
-            <div class="h-[400px] w-full">
-              <Chart
-                type="line"
-                :data="chartData"
-                :options="chartOptions"
-                class="h-full"
-                :key="indicator.id"
-              />
-            </div>
-          </template>
-        </Card>
-
-        <Card>
-          <template #title>Historique des valeurs</template>
-          <template #content>
-            <DataTable :value="indicator.values" paginator :rows="5" size="small" stripedRows>
-              <Column field="date" header="Date">
-                <template #body="slotProps">
-                  {{ formatDate(slotProps.data.date) }}
-                </template>
-              </Column>
-              <Column field="value" header="Valeur">
-                <template #body="slotProps">
-                  <span class="font-bold">{{ slotProps.data.value }} {{ indicator.unit }}</span>
-                </template>
-              </Column>
-              <Column field="comment" header="Commentaire"></Column>
-              <Column field="creator.username" header="Saisi par"></Column>
-              <Column header="Actions" style="width: 100px" v-if="appStore.userRole === 'admin'">
-                <template #body="slotProps">
-                  <div class="flex gap-2">
-                    <Button
-                      icon="pi pi-pencil"
-                      text
-                      rounded
-                      severity="secondary"
-                      size="small"
-                      @click="editValue(slotProps.data)"
-                    >
-                      <template #icon>
-                        <font-awesome-icon icon="pencil" />
-                      </template>
-                    </Button>
-                    <Button
-                      icon="pi pi-trash"
-                      text
-                      rounded
-                      severity="danger"
-                      size="small"
-                      @click="confirmDeleteValue(slotProps.data)"
-                    >
-                      <template #icon>
-                        <font-awesome-icon icon="trash" />
-                      </template>
-                    </Button>
-                  </div>
-                </template>
-              </Column>
-            </DataTable>
-          </template>
-        </Card>
-      </div>
-
-      <!-- Sidebar / Input Section -->
+      <!-- Left Column: Info & Actions -->
       <div class="flex flex-col gap-6">
         <!-- Current Status Card -->
         <Card>
@@ -133,51 +82,6 @@
                 >
               </div>
             </div>
-          </template>
-        </Card>
-
-        <!-- Add Value Form -->
-        <Card>
-          <template #title>Ajouter une valeur</template>
-          <template #content>
-            <form @submit.prevent="submitValue" class="flex flex-col gap-4">
-              <div class="flex flex-col gap-2">
-                <label for="date" class="text-sm font-medium text-color-secondary">Date</label>
-                <DatePicker
-                  v-model="newValue.date"
-                  dateFormat="dd/mm/yy"
-                  showIcon
-                  fluid
-                  inputId="date"
-                />
-              </div>
-
-              <div class="flex flex-col gap-2">
-                <label for="value" class="text-sm font-medium text-color-secondary"
-                  >Valeur ({{ indicator.unit }})</label
-                >
-                <InputNumber
-                  v-model="newValue.value"
-                  :minFractionDigits="0"
-                  :maxFractionDigits="2"
-                  inputId="value"
-                  fluid
-                />
-              </div>
-
-              <div class="flex flex-col gap-2">
-                <label for="comment" class="text-sm font-medium text-color-secondary"
-                  >Commentaire</label
-                >
-                <Textarea v-model="newValue.comment" rows="3" autoResize />
-              </div>
-
-              <Button type="submit" label="Ajouter" :loading="submitting">
-                <template #icon>
-                  <font-awesome-icon icon="plus" class="mr-2" />
-                </template>
-              </Button>
-            </form>
           </template>
         </Card>
 
@@ -225,42 +129,160 @@
           </template>
         </Card>
 
-        <!-- Linked Actions -->
-        <Card>
-          <template #title>
-            <div class="flex items-center gap-2 mb-2">
-              <font-awesome-icon icon="tasks" />
-              <span>Actions Liées</span>
-            </div>
-          </template>
+        <!-- Add Value Form -->
+        <Card v-if="indicator.can?.update">
+          <template #title>Ajouter une valeur</template>
           <template #content>
-            <div
-              v-if="indicator.actions && indicator.actions.length > 0"
-              class="flex flex-col gap-3"
-            >
-              <div
-                v-for="action in indicator.actions"
-                :key="action.id"
-                class="p-3 border rounded-lg hover:bg-surface-50 cursor-pointer transition-colors"
-                @click="router.push(`/actions/${action.id}`)"
-              >
-                <div class="flex justify-between items-start mb-1">
-                  <span class="font-medium text-color text-sm line-clamp-2">{{
-                    action.title
-                  }}</span>
-                  <Tag
-                    :severity="getPrioritySeverity(action.priority)"
-                    class="text-xs"
-                    :value="getPriorityLabel(action.priority).charAt(0)"
-                  />
-                </div>
-                <div class="flex justify-between items-center text-xs text-color-secondary">
-                  <span>{{ getStatusLabel(action.status) }}</span>
-                  <span v-if="action.due_date">{{ formatDate(action.due_date) }}</span>
-                </div>
+            <form @submit.prevent="submitValue" class="flex flex-col gap-4">
+              <div class="flex flex-col gap-2">
+                <label for="date" class="text-sm font-medium text-color-secondary">Date</label>
+                <DatePicker
+                  v-model="newValue.date"
+                  dateFormat="dd/mm/yy"
+                  showIcon
+                  fluid
+                  inputId="date"
+                />
               </div>
-            </div>
-            <div v-else class="text-color-secondary text-sm italic">Aucune action liée.</div>
+
+              <div class="flex flex-col gap-2">
+                <label for="value" class="text-sm font-medium text-color-secondary"
+                  >Valeur ({{ indicator.unit }})</label
+                >
+                <InputNumber
+                  v-model="newValue.value"
+                  :minFractionDigits="0"
+                  :maxFractionDigits="2"
+                  inputId="value"
+                  fluid
+                />
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label for="comment" class="text-sm font-medium text-color-secondary"
+                  >Commentaire</label
+                >
+                <Textarea v-model="newValue.comment" rows="3" autoResize />
+              </div>
+
+              <Button type="submit" label="Ajouter" :loading="submitting">
+                <template #icon>
+                  <font-awesome-icon icon="plus" class="mr-2" />
+                </template>
+              </Button>
+            </form>
+          </template>
+        </Card>
+      </div>
+
+      <!-- Right Column: Tabs -->
+      <div class="lg:col-span-2 space-y-6">
+        <Card>
+          <template #content>
+            <Tabs value="suivi">
+              <TabList>
+                <Tab value="suivi">Suivi & Évolution</Tab>
+                <Tab value="history">Historique</Tab>
+                <Tab value="actions">Actions Liées</Tab>
+              </TabList>
+              <TabPanels>
+                <!-- SUIVI TAB -->
+                <TabPanel value="suivi">
+                  <div class="h-[400px] w-full">
+                    <Chart
+                      type="line"
+                      :data="chartData"
+                      :options="chartOptions"
+                      class="h-full"
+                      :key="indicator.id"
+                    />
+                  </div>
+                </TabPanel>
+
+                <!-- HISTORY TAB -->
+                <TabPanel value="history">
+                  <DataTable :value="indicator.values" paginator :rows="5" size="small" stripedRows>
+                    <Column field="date" header="Date">
+                      <template #body="slotProps">
+                        {{ formatDate(slotProps.data.date) }}
+                      </template>
+                    </Column>
+                    <Column field="value" header="Valeur">
+                      <template #body="slotProps">
+                        <span class="font-bold"
+                          >{{ slotProps.data.value }} {{ indicator.unit }}</span
+                        >
+                      </template>
+                    </Column>
+                    <Column field="comment" header="Commentaire"></Column>
+                    <Column field="creator.username" header="Saisi par"></Column>
+                    <Column header="Actions" style="width: 100px" v-if="indicator.can?.update">
+                      <template #body="slotProps">
+                        <div class="flex gap-2">
+                          <Button
+                            icon="pi pi-pencil"
+                            text
+                            rounded
+                            severity="secondary"
+                            size="small"
+                            @click="editValue(slotProps.data)"
+                          >
+                            <template #icon>
+                              <font-awesome-icon icon="pencil" />
+                            </template>
+                          </Button>
+                          <Button
+                            icon="pi pi-trash"
+                            text
+                            rounded
+                            severity="danger"
+                            size="small"
+                            @click="confirmDeleteValue(slotProps.data)"
+                          >
+                            <template #icon>
+                              <font-awesome-icon icon="trash" />
+                            </template>
+                          </Button>
+                        </div>
+                      </template>
+                    </Column>
+                  </DataTable>
+                </TabPanel>
+
+                <!-- ACTIONS TAB -->
+                <TabPanel value="actions">
+                  <div
+                    v-if="indicator.actions && indicator.actions.length > 0"
+                    class="flex flex-col gap-3"
+                  >
+                    <div
+                      v-for="action in indicator.actions"
+                      :key="action.id"
+                      class="p-3 border rounded-lg hover:bg-surface-50 cursor-pointer transition-colors"
+                      @click="router.push(`/actions/${action.id}`)"
+                    >
+                      <div class="flex justify-between items-start mb-1">
+                        <span class="font-medium text-color text-sm line-clamp-2">{{
+                          action.title
+                        }}</span>
+                        <Tag
+                          :severity="getPrioritySeverity(action.priority)"
+                          class="text-xs"
+                          :value="getPriorityLabel(action.priority).charAt(0)"
+                        />
+                      </div>
+                      <div class="flex justify-between items-center text-xs text-color-secondary">
+                        <span>{{ getStatusLabel(action.status) }}</span>
+                        <span v-if="action.due_date">{{ formatDate(action.due_date) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-color-secondary text-sm italic py-4 text-center">
+                    Aucune action liée.
+                  </div>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </template>
         </Card>
       </div>
@@ -337,6 +359,11 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
+import TabPanel from 'primevue/tabpanel'
 import type { IndicatorValue } from '@/stores/app'
 
 // Define types for Chart.js datasets
@@ -355,7 +382,6 @@ interface ChartDataset {
 const route = useRoute()
 const router = useRouter()
 const store = useIndicatorStore()
-const appStore = useAppStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -619,6 +645,33 @@ const confirmDeleteValue = (val: IndicatorValue) => {
 
 const goBack = () => router.back()
 const editIndicator = () => router.push(`/indicators/${route.params.id}/edit`)
+const deleteIndicator = () => {
+  confirm.require({
+    message: 'Êtes-vous sûr de vouloir supprimer cet indicateur ?',
+    header: 'Confirmation',
+    icon: 'pi pi-exclamation-triangle',
+    accept: async () => {
+      if (!indicator.value) return
+      try {
+        await store.deleteIndicator(indicator.value.id)
+        toast.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Indicateur supprimé',
+          life: 3000,
+        })
+        router.push('/indicators')
+      } catch {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: "Impossible de supprimer l'indicateur",
+          life: 3000,
+        })
+      }
+    },
+  })
+}
 
 const formatDate = (dateStr: string | undefined) => {
   if (!dateStr) return '-'

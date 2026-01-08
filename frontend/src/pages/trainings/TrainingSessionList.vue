@@ -2,11 +2,24 @@
   <div class="p-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Sessions de formation</h1>
-      <Button label="Nouvelle session" @click="openSessionDialog">
-        <template #icon>
-          <font-awesome-icon icon="plus" class="mr-2" />
-        </template>
-      </Button>
+      <div class="flex gap-2">
+        <SelectButton
+          v-model="viewMode"
+          :options="viewOptions"
+          optionLabel="icon"
+          optionValue="value"
+          :allowEmpty="false"
+        >
+          <template #option="slotProps">
+            <font-awesome-icon :icon="slotProps.option.icon" />
+          </template>
+        </SelectButton>
+        <Button label="Nouvelle session" @click="openSessionDialog">
+          <template #icon>
+            <font-awesome-icon icon="plus" class="mr-2" />
+          </template>
+        </Button>
+      </div>
     </div>
 
     <div v-if="loading" class="flex justify-center py-12">
@@ -14,7 +27,13 @@
     </div>
 
     <div v-else>
-      <SessionList :sessions="store.sessions" @view="viewSession" @edit="editSession" />
+      <SessionList
+        v-if="viewMode === 'list'"
+        :sessions="store.sessions"
+        @view="viewSession"
+        @edit="editSession"
+      />
+      <SessionGrid v-else :sessions="store.sessions" @view="viewSession" @edit="editSession" />
     </div>
 
     <!-- Dialog Session -->
@@ -125,12 +144,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrainingStore, type TrainingSession } from '@/stores/training'
 import SessionList from '@/components/trainings/SessionList.vue'
+import SessionGrid from '@/components/trainings/SessionGrid.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
+import SelectButton from 'primevue/selectbutton'
 import { useToast } from 'primevue/usetoast'
 
 const router = useRouter()
@@ -138,6 +159,16 @@ const store = useTrainingStore()
 const toast = useToast()
 
 const loading = computed(() => store.loading)
+
+const viewMode = ref(localStorage.getItem('training_session_view_mode') || 'list')
+const viewOptions = [
+  { icon: 'list', value: 'list' },
+  { icon: 'th-large', value: 'grid' },
+]
+
+watch(viewMode, (newValue) => {
+  localStorage.setItem('training_session_view_mode', newValue)
+})
 
 const statusOptions = [
   { label: 'Planifiée', value: 'planned' },

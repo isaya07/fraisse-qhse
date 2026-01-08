@@ -36,7 +36,7 @@ class IndicatorPolicy
      */
     public function update(User $user, Indicator $indicator): bool
     {
-        return $user->id === $indicator->created_by || $user->role === 'admin';
+        return $user->id === $indicator->created_by || $user->id === $indicator->manager_id || $user->role === 'admin';
     }
 
     /**

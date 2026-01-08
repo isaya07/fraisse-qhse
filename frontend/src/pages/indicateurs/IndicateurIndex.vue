@@ -9,6 +9,17 @@
           </InputIcon>
           <InputText v-model="searchQuery" placeholder="Rechercher..." class="w-full md:w-64" />
         </IconField>
+        <SelectButton
+          v-model="viewMode"
+          :options="viewOptions"
+          optionLabel="icon"
+          optionValue="value"
+          :allowEmpty="false"
+        >
+          <template #option="slotProps">
+            <font-awesome-icon :icon="slotProps.option.icon" />
+          </template>
+        </SelectButton>
         <Button label="Configuration" @click="goToConfig" severity="secondary" variant="outlined">
           <template #icon>
             <font-awesome-icon icon="cog" class="mr-2" />
@@ -26,14 +37,20 @@
       <font-awesome-icon :icon="['fas', 'spinner']" spin size="2x" class="text-gray-500" />
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <IndicatorCard
-        v-for="indicator in indicators"
-        :key="indicator.id"
-        :indicator="indicator"
-        @view="viewIndicator"
-        @edit="editIndicator"
-      />
+    <div v-else>
+      <div
+        v-if="viewMode === 'grid'"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        <IndicatorCard
+          v-for="indicator in indicators"
+          :key="indicator.id"
+          :indicator="indicator"
+          @view="viewIndicator"
+          @edit="editIndicator"
+        />
+      </div>
+      <IndicatorList v-else :indicators="indicators" @view="viewIndicator" @edit="editIndicator" />
     </div>
 
     <div v-if="!loading && indicators.length === 0" class="text-center p-8 text-gray-500">
@@ -50,7 +67,9 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import SelectButton from 'primevue/selectbutton'
 import IndicatorCard from '@/components/indicators/IndicatorCard.vue'
+import IndicatorList from '@/components/indicators/IndicatorList.vue'
 
 const router = useRouter()
 const indicatorStore = useIndicatorStore()
@@ -59,6 +78,16 @@ const searchQuery = ref('')
 
 const indicators = computed(() => indicatorStore.indicators)
 const loading = computed(() => indicatorStore.loading)
+
+const viewMode = ref(localStorage.getItem('indicator_view_mode') || 'grid')
+const viewOptions = [
+  { icon: 'th-large', value: 'grid' },
+  { icon: 'list', value: 'list' },
+]
+
+watch(viewMode, (newValue) => {
+  localStorage.setItem('indicator_view_mode', newValue)
+})
 
 const loadIndicators = async () => {
   // Fetch all indicators with search filter

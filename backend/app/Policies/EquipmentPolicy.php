@@ -10,6 +10,21 @@ class EquipmentPolicy
     /**
      * Determine whether the user can view any models.
      */
+    /**
+     * Perform pre-authorization checks.
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine whether the user can view any models.
+     */
     public function viewAny(User $user): bool
     {
         return true;
@@ -20,6 +35,9 @@ class EquipmentPolicy
      */
     public function view(User $user, Equipment $equipment): bool
     {
+        if ($equipment->permissions()->exists()) {
+            return $equipment->hasAccess($user, 'read');
+        }
         return true;
     }
 
@@ -28,7 +46,7 @@ class EquipmentPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'admin';
+        return $user->role === 'admin'; // Only admin can create for now
     }
 
     /**
@@ -36,7 +54,7 @@ class EquipmentPolicy
      */
     public function update(User $user, Equipment $equipment): bool
     {
-        return $user->role === 'admin';
+        return $equipment->hasAccess($user, 'write');
     }
 
     /**
@@ -44,6 +62,6 @@ class EquipmentPolicy
      */
     public function delete(User $user, Equipment $equipment): bool
     {
-        return $user->role === 'admin';
+        return $equipment->hasAccess($user, 'admin');
     }
 }

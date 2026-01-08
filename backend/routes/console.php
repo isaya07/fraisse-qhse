@@ -13,3 +13,4 @@ Artisan::command('inspire', function () {
 Schedule::job(new \App\Jobs\GenerateDailyAlerts)->dailyAt('06:00');
 Schedule::job(new \App\Jobs\SendDailyNotifications)->hourly();
 Schedule::command('documents:archive-versions --keep=10')->weekly();
+Schedule::command('documents:check-expirations')->dailyAt('07:00');

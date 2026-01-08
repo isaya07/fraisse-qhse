@@ -28,6 +28,17 @@ export interface DocumentVersion {
   creator?: User
 }
 
+export interface DocumentReview {
+  id: number
+  document_id: number
+  user_id: number
+  status: 'approved' | 'rejected'
+  comment?: string
+  created_at: string
+  updated_at: string
+  reviewer?: User
+}
+
 export interface Document {
   id: number
   title: string
@@ -54,6 +65,12 @@ export interface Document {
   creator?: User
   approver?: User
   actions?: Action[]
+  reviews?: DocumentReview[]
+  can?: {
+    view: boolean
+    update: boolean
+    delete: boolean
+  }
 }
 
 export interface Comment {
@@ -93,6 +110,11 @@ export interface Action {
   documents?: Document[]
   indicators?: Indicator[]
   comments?: Comment[]
+  can?: {
+    view: boolean
+    update: boolean
+    delete: boolean
+  }
 }
 
 export interface IndicatorValue {
@@ -152,6 +174,11 @@ export interface Indicator {
   creator?: User
   actions?: Action[]
   values?: IndicatorValue[]
+  can?: {
+    view: boolean
+    update: boolean
+    delete: boolean
+  }
 }
 
 // Interface pour la réponse paginée (Laravel Standard)

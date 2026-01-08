@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Indicator extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasPermissions;
 
     protected $fillable = [
         'name',
@@ -33,6 +33,23 @@ class Indicator extends Model
         'threshold_max' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return [];
+        }
+
+        return [
+            'view' => $user->can('view', $this),
+            'update' => $user->can('update', $this),
+            'delete' => $user->can('delete', $this),
+        ];
+    }
 
     // Relations
     public function indicatorCategory()

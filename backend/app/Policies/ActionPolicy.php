@@ -8,6 +8,13 @@ use Illuminate\Auth\Access\Response;
 
 class ActionPolicy
 {
+    public function before(User $user, $ability)
+    {
+        if ($user->role === 'admin') {
+            return true;
+        }
+    }
+
     /**
      * Determine whether the user can view any models.
      */
@@ -21,6 +28,13 @@ class ActionPolicy
      */
     public function view(User $user, Action $action): bool
     {
+        // View access via permission or general access
+        if ($action->hasAccess($user, 'read')) {
+            return true;
+        }
+
+        // By default all users can see actions for now, unless restricted?
+        // Let's keep it open, but allow specific restrictions if added.
         return true;
     }
 
@@ -37,11 +51,14 @@ class ActionPolicy
      */
     public function update(User $user, Action $action): bool
     {
-        // Users can update actions they created or are assigned to
-        // Admins can update everything (assuming 'admin' role exists, checking simple logic first)
-        return $user->id === $action->created_by || 
-               $user->id === $action->assigned_to ||
-               $user->role === 'admin';
+        // Permission system override
+        if ($action->hasAccess($user, 'write')) {
+            return true;
+        }
+
+        // Default logic: Creator or Assignee
+        return $user->id === $action->created_by ||
+            $user->id === $action->assigned_to;
     }
 
     /**
@@ -49,7 +66,12 @@ class ActionPolicy
      */
     public function delete(User $user, Action $action): bool
     {
-        // Only creator or admin can delete
-        return $user->id === $action->created_by || $user->role === 'admin';
+        // Permission system override
+        if ($action->hasAccess($user, 'admin')) {
+            return true;
+        }
+
+        // Default logic: Creator only
+        return $user->id === $action->created_by;
     }
 }

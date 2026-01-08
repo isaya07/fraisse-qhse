@@ -15,12 +15,28 @@
           </p>
         </div>
       </div>
+      <!-- Actions (Protected) -->
+      <div class="flex gap-2" v-if="equipment.can?.update">
+        <Button label="Modifier" icon="pi pi-pencil" @click="openEditDialog" severity="secondary" />
+        <Button
+          v-if="equipment.can?.delete"
+          label="Supprimer"
+          icon="pi pi-trash"
+          severity="danger"
+          @click="confirmDelete"
+        />
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Info Column -->
       <div class="lg:col-span-1 space-y-6">
-        <EquipmentInfo :equipment="equipment" @edit="openEditDialog" @delete="confirmDelete" />
+        <EquipmentInfo
+          :equipment="equipment"
+          @edit="openEditDialog"
+          @delete="confirmDelete"
+          :can-edit="equipment.can?.update"
+        />
 
         <!-- Current Assignment -->
         <Card v-if="equipment.current_assignment">
@@ -52,23 +68,42 @@
             </div>
           </template>
         </Card>
-
-        <EquipmentDocuments :equipment="equipment" />
       </div>
 
-      <!-- History Column -->
+      <!-- History Column (Tabs) -->
       <div class="lg:col-span-2 space-y-6">
-        <EquipmentMaintenance
-          :maintenance-logs="store.maintenanceLogs"
-          @add-maintenance="openMaintenanceDialog"
-        />
-
-        <EquipmentAssignments
-          :assignments="equipment.assignments || []"
-          :status="equipment.status"
-          @assign="openAssignDialog"
-          @return="openReturnDialog"
-        />
+        <Card>
+          <template #content>
+            <Tabs value="maintenance">
+              <TabList>
+                <Tab value="maintenance">Maintenance</Tab>
+                <Tab value="history">Historique Affectations</Tab>
+                <Tab value="documents">Documents</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel value="maintenance">
+                  <EquipmentMaintenance
+                    :maintenance-logs="store.maintenanceLogs"
+                    @add-maintenance="openMaintenanceDialog"
+                    :can-add="equipment.can?.update"
+                  />
+                </TabPanel>
+                <TabPanel value="history">
+                  <EquipmentAssignments
+                    :assignments="equipment.assignments || []"
+                    :status="equipment.status"
+                    @assign="openAssignDialog"
+                    @return="openReturnDialog"
+                    :can-manage="equipment.can?.update"
+                  />
+                </TabPanel>
+                <TabPanel value="documents">
+                  <EquipmentDocuments :equipment="equipment" :can-edit="equipment.can?.update" />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </template>
+        </Card>
       </div>
     </div>
 
@@ -149,6 +184,11 @@ import EquipmentAssignments from '@/components/equipment/detail/EquipmentAssignm
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Card from 'primevue/card'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
+import TabPanel from 'primevue/tabpanel'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useConfirm } from 'primevue/useconfirm'

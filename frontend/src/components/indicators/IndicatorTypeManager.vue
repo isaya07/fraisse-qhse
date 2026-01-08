@@ -52,7 +52,6 @@
 
             <div class="ml-2" v-if="editingCategory?.id !== category.id">
               <Button
-                icon="pi pi-trash"
                 text
                 rounded
                 severity="danger"

@@ -77,32 +77,49 @@ const emit = defineEmits(['click', 'edit', 'download', 'delete', 'view'])
 
 const menu = ref()
 
-const menuItems = computed(() => [
-  {
-    label: 'Voir',
-    icon: 'pi pi-eye',
-    command: () => emit('view', props.document),
-  },
-  {
-    label: 'Télécharger',
-    icon: 'pi pi-download',
-    command: () => emit('download', props.document),
-  },
-  {
-    label: 'Modifier',
-    icon: 'pi pi-pencil',
-    command: () => emit('edit', props.document),
-  },
-  {
-    separator: true,
-  },
-  {
-    label: 'Supprimer',
-    icon: 'pi pi-trash',
-    class: 'text-red-500',
-    command: () => emit('delete', props.document),
-  },
-])
+const menuItems = computed(() => {
+  const items = [
+    {
+      label: 'Voir',
+      icon: 'pi pi-eye',
+      command: () => emit('view', props.document),
+    },
+    {
+      label: 'Télécharger',
+      icon: 'pi pi-download',
+      command: () => emit('download', props.document),
+    },
+  ]
+
+  if (
+    props.document.can?.update ||
+    props.document.created_by === appStore.currentUser?.id ||
+    appStore.userRole === 'admin'
+  ) {
+    items.push({
+      label: 'Modifier',
+      icon: 'pi pi-pencil',
+      command: () => emit('edit', props.document),
+    })
+  }
+
+  if (
+    props.document.can?.delete ||
+    props.document.created_by === appStore.currentUser?.id ||
+    appStore.userRole === 'admin'
+  ) {
+    if (items.length > 0) {
+      items.push({ separator: true } as any)
+    }
+    items.push({
+      label: 'Supprimer',
+      icon: 'pi pi-trash',
+      class: 'text-red-500',
+      command: () => emit('delete', props.document),
+    })
+  }
+  return items
+})
 
 const toggleMenu = (event: Event) => {
   menu.value.toggle(event)

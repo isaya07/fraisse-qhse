@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasPermissions;
 
 class Action extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPermissions;
 
     protected $fillable = [
         'title',
@@ -28,6 +29,17 @@ class Action extends Model
         'completed_date' => 'date',
         'progress' => 'integer',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        return [
+            'view' => \Illuminate\Support\Facades\Gate::allows('view', $this),
+            'update' => \Illuminate\Support\Facades\Gate::allows('update', $this),
+            'delete' => \Illuminate\Support\Facades\Gate::allows('delete', $this),
+        ];
+    }
 
     // Relations
     public function actionType()

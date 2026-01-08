@@ -61,6 +61,7 @@
               class="mr-2"
               @click="$emit('edit', slotProps.data)"
               v-tooltip="'Modifier'"
+              v-if="slotProps.data.can?.update"
             >
               <template #icon>
                 <font-awesome-icon icon="pencil" />

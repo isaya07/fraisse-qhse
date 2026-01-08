@@ -18,10 +18,27 @@
           </div>
         </div>
       </div>
-      <div class="flex gap-2">
-        <Button label="Modifier" @click="editAction" severity="warning" outlined>
+      <div class="flex gap-2" v-if="action">
+        <Button
+          v-if="action.can?.update"
+          label="Modifier"
+          @click="editAction"
+          severity="warning"
+          outlined
+        >
           <template #icon>
             <font-awesome-icon icon="pencil" class="mr-2" />
+          </template>
+        </Button>
+        <Button
+          v-if="action.can?.delete"
+          label="Supprimer"
+          @click="confirmDelete"
+          severity="danger"
+          outlined
+        >
+          <template #icon>
+            <font-awesome-icon icon="trash" class="mr-2" />
           </template>
         </Button>
       </div>
@@ -34,13 +51,13 @@
 
     <!-- Content -->
     <div v-else-if="action" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Main Info -->
-      <div class="lg:col-span-2 space-y-6">
+      <!-- Left Column: Main Info -->
+      <div class="lg:col-span-1 space-y-6">
         <!-- Meta Info -->
         <Card>
           <template #title><h4>Informations</h4></template>
           <template #content>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-4">
               <div>
                 <span class="block font-bold text-color-secondary mb-1">Type : </span>
                 <div class="flex items-center gap-2">
@@ -53,7 +70,7 @@
                   >
                     <font-awesome-icon :icon="['fas', action.action_type?.icon || 'tasks']" />
                   </div>
-                  <span class="font-medium text-lg">{{ action.action_type?.name || '-' }}</span>
+                  <span class="font-medium">{{ action.action_type?.name || '-' }}</span>
                 </div>
               </div>
 
@@ -131,227 +148,251 @@
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="md:col-span-2">
-                <span class="block font-bold text-color-secondary mb-2">Description : </span>
-                <div
-                  class="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg text-color border border-surface-200 dark:border-surface-700 leading-relaxed whitespace-pre-line"
-                >
-                  {{ action.description || 'Aucune description.' }}
-                </div>
+            <div class="mt-6 pt-4 border-t border-surface-border">
+              <span class="block font-bold text-color-secondary mb-2">Description : </span>
+              <div class="text-sm text-color leading-relaxed whitespace-pre-line">
+                {{ action.description || 'Aucune description.' }}
               </div>
             </div>
-          </template>
-        </Card>
-
-        <!-- Documents -->
-        <LinkedDocuments
-          :documents="action.documents || []"
-          :loading="loading"
-          @request-create="onDocumentSubmit"
-          @request-link="onLinkDocument"
-          @request-download="downloadDocument"
-          @request-unlink="onUnlinkDocument"
-        />
-
-        <!-- Indicators -->
-        <Card>
-          <template #title>
-            <div class="flex items-center justify-between">
-              <h4>Indicateurs liés</h4>
-              <Button
-                text
-                rounded
-                v-tooltip="'Lier un indicateur'"
-                @click="openLinkIndicatorDialog"
-              >
-                <template #icon>
-                  <font-awesome-icon icon="plus" />
-                </template>
-              </Button>
-            </div>
-          </template>
-          <template #content>
-            <div
-              v-if="action.indicators && action.indicators.length > 0"
-              class="grid grid-cols-1 sm:grid-cols-2 gap-2"
-            >
-              <div
-                v-for="ind in action.indicators"
-                :key="ind.id"
-                class="flex items-center justify-between p-2 border rounded-lg hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors group"
-              >
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-10 h-10 rounded bg-orange-50 flex items-center justify-center text-orange-500 text-xs"
-                  >
-                    <font-awesome-icon icon="chart-line" class="text-xl" />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <span class="font-bold text-color">{{ ind.name }}</span>
-                  </div>
-                </div>
-                <Button
-                  text
-                  rounded
-                  severity="danger"
-                  size="small"
-                  class="opacity-0 group-hover:opacity-100 transition-opacity"
-                  @click="unlinkIndicator(ind.id)"
-                  v-tooltip.top="'Délier'"
-                >
-                  <template #icon>
-                    <font-awesome-icon icon="xmark" />
-                  </template>
-                </Button>
-              </div>
-            </div>
-            <p v-else class="text-color-secondary italic">Aucun indicateur lié.</p>
           </template>
         </Card>
       </div>
 
-      <!-- Sidebar Info -->
-      <div class="space-y-6">
-        <!-- Progress -->
+      <!-- Right Column: Tabs -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Progress (Moved here) -->
         <Card>
           <template #title><h4>Progression</h4></template>
           <template #content>
-            <div class="flex flex-col items-center gap-4">
-              <Knob
-                v-model="progressUpdateValue"
-                :size="120"
-                :step="5"
-                :valueColor="getProgressColor(progressUpdateValue)"
-                rangeColor="#e5e7eb"
-                :strokeWidth="15"
-                valueTemplate="{value}%"
-                :readonly="false"
-                @change="onProgressChange"
-              />
-              <div class="text-center">
-                <p class="text-sm text-color-secondary">Modifier la progression</p>
-                <div class="flex gap-2 justify-center">
-                  <Button
-                    size="small"
-                    outlined
-                    rounded
-                    @click="adjustProgress(-10)"
-                    severity="secondary"
-                    :disabled="progressUpdateValue <= 0"
-                  >
-                    <template #icon>
-                      <font-awesome-icon icon="minus" />
-                    </template>
-                  </Button>
-                  <Button
-                    size="small"
-                    outlined
-                    rounded
-                    @click="inputProgressUpdate"
-                    severity="success"
-                    :disabled="progressUpdateValue === action?.progress"
-                    v-if="progressUpdateValue !== action?.progress"
-                  >
-                    <template #icon>
-                      <font-awesome-icon icon="check" />
-                    </template>
-                  </Button>
-                  <Button
-                    size="small"
-                    outlined
-                    rounded
-                    @click="adjustProgress(10)"
-                    severity="secondary"
-                    :disabled="progressUpdateValue >= 100"
-                  >
-                    <template #icon>
-                      <font-awesome-icon icon="plus" />
-                    </template>
-                  </Button>
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center gap-4">
+                <div
+                  class="font-bold text-2xl w-16 text-center"
+                  :style="{ color: getProgressColor(progressUpdateValue) }"
+                >
+                  {{ progressUpdateValue }}%
                 </div>
+                <div class="flex-1">
+                  <Slider
+                    v-model="progressUpdateValue"
+                    :step="5"
+                    :min="0"
+                    :max="100"
+                    class="w-full"
+                    :disabled="!action.can?.update"
+                    @slideend="onProgressChange"
+                  />
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-2" v-if="action.can?.update">
+                <Button
+                  size="small"
+                  outlined
+                  rounded
+                  @click="adjustProgress(-10)"
+                  severity="secondary"
+                  :disabled="progressUpdateValue <= 0"
+                  v-tooltip="'Diminuer (-10%)'"
+                >
+                  <template #icon>
+                    <font-awesome-icon icon="minus" />
+                  </template>
+                </Button>
+                <!-- Validation button is arguably redundant with slideend but good for explicit confirmation if user prefers -->
+                <Button
+                  size="small"
+                  outlined
+                  rounded
+                  @click="inputProgressUpdate"
+                  severity="success"
+                  :disabled="progressUpdateValue === action?.progress"
+                  v-if="progressUpdateValue !== action?.progress"
+                  label="Valider"
+                >
+                  <template #icon>
+                    <font-awesome-icon icon="check" class="mr-2" />
+                  </template>
+                </Button>
+                <Button
+                  size="small"
+                  outlined
+                  rounded
+                  @click="adjustProgress(10)"
+                  severity="secondary"
+                  :disabled="progressUpdateValue >= 100"
+                  v-tooltip="'Augmenter (+10%)'"
+                >
+                  <template #icon>
+                    <font-awesome-icon icon="plus" />
+                  </template>
+                </Button>
               </div>
             </div>
           </template>
         </Card>
 
-        <!-- Comments (Moved here) -->
         <Card>
-          <template #title><h4>Commentaires</h4></template>
           <template #content>
-            <div class="space-y-6">
-              <div v-if="action.comments && action.comments.length > 0" class="space-y-4">
-                <div v-for="comment in action.comments" :key="comment.id" class="flex gap-4 group">
-                  <Avatar
-                    :label="getInitials(comment.user)"
-                    shape="circle"
-                    size="normal"
-                    class="shrink-0"
-                    :style="{
-                      backgroundColor: stringToColor(comment.user?.username || ''),
-                      color: '#fff',
-                    }"
+            <Tabs value="comments">
+              <TabList>
+                <Tab value="comments">Commentaires</Tab>
+                <Tab value="documents">Documents</Tab>
+                <Tab value="indicators">Indicateurs</Tab>
+              </TabList>
+              <TabPanels>
+                <!-- COMMENTS TAB -->
+                <TabPanel value="comments">
+                  <div class="space-y-6">
+                    <div v-if="action.comments && action.comments.length > 0" class="space-y-4">
+                      <div
+                        v-for="comment in action.comments"
+                        :key="comment.id"
+                        class="flex gap-4 group"
+                      >
+                        <Avatar
+                          :label="getInitials(comment.user)"
+                          shape="circle"
+                          size="normal"
+                          class="shrink-0"
+                          :style="{
+                            backgroundColor: stringToColor(comment.user?.username || ''),
+                            color: '#fff',
+                          }"
+                        />
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2 mb-1 w-full justify-between">
+                            <div class="flex items-center gap-2">
+                              <span class="font-bold text-sm"
+                                >{{ comment.user?.first_name }} {{ comment.user?.last_name }}</span
+                              >
+                              <span class="text-xs text-color-secondary">{{
+                                formatDateTime(comment.created_at)
+                              }}</span>
+                            </div>
+                            <Button
+                              v-if="canDeleteComment(comment)"
+                              text
+                              rounded
+                              severity="danger"
+                              size="small"
+                              class="w-6! h-6! opacity-0 group-hover:opacity-100 transition-opacity"
+                              @click="confirmDeleteComment(comment.id)"
+                              v-tooltip.top="'Supprimer'"
+                            >
+                              <template #icon>
+                                <font-awesome-icon icon="xmark" class="text-xs" />
+                              </template>
+                            </Button>
+                          </div>
+                          <div
+                            class="text-color text-sm whitespace-pre-wrap bg-surface-50 dark:bg-surface-800 p-3 rounded-lg rounded-tl-none border border-surface-border"
+                          >
+                            {{ comment.content }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p v-else class="text-color-secondary italic text-sm">Aucun commentaire.</p>
+
+                    <div class="border-t border-surface-border pt-4 mt-2">
+                      <div class="flex flex-col gap-2">
+                        <Textarea
+                          v-model="newComment"
+                          rows="3"
+                          placeholder="Écrire un commentaire..."
+                          class="w-full"
+                          autoResize
+                        />
+                        <div class="flex justify-end">
+                          <Button
+                            label="Envoyer"
+                            size="small"
+                            @click="submitComment"
+                            :loading="submittingComment"
+                            :disabled="!newComment.trim()"
+                          >
+                            <template #icon>
+                              <font-awesome-icon icon="paper-plane" class="mr-2" />
+                            </template>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabPanel>
+
+                <!-- DOCUMENTS TAB -->
+                <TabPanel value="documents">
+                  <LinkedDocuments
+                    :documents="action.documents || []"
+                    :loading="loading"
+                    :readonly="!action.can?.update"
+                    @request-create="onDocumentSubmit"
+                    @request-link="onLinkDocument"
+                    @request-download="downloadDocument"
+                    @request-unlink="onUnlinkDocument"
                   />
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1 w-full justify-between">
+                </TabPanel>
+
+                <!-- INDICATORS TAB -->
+                <TabPanel value="indicators">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-base font-semibold m-0">Indicateurs liés</h4>
+                    <Button
+                      v-if="action.can?.update"
+                      label="Lier"
+                      size="small"
+                      outlined
+                      @click="openLinkIndicatorDialog"
+                    >
+                      <template #icon>
+                        <font-awesome-icon icon="plus" class="mr-2" />
+                      </template>
+                    </Button>
+                  </div>
+
+                  <div
+                    v-if="action.indicators && action.indicators.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                  >
+                    <div
+                      v-for="ind in action.indicators"
+                      :key="ind.id"
+                      class="flex items-center justify-between p-2 border rounded-lg hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors group"
+                    >
                       <div class="flex items-center gap-2">
-                        <span class="font-bold text-sm"
-                          >{{ comment.user?.first_name }} {{ comment.user?.last_name }}</span
+                        <div
+                          class="w-10 h-10 rounded bg-orange-50 flex items-center justify-center text-orange-500 text-xs"
                         >
-                        <span class="text-xs text-color-secondary">{{
-                          formatDateTime(comment.created_at)
-                        }}</span>
+                          <font-awesome-icon icon="chart-line" class="text-xl" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                          <span class="font-bold text-color">{{ ind.name }}</span>
+                        </div>
                       </div>
                       <Button
-                        v-if="canDeleteComment(comment)"
+                        v-if="action.can?.update"
                         text
                         rounded
                         severity="danger"
                         size="small"
-                        class="w-6! h-6! opacity-0 group-hover:opacity-100 transition-opacity"
-                        @click="confirmDeleteComment(comment.id)"
-                        v-tooltip.top="'Supprimer'"
+                        class="opacity-0 group-hover:opacity-100 transition-opacity"
+                        @click="unlinkIndicator(ind.id)"
+                        v-tooltip.top="'Délier'"
                       >
                         <template #icon>
-                          <font-awesome-icon icon="xmark" class="text-xs" />
+                          <font-awesome-icon icon="xmark" />
                         </template>
                       </Button>
                     </div>
-                    <div
-                      class="text-color text-sm whitespace-pre-wrap bg-surface-50 dark:bg-surface-800 p-3 rounded-lg rounded-tl-none border border-surface-border"
-                    >
-                      {{ comment.content }}
-                    </div>
                   </div>
-                </div>
-              </div>
-              <p v-else class="text-color-secondary italic text-sm">Aucun commentaire.</p>
-
-              <div class="border-t border-surface-border pt-4 mt-2">
-                <div class="flex flex-col gap-2">
-                  <Textarea
-                    v-model="newComment"
-                    rows="3"
-                    placeholder="Écrire un commentaire..."
-                    class="w-full"
-                    autoResize
-                  />
-                  <div class="flex justify-end">
-                    <Button
-                      label="Envoyer"
-                      size="small"
-                      @click="submitComment"
-                      :loading="submittingComment"
-                      :disabled="!newComment.trim()"
-                    >
-                      <template #icon>
-                        <font-awesome-icon icon="paper-plane" class="mr-2" />
-                      </template>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  <p v-else class="text-color-secondary italic">Aucun indicateur lié.</p>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </template>
         </Card>
       </div>
@@ -427,10 +468,15 @@ import { useActionStore } from '@/stores/actions'
 import { useAppStore } from '@/stores/app'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import Knob from 'primevue/knob'
+import Slider from 'primevue/slider'
 import Avatar from 'primevue/avatar'
 import Card from 'primevue/card'
 import Textarea from 'primevue/textarea'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
+import TabPanel from 'primevue/tabpanel'
 import { useDocumentStore } from '@/stores/documents'
 import { useIndicatorStore } from '@/stores/indicators'
 import Dialog from 'primevue/dialog'
@@ -804,6 +850,37 @@ const goBack = () => {
 
 const editAction = () => {
   router.push(`/actions/${actionId}/edit`)
+}
+
+const confirmDelete = () => {
+  confirm.require({
+    message: `Voulez-vous vraiment supprimer l'action "${action.value?.title}" ?`,
+    header: 'Confirmation de suppression',
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Annuler',
+    acceptLabel: 'Supprimer',
+    rejectClass: 'p-button-secondary p-button-outlined',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await actionStore.deleteAction(actionId)
+        toast.add({
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Action supprimée',
+          life: 3000,
+        })
+        router.push('/actions')
+      } catch {
+        toast.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: "Impossible de supprimer l'action",
+          life: 3000,
+        })
+      }
+    },
+  })
 }
 
 const inputProgressUpdate = () => {

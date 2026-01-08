@@ -52,7 +52,13 @@
             <font-awesome-icon icon="upload" class="mr-2" />
           </template>
         </Button>
-        <Button label="Modifier" severity="secondary" outlined @click="editDocument">
+        <Button
+          v-if="document.can?.update || document.status === 'draft'"
+          label="Modifier"
+          severity="secondary"
+          outlined
+          @click="editDocument"
+        >
           <template #icon>
             <font-awesome-icon icon="pen" class="mr-2" />
           </template>
@@ -62,7 +68,14 @@
             <font-awesome-icon icon="download" class="mr-2" />
           </template>
         </Button>
-        <Button severity="danger" text rounded @click="confirmDelete" v-tooltip.top="'Supprimer'">
+        <Button
+          v-if="document.can?.delete"
+          severity="danger"
+          text
+          rounded
+          @click="confirmDelete"
+          v-tooltip.top="'Supprimer'"
+        >
           <template #icon>
             <font-awesome-icon icon="trash" />
           </template>
@@ -208,6 +221,42 @@
                 <div class="flex justify-between items-center text-xs text-color-secondary">
                   <span>{{ getStatusLabel(action.status) }}</span>
                   <span v-if="action.due_date">{{ formatDate(action.due_date) }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </Card>
+
+        <!-- Workflow History -->
+        <Card v-if="document.reviews && document.reviews.length > 0">
+          <template #title>
+            <div class="text-lg font-bold flex items-center gap-2">
+              <font-awesome-icon icon="history" class="text-primary" />
+              Historique
+            </div>
+          </template>
+          <template #content>
+            <div class="flex flex-col gap-3">
+              <div
+                v-for="review in document.reviews"
+                :key="review.id"
+                class="flex flex-col gap-1 p-3 bg-surface-50 dark:bg-surface-800/50 rounded-lg border border-surface-100 dark:border-surface-700/50"
+              >
+                <div class="flex justify-between items-start">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-color"
+                      >{{ review.reviewer?.first_name }} {{ review.reviewer?.last_name }}</span
+                    >
+                  </div>
+                  <Tag
+                    :value="review.status === 'approved' ? 'Approuvé' : 'Rejeté'"
+                    :severity="review.status === 'approved' ? 'success' : 'danger'"
+                    class="text-[10px]"
+                  />
+                </div>
+                <div class="text-xs text-color-secondary">{{ formatDate(review.created_at) }}</div>
+                <div v-if="review.comment" class="text-sm text-color mt-1 italic">
+                  "{{ review.comment }}"
                 </div>
               </div>
             </div>

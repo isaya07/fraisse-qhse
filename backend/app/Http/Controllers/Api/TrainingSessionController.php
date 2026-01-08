@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 
 class TrainingSessionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sessions = \App\Models\TrainingSession::with(['training', 'organization', 'participations', 'documents'])->get();
+        $sessions = \App\Models\TrainingSession::with([
+            'training',
+            'organization',
+            'participations',
+            'documents',
+            'permissions' => function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            }
+        ])->get();
         return response()->json([
             'success' => true,
             'data' => $sessions
@@ -39,9 +47,17 @@ class TrainingSessionController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $session = \App\Models\TrainingSession::with(['training', 'organization', 'participations.user', 'documents'])->findOrFail($id);
+        $session = \App\Models\TrainingSession::with([
+            'training',
+            'organization',
+            'participations.user',
+            'documents',
+            'permissions' => function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            }
+        ])->findOrFail($id);
         return response()->json([
             'success' => true,
             'data' => $session

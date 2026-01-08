@@ -27,7 +27,12 @@ export interface Training {
   category?: TrainingCategory
 }
 
-export type TrainingParticipationStatus = 'registered' | 'attended' | 'validated' | 'failed' | 'cancelled'
+export type TrainingParticipationStatus =
+  | 'registered'
+  | 'attended'
+  | 'validated'
+  | 'failed'
+  | 'cancelled'
 
 export interface TrainingParticipation {
   id: number
@@ -62,6 +67,11 @@ export interface TrainingSession {
   organization?: TrainingOrganization
   participations?: TrainingParticipation[]
   documents?: Document[]
+  can?: {
+    view: boolean
+    update: boolean
+    delete: boolean
+  }
 }
 
 interface TrainingState {
@@ -109,7 +119,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await post<TrainingCategory>('/training-categories', data)
         if (response.success && response.data) {
           const responseData = response.data as { data: TrainingCategory } | TrainingCategory
-          const newCategory = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const newCategory = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           this.categories.push(newCategory)
           return newCategory
         }
@@ -128,7 +142,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await put<TrainingCategory>(`/training-categories/${id}`, data)
         if (response.success && response.data) {
           const responseData = response.data as { data: TrainingCategory } | TrainingCategory
-          const updatedCategory = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const updatedCategory = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           const index = this.categories.findIndex((c) => c.id === id)
           if (index !== -1) {
             this.categories[index] = updatedCategory
@@ -166,7 +184,9 @@ export const useTrainingStore = defineStore('training', {
         const { get } = useApi()
         const response = await get<TrainingOrganization[]>('/training-organizations')
         if (response.success && response.data) {
-          const responseData = response.data as { data: TrainingOrganization[] } | TrainingOrganization[]
+          const responseData = response.data as
+            | { data: TrainingOrganization[] }
+            | TrainingOrganization[]
           this.organizations = Array.isArray(responseData) ? responseData : responseData.data
         }
       } catch (error) {
@@ -183,8 +203,14 @@ export const useTrainingStore = defineStore('training', {
         const { post } = useApi()
         const response = await post<TrainingOrganization>('/training-organizations', data)
         if (response.success && response.data) {
-          const responseData = response.data as { data: TrainingOrganization } | TrainingOrganization
-          const newOrg = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const responseData = response.data as
+            | { data: TrainingOrganization }
+            | TrainingOrganization
+          const newOrg = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           this.organizations.push(newOrg)
           return newOrg
         }
@@ -202,8 +228,14 @@ export const useTrainingStore = defineStore('training', {
         const { put } = useApi()
         const response = await put<TrainingOrganization>(`/training-organizations/${id}`, data)
         if (response.success && response.data) {
-          const responseData = response.data as { data: TrainingOrganization } | TrainingOrganization
-          const updatedOrg = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const responseData = response.data as
+            | { data: TrainingOrganization }
+            | TrainingOrganization
+          const updatedOrg = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           const index = this.organizations.findIndex((o) => o.id === id)
           if (index !== -1) {
             this.organizations[index] = updatedOrg
@@ -259,7 +291,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await post<Training>('/trainings', data)
         if (response.success && response.data) {
           const responseData = response.data as { data: Training } | Training
-          const newTraining = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const newTraining = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           this.trainings.push(newTraining)
           return newTraining
         }
@@ -278,7 +314,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await put<Training>(`/trainings/${id}`, data)
         if (response.success && response.data) {
           const responseData = response.data as { data: Training } | Training
-          const updatedTraining = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const updatedTraining = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           const index = this.trainings.findIndex((t) => t.id === id)
           if (index !== -1) {
             this.trainings[index] = updatedTraining
@@ -334,7 +374,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await post<TrainingSession>('/training-sessions', data)
         if (response.success && response.data) {
           const responseData = response.data as { data: TrainingSession } | TrainingSession
-          const newSession = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const newSession = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           this.sessions.push(newSession)
           return newSession
         }
@@ -353,7 +397,11 @@ export const useTrainingStore = defineStore('training', {
         const response = await put<TrainingSession>(`/training-sessions/${id}`, data)
         if (response.success && response.data) {
           const responseData = response.data as { data: TrainingSession } | TrainingSession
-          const updatedSession = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const updatedSession = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
           const index = this.sessions.findIndex((s) => s.id === id)
           if (index !== -1) {
             this.sessions[index] = updatedSession
@@ -391,8 +439,14 @@ export const useTrainingStore = defineStore('training', {
         const { post } = useApi()
         const response = await post<TrainingParticipation>('/training-participations', data)
         if (response.success && response.data) {
-          const responseData = response.data as { data: TrainingParticipation } | TrainingParticipation
-          const newParticipation = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const responseData = response.data as
+            | { data: TrainingParticipation }
+            | TrainingParticipation
+          const newParticipation = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
 
           // Update local session state if loaded
           const sessionIndex = this.sessions.findIndex((s) => s.id === data.training_session_id)
@@ -418,8 +472,14 @@ export const useTrainingStore = defineStore('training', {
         const { put } = useApi()
         const response = await put<TrainingParticipation>(`/training-participations/${id}`, data)
         if (response.success && response.data) {
-          const responseData = response.data as { data: TrainingParticipation } | TrainingParticipation
-          const updatedParticipation = Array.isArray(responseData) ? responseData[0] : ('data' in responseData ? responseData.data : responseData)
+          const responseData = response.data as
+            | { data: TrainingParticipation }
+            | TrainingParticipation
+          const updatedParticipation = Array.isArray(responseData)
+            ? responseData[0]
+            : 'data' in responseData
+              ? responseData.data
+              : responseData
 
           // Update local session state if loaded
           const sessionIndex = this.sessions.findIndex(

@@ -12,7 +12,14 @@ class EquipmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Equipment::with(['category', 'currentAssignment.user']);
+        $user = $request->user();
+        $query = Equipment::with([
+            'category',
+            'currentAssignment.user',
+            'permissions' => function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            }
+        ]);
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -64,7 +71,16 @@ class EquipmentController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $equipment->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user', 'documents'])
+            'data' => $equipment->load([
+                'category',
+                'currentAssignment.user',
+                'maintenanceLogs',
+                'assignments.user',
+                'documents',
+                'permissions' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }
+            ])
         ]);
     }
 

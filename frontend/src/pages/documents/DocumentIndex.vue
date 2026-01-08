@@ -286,7 +286,12 @@ const confirm = useConfirm()
 const toast = useToast()
 
 // View Mode
-const viewMode = ref<'list' | 'grid'>('list')
+const viewMode = ref<'list' | 'grid'>(
+  (localStorage.getItem('documents_view_mode') as 'list' | 'grid') || 'list',
+)
+watch(viewMode, (newValue) => {
+  localStorage.setItem('documents_view_mode', newValue)
+})
 const viewOptions = ref([
   { value: 'list', icon: 'list' },
   { value: 'grid', icon: 'table-cells-large' },

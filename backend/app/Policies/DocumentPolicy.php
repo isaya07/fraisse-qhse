@@ -8,11 +8,23 @@ use App\Models\User;
 class DocumentPolicy
 {
     /**
+     * Perform pre-authorization checks.
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return true; // Or check a global 'documents.view' permission
     }
 
     /**
@@ -20,6 +32,11 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document): bool
     {
+        // Public/Open by default OR check if user has 'read' access
+        // If no rules exist, allow. If rules exist, check AccessControl.
+        if ($document->permissions()->exists()) {
+            return $document->hasAccess($user, 'read');
+        }
         return true;
     }
 
@@ -36,7 +53,13 @@ class DocumentPolicy
      */
     public function update(User $user, Document $document): bool
     {
-        return $user->id === $document->created_by || $user->role === 'admin';
+        // Owner always has access
+        if ($user->id === $document->created_by) {
+            return true;
+        }
+
+        // Check explicit 'write' permission
+        return $document->hasAccess($user, 'write');
     }
 
     /**
@@ -44,6 +67,6 @@ class DocumentPolicy
      */
     public function delete(User $user, Document $document): bool
     {
-        return $user->id === $document->created_by || $user->role === 'admin';
+        return $user->id === $document->created_by || $document->hasAccess($user, 'admin');
     }
 }

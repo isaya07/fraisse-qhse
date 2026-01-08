@@ -2,7 +2,7 @@
   <div class="card">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-medium">Participants</h3>
-      <Button label="Ajouter" size="small" @click="openAddDialog">
+      <Button label="Ajouter" size="small" @click="openAddDialog" v-if="!readonly">
         <template #icon>
           <font-awesome-icon icon="plus" class="mr-2" />
         </template>
@@ -27,7 +27,7 @@
         </template>
       </Column>
 
-      <Column header="Actions" :exportable="false" style="min-width: 8rem">
+      <Column header="Actions" :exportable="false" style="min-width: 8rem" v-if="!readonly">
         <template #body="slotProps">
           <Button
             text
@@ -109,10 +109,16 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import { useConfirm } from 'primevue/useconfirm'
 
-const props = defineProps<{
-  participations: TrainingParticipation[]
-  users: User[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    participations: TrainingParticipation[]
+    users: User[]
+    readonly?: boolean
+  }>(),
+  {
+    readonly: false,
+  },
+)
 
 const emit = defineEmits(['add', 'update', 'remove'])
 

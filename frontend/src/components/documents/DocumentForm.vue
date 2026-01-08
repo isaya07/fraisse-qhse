@@ -17,39 +17,58 @@
       <FileUpload
         v-if="!isEditMode"
         name="file"
-        :auto="true"
-        :customUpload="true"
-        @uploader="onFileSelect"
-        :maxFileSize="10000000"
+        :multiple="false"
         accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png"
+        :maxFileSize="10000000"
+        :auto="false"
+        :showUploadButton="false"
+        :showCancelButton="false"
+        chooseLabel="Charger un fichier"
+        @select="onFileSelect"
+        @remove="onFileRemove"
+        @clear="onFileClear"
       >
+        <template #content="{ files, removeFileCallback }">
+          <div v-if="files.length > 0" class="flex flex-col gap-2">
+            <div
+              v-for="(file, index) in files"
+              :key="index"
+              class="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg"
+            >
+              <div class="flex items-center gap-3 overflow-hidden">
+                <font-awesome-icon :icon="['fas', 'file']" class="text-primary text-xl shrink-0" />
+                <div class="flex flex-col overflow-hidden">
+                  <span class="font-medium text-sm truncate" :title="file.name">{{
+                    file.name
+                  }}</span>
+                  <span class="text-xs text-color-secondary">{{ formatFileSize(file.size) }}</span>
+                </div>
+              </div>
+              <Button
+                outlined
+                rounded
+                severity="danger"
+                size="small"
+                @click="removeFileCallback(index)"
+                class="shrink-0 ml-2"
+              >
+                <template #icon>
+                  <font-awesome-icon :icon="['fas', 'times']" />
+                </template>
+              </Button>
+            </div>
+          </div>
+        </template>
         <template #empty>
-          <div class="flex items-center justify-center flex-col">
+          <div class="flex items-center justify-center flex-col py-4">
             <font-awesome-icon
               :icon="['fas', 'cloud-upload-alt']"
-              class="text-6xl text-color-secondary mb-4"
+              class="text-4xl text-color-secondary mb-3"
             />
-            <p class="mt-4 mb-0 text-color-secondary">
-              Glisser-déposer le fichier ici pour le télécharger.
-            </p>
+            <p class="m-0 text-color-secondary">Glisser-déposer le fichier ici.</p>
           </div>
         </template>
       </FileUpload>
-
-      <!-- Display selected file separately -->
-      <div
-        v-if="selectedFile"
-        class="mt-2 flex items-center gap-2 text-sm text-color bg-surface-100 dark:bg-surface-800 p-2 rounded"
-      >
-        <font-awesome-icon :icon="['fas', 'check-circle']" class="text-green-500" />
-        <span class="font-semibold">{{ selectedFile.name }}</span>
-        <span>({{ formatFileSize(selectedFile.size) }})</span>
-        <Button @click="clearFile" outlined rounded severity="danger" size="small" class="w-8 h-8">
-          <template #icon>
-            <font-awesome-icon :icon="['fas', 'times']" />
-          </template>
-        </Button>
-      </div>
       <small v-if="errors.file" class="text-red-500">{{ errors.file }}</small>
     </div>
 
@@ -209,12 +228,14 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
-import FileUpload, { type FileUploadUploaderEvent } from 'primevue/fileupload'
+import FileUpload, { type FileUploadSelectEvent } from 'primevue/fileupload'
 import TreeSelect from 'primevue/treeselect'
 import DatePicker from 'primevue/datepicker'
 import { useDocumentFolderStore, type DocumentFolder } from '@/stores/documentFolders'
 import type { DocumentFormData } from '@/stores/documents'
 import type { TreeNode } from 'primevue/treenode'
+
+import { useCategoryStore } from '@/stores/category'
 
 // Types
 interface Props {
@@ -243,10 +264,6 @@ const props = withDefaults(defineProps<Props>(), {
   isEditMode: false,
 })
 
-import { useCategoryStore } from '@/stores/category'
-
-// ...
-
 const emit = defineEmits<Emits>()
 const folderStore = useDocumentFolderStore()
 const categoryStore = useCategoryStore()
@@ -270,7 +287,7 @@ const schema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(255, 'Le titre est trop long'),
   description: z.string().optional(),
   document_folder_id: z.number().nullable(),
-  category_id: z.number(),
+  category_id: z.number('Le type de document est requis'),
   version: z.string().min(1, 'La version est requise'),
   status: z.string().min(1, 'Le statut est requis'),
   expires_date: z.date().nullable().optional(),
@@ -303,8 +320,7 @@ const statusOptions = [
   { value: 'archived', text: 'Archivé' },
 ]
 
-// Méthodes
-const onFileSelect = (event: FileUploadUploaderEvent) => {
+const onFileSelect = (event: FileUploadSelectEvent) => {
   const file = Array.isArray(event.files) ? event.files[0] : event.files
   if (file) {
     selectedFile.value = file
@@ -312,8 +328,21 @@ const onFileSelect = (event: FileUploadUploaderEvent) => {
   }
 }
 
-const clearFile = () => {
+const onFileRemove = (/* event: FileUploadRemoveEvent */) => {
   selectedFile.value = undefined
+}
+
+const onFileClear = () => {
+  selectedFile.value = undefined
+}
+
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const unit = sizes[i] || sizes[sizes.length - 1]
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + unit
 }
 
 const selectedFolder = computed({
@@ -333,15 +362,6 @@ const selectedFolder = computed({
     }
   },
 })
-
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  const unit = sizes[i] || sizes[sizes.length - 1]
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + unit
-}
 
 const validate = () => {
   // Reset errors
