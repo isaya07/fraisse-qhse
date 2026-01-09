@@ -164,8 +164,8 @@ test.describe('Dashboard', () => {
 
       // Soit un chart est visible, soit la section stats
       await Promise.race([
-        expect(chartCanvas.first()).toBeVisible({ timeout: 10000 }),
-        expect(chartSection.first()).toBeVisible({ timeout: 10000 }),
+        await expect(chartCanvas.first()).toBeVisible({ timeout: 10000 }),
+        await expect(chartSection.first()).toBeVisible({ timeout: 10000 }),
       ]).catch(() => {})
     })
   })

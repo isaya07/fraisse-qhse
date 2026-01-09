@@ -103,6 +103,8 @@ export const useTrainingStore = defineStore('training', {
         if (response.success && response.data) {
           const responseData = response.data as { data: TrainingCategory[] } | TrainingCategory[]
           this.categories = Array.isArray(responseData) ? responseData : responseData.data
+        } else {
+          this.error = response.error || 'Failed to fetch categories'
         }
       } catch (error) {
         this.error = 'Failed to fetch categories'
@@ -298,6 +300,8 @@ export const useTrainingStore = defineStore('training', {
               : responseData
           this.trainings.push(newTraining)
           return newTraining
+        } else {
+          throw new Error(response.error || 'Failed to create training')
         }
       } catch (error) {
         this.error = 'Failed to create training'
@@ -457,6 +461,8 @@ export const useTrainingStore = defineStore('training', {
             this.sessions[sessionIndex].participations?.push(newParticipation)
           }
           return newParticipation
+        } else {
+          throw new Error(response.error || 'Failed to add participant')
         }
       } catch (error) {
         this.error = 'Failed to add participant'

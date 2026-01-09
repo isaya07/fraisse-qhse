@@ -20,6 +20,17 @@
       </div>
       <div class="flex gap-2" v-if="action">
         <Button
+          v-if="canManagePermissions"
+          label="Partager"
+          @click="openPermissionDialog"
+          severity="info"
+          outlined
+        >
+          <template #icon>
+            <font-awesome-icon icon="share-nodes" class="mr-2" />
+          </template>
+        </Button>
+        <Button
           v-if="action.can?.update"
           label="Modifier"
           @click="editAction"
@@ -458,6 +469,12 @@
         </Button>
       </template>
     </Dialog>
+    <PermissionDialog
+      v-if="action"
+      v-model:visible="permissionDialogVisible"
+      :entity-type="'action'"
+      :entity-id="actionId"
+    />
   </div>
 </template>
 
@@ -487,6 +504,7 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useApi } from '@/composables/useApi'
 import LinkedDocuments from '@/components/common/LinkedDocuments.vue'
+import PermissionDialog from '@/components/common/PermissionDialog.vue'
 import { format } from 'date-fns'
 
 const route = useRoute()
@@ -502,8 +520,22 @@ const actionId = Number(route.params.id)
 const loading = ref(true)
 const updatingProgress = ref(false)
 const progressUpdateValue = ref(0)
+const permissionDialogVisible = ref(false)
 
 const action = computed(() => actionStore.currentAction)
+
+const canManagePermissions = computed(() => {
+  if (!action.value || !appStore.user) return false
+  return (
+    appStore.user.role === 'admin' ||
+    action.value.created_by === appStore.user.id ||
+    action.value.can?.delete
+  )
+})
+
+const openPermissionDialog = () => {
+  permissionDialogVisible.value = true
+}
 
 // Documents Linking
 const onDocumentSubmit = async (data: Record<string, unknown>) => {

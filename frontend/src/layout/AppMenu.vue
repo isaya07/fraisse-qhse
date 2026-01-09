@@ -88,6 +88,11 @@ const model = ref<MenuItem[]>([
     to: '/trainings',
   },
   {
+    label: 'Personnels',
+    icon: ['fas', 'id-card'],
+    to: '/employees',
+  },
+  {
     header: 'ADMINISTRATION',
   },
   {

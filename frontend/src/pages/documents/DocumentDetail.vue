@@ -63,6 +63,17 @@
             <font-awesome-icon icon="pen" class="mr-2" />
           </template>
         </Button>
+        <Button
+          v-if="canManagePermissions"
+          label="Partager"
+          severity="info"
+          outlined
+          @click="openPermissionDialog"
+        >
+          <template #icon>
+            <font-awesome-icon icon="share-nodes" class="mr-2" />
+          </template>
+        </Button>
         <Button label="Télécharger" severity="primary" @click="downloadFile">
           <template #icon>
             <font-awesome-icon icon="download" class="mr-2" />
@@ -286,6 +297,13 @@
     :loading="uploading"
     @upload="handleUploadVersion"
   />
+
+  <PermissionDialog
+    v-if="document"
+    v-model:visible="permissionDialogVisible"
+    :entity-type="'document'"
+    :entity-id="document.id"
+  />
 </template>
 
 <script setup lang="ts">
@@ -303,6 +321,7 @@ import Tag from 'primevue/tag'
 import FileIcon from '@/components/common/FileIcon.vue'
 import DocumentVersionHistory from '@/components/documents/DocumentVersionHistory.vue'
 import UploadNewVersionDialog from '@/components/documents/UploadNewVersionDialog.vue'
+import PermissionDialog from '@/components/common/PermissionDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -317,6 +336,21 @@ const uploadDialogVisible = ref(false)
 const uploading = ref(false)
 const previewUrl = ref<string | null>(null)
 const loadingPreview = ref(false)
+
+const permissionDialogVisible = ref(false)
+
+const canManagePermissions = computed(() => {
+  if (!document.value || !appStore.user) return false
+  return (
+    appStore.user.role === 'admin' ||
+    document.value.created_by === appStore.user.id ||
+    document.value.can?.delete
+  )
+})
+
+const openPermissionDialog = () => {
+  permissionDialogVisible.value = true
+}
 
 const document = computed(() => store.currentDocument)
 

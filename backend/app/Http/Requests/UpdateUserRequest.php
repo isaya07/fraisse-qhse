@@ -29,7 +29,7 @@ class UpdateUserRequest extends FormRequest
             'email' => ['sometimes', 'email', Rule::unique('users')->ignore($userId)],
             'first_name' => 'sometimes|string|max:50',
             'last_name' => 'sometimes|string|max:50',
-            'role' => 'sometimes|in:admin,manager,user,viewer',
+            'role' => 'sometimes|in:admin,manager,user,viewer,employee',
             'is_active' => 'sometimes|boolean',
         ];
     }

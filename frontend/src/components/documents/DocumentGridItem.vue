@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Document } from '@/stores/app'
+import { useAppStore } from '@/stores/app'
 import FileIcon from '@/components/common/FileIcon.vue'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
@@ -75,6 +76,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['click', 'edit', 'download', 'delete', 'view'])
 
+const appStore = useAppStore()
 const menu = ref()
 
 const menuItems = computed(() => {
@@ -114,11 +116,10 @@ const menuItems = computed(() => {
     items.push({
       label: 'Supprimer',
       icon: 'pi pi-trash',
-      class: 'text-red-500',
       command: () => emit('delete', props.document),
-    })
+    } as any)
   }
-  return items
+  return items as any[]
 })
 
 const toggleMenu = (event: Event) => {

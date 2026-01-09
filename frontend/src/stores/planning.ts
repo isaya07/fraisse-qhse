@@ -65,6 +65,7 @@ export const usePlanningStore = defineStore('planning', {
   actions: {
     async fetchEvents(start?: string, end?: string) {
       this.loading = true
+      this.error = null
       try {
         const { get } = useApi()
         let url = '/planning/events'
@@ -78,6 +79,8 @@ export const usePlanningStore = defineStore('planning', {
         if (response.success && response.data) {
           const responseData = response.data as any
           this.events = responseData.data || responseData
+        } else {
+          this.error = response.error || 'Failed to fetch events'
         }
       } catch (error) {
         this.error = 'Failed to fetch events'
@@ -90,12 +93,15 @@ export const usePlanningStore = defineStore('planning', {
     // Safety Visits
     async fetchVisits() {
       this.loading = true
+      this.error = null
       try {
         const { get } = useApi()
         const response = await get<SafetyVisit[]>('/safety-visits')
         if (response.success && response.data) {
           const responseData = response.data as any
           this.visits = responseData.data || responseData
+        } else {
+          this.error = response.error || 'Failed to fetch visits'
         }
       } catch (error) {
         this.error = 'Failed to fetch visits'
@@ -107,6 +113,7 @@ export const usePlanningStore = defineStore('planning', {
 
     async createVisit(data: Partial<SafetyVisit>) {
       this.loading = true
+      this.error = null
       try {
         const { post } = useApi()
         const response = await post<SafetyVisit>('/safety-visits', data)
@@ -115,6 +122,8 @@ export const usePlanningStore = defineStore('planning', {
           const newVisit = responseData.data || responseData
           this.visits.unshift(newVisit)
           return newVisit
+        } else {
+          throw new Error(response.error || 'Failed to create visit')
         }
       } catch (error) {
         this.error = 'Failed to create visit'
@@ -126,6 +135,7 @@ export const usePlanningStore = defineStore('planning', {
 
     async updateVisit(id: number, data: Partial<SafetyVisit>) {
       this.loading = true
+      this.error = null
       try {
         const { put } = useApi()
         const response = await put<SafetyVisit>(`/safety-visits/${id}`, data)
@@ -137,6 +147,8 @@ export const usePlanningStore = defineStore('planning', {
             this.visits[index] = updatedVisit
           }
           return updatedVisit
+        } else {
+          throw new Error(response.error || 'Failed to update visit')
         }
       } catch (error) {
         this.error = 'Failed to update visit'
@@ -148,11 +160,14 @@ export const usePlanningStore = defineStore('planning', {
 
     async deleteVisit(id: number) {
       this.loading = true
+      this.error = null
       try {
         const { del } = useApi()
         const response = await del(`/safety-visits/${id}`)
         if (response.success) {
           this.visits = this.visits.filter((v) => v.id !== id)
+        } else {
+          throw new Error(response.error || 'Failed to delete visit')
         }
       } catch (error) {
         this.error = 'Failed to delete visit'
@@ -165,12 +180,15 @@ export const usePlanningStore = defineStore('planning', {
     // Toolbox Talks
     async fetchTalks() {
       this.loading = true
+      this.error = null
       try {
         const { get } = useApi()
         const response = await get<ToolboxTalk[]>('/toolbox-talks')
         if (response.success && response.data) {
           const responseData = response.data as any
           this.talks = responseData.data || responseData
+        } else {
+          this.error = response.error || 'Failed to fetch talks'
         }
       } catch (error) {
         this.error = 'Failed to fetch talks'
@@ -182,6 +200,7 @@ export const usePlanningStore = defineStore('planning', {
 
     async createTalk(data: Partial<ToolboxTalk> & { attendees?: number[] }) {
       this.loading = true
+      this.error = null
       try {
         const { post } = useApi()
         const response = await post<ToolboxTalk>('/toolbox-talks', data)
@@ -190,6 +209,8 @@ export const usePlanningStore = defineStore('planning', {
           const newTalk = responseData.data || responseData
           this.talks.unshift(newTalk)
           return newTalk
+        } else {
+          throw new Error(response.error || 'Failed to create talk')
         }
       } catch (error) {
         this.error = 'Failed to create talk'
@@ -201,6 +222,7 @@ export const usePlanningStore = defineStore('planning', {
 
     async updateTalk(id: number, data: Partial<ToolboxTalk> & { attendees?: number[] }) {
       this.loading = true
+      this.error = null
       try {
         const { put } = useApi()
         const response = await put<ToolboxTalk>(`/toolbox-talks/${id}`, data)
@@ -212,6 +234,8 @@ export const usePlanningStore = defineStore('planning', {
             this.talks[index] = updatedTalk
           }
           return updatedTalk
+        } else {
+          throw new Error(response.error || 'Failed to update talk')
         }
       } catch (error) {
         this.error = 'Failed to update talk'
@@ -223,11 +247,14 @@ export const usePlanningStore = defineStore('planning', {
 
     async deleteTalk(id: number) {
       this.loading = true
+      this.error = null
       try {
         const { del } = useApi()
         const response = await del(`/toolbox-talks/${id}`)
         if (response.success) {
           this.talks = this.talks.filter((t) => t.id !== id)
+        } else {
+          throw new Error(response.error || 'Failed to delete talk')
         }
       } catch (error) {
         this.error = 'Failed to delete talk'

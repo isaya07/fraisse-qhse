@@ -76,6 +76,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('training-organizations', \App\Http\Controllers\Api\TrainingOrganizationController::class);
     Route::apiResource('trainings', \App\Http\Controllers\Api\TrainingController::class);
     Route::apiResource('training-sessions', \App\Http\Controllers\Api\TrainingSessionController::class);
+    Route::post('training-sessions/{id}/documents', [\App\Http\Controllers\Api\TrainingSessionController::class, 'attachDocument']);
+    Route::delete('training-sessions/{id}/documents/{documentId}', [\App\Http\Controllers\Api\TrainingSessionController::class, 'detachDocument']);
     Route::apiResource('training-participations', \App\Http\Controllers\Api\TrainingParticipationController::class)->except(['index', 'show']);
     // Equipment Module
     Route::apiResource('equipment-categories', \App\Http\Controllers\Api\EquipmentCategoryController::class);
@@ -100,4 +102,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('planning/events', \App\Http\Controllers\Api\PlanningController::class)->only(['index']);
     Route::apiResource('safety-visits', \App\Http\Controllers\Api\SafetyVisitController::class);
     Route::apiResource('toolbox-talks', \App\Http\Controllers\Api\ToolboxTalkController::class);
+    // Access Control
+    // Access Control
+    Route::get('/permissions', [\App\Http\Controllers\Api\AccessControlController::class, 'index']);
+    Route::post('/permissions', [\App\Http\Controllers\Api\AccessControlController::class, 'store']);
+    Route::delete('/permissions/{id}', [\App\Http\Controllers\Api\AccessControlController::class, 'destroy']);
+
+    // Employee Profile
+    Route::get('/employees', [\App\Http\Controllers\Api\EmployeeController::class, 'index']);
+    Route::get('/employees/{id}', [\App\Http\Controllers\Api\EmployeeController::class, 'show']);
 });

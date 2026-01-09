@@ -109,6 +109,19 @@ const router = createRouter({
           props: true,
           meta: { requiresAuth: true, roles: ['admin'] },
         },
+        // Employees (Fiche Saurié)
+        {
+          path: '/employees',
+          name: 'employees',
+          component: () => import('@/pages/employees/EmployeeIndex.vue'),
+          meta: { requiresAuth: true }, // Accessible by managers/admins
+        },
+        {
+          path: '/employees/:id',
+          name: 'employee-detail',
+          component: () => import('@/pages/employees/EmployeeDetail.vue'),
+          meta: { requiresAuth: true },
+        },
         {
           path: '/profile',
           name: 'profile',

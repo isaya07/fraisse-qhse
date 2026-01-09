@@ -14,7 +14,9 @@
       </div>
 
       <div class="flex justify-between items-start mb-4">
-        <h3 class="text-lg font-semibold text-color truncate pr-2">{{ session.training.title }}</h3>
+        <h3 class="text-lg font-semibold text-color truncate pr-2">
+          {{ session.training?.title }}
+        </h3>
         <Button
           v-if="session.can?.update"
           text
@@ -109,7 +111,7 @@ const getStatusSeverity = (status: string) => {
   return map[status] || 'info'
 }
 
-const getInitials = (user: any) => {
+const getInitials = (user?: { first_name?: string; last_name?: string }) => {
   if (!user) return ''
   return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase()
 }

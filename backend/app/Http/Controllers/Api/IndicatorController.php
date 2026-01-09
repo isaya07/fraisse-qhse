@@ -138,7 +138,7 @@ class IndicatorController extends Controller
         $value = $indicator->values()->create([
             'value' => $validated['value'],
             'date' => $validated['date'],
-            'comment' => $validated['comment'],
+            'comment' => $validated['comment'] ?? null,
             'created_by' => auth()->id(),
         ]);
 

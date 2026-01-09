@@ -346,7 +346,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useIndicatorStore } from '@/stores/indicators'
-import { useAppStore } from '@/stores/app'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'

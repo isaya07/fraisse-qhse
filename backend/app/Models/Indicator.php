@@ -82,8 +82,12 @@ class Indicator extends Model
      */
     public function updateTrend()
     {
-        // Get the last two values ordered by date
-        $values = $this->values()->orderBy('date', 'desc')->take(2)->get();
+        // Bypass relationship caching to ensure we get the latest values
+        $values = \App\Models\IndicatorValue::where('indicator_id', $this->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->take(2)
+            ->get();
 
         if ($values->count() < 2) {
             if ($values->count() === 0) {
@@ -93,15 +97,17 @@ class Indicator extends Model
             return;
         }
 
-        $current = $values[0];
-        $previous = $values[1];
+        $current = (float) $values[0]->value;
+        $previous = (float) $values[1]->value;
+
+        // fwrite(STDERR, "Indicator {$this->id} current: {$current}, previous: {$previous}\n");
 
         $direction = 'neutral';
 
-        if ($current->value > $previous->value) {
-            $direction = 'positive'; // Hausse (Up)
-        } elseif ($current->value < $previous->value) {
-            $direction = 'negative'; // Baisse (Down)
+        if ($current > $previous) {
+            $direction = 'positive';
+        } elseif ($current < $previous) {
+            $direction = 'negative';
         }
 
         $this->trend_direction = $direction;

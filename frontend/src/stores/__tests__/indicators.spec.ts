@@ -27,6 +27,11 @@ describe('useIndicatorStore', () => {
     indicator_category_id: 1,
     created_at: '2024-01-01',
     updated_at: '2024-01-01',
+    code: 'TF',
+    trend_direction: 'down',
+    created_by: 1,
+    created: '2024-01-01',
+    modified: '2024-01-01',
   }
 
   const mockIndicatorValue = {
@@ -36,6 +41,12 @@ describe('useIndicatorStore', () => {
     date: '2024-01-15',
     comment: 'Amélioration notable',
     created_at: '2024-01-15',
+    frequency: 'monthly',
+    target_value: 5,
+    unit: 'accidents/million h',
+    trend_direction: 'down',
+    created_by: 1,
+    updated_at: '2024-01-15',
   }
 
   describe('Initial state', () => {
@@ -202,7 +213,9 @@ describe('useIndicatorStore', () => {
         ...mockIndicator,
         values: [mockIndicatorValue],
       }
-      vi.mocked(fetch).mockResolvedValueOnce(createMockResponse(responseData))
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(createMockResponse(mockIndicatorValue)) // POST response
+        .mockResolvedValueOnce(createMockResponse(responseData)) // GET response (fetchIndicatorById)
 
       await store.addIndicatorValue(1, {
         value: 3.5,
@@ -225,7 +238,9 @@ describe('useIndicatorStore', () => {
         ...mockIndicator,
         values: [updatedValue],
       }
-      vi.mocked(fetch).mockResolvedValueOnce(createMockResponse(responseData))
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(createMockResponse(updatedValue)) // PUT response
+        .mockResolvedValueOnce(createMockResponse(responseData)) // GET response
 
       await store.updateIndicatorValue(1, 1, { value: 4.0, date: '2024-01-15' })
 
@@ -243,7 +258,9 @@ describe('useIndicatorStore', () => {
         ...mockIndicator,
         values: [],
       }
-      vi.mocked(fetch).mockResolvedValueOnce(createMockResponse(responseData))
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(createMockResponse({ success: true })) // DELETE response
+        .mockResolvedValueOnce(createMockResponse(responseData)) // GET response
 
       await store.deleteIndicatorValue(1, 1)
 

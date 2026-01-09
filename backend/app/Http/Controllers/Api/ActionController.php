@@ -181,6 +181,8 @@ class ActionController extends Controller
             $action->update(['status' => 'completed', 'completed_date' => now()]);
         } elseif ($request->progress < 100 && $action->status === 'completed') {
             $action->update(['status' => 'in_progress', 'completed_date' => null]);
+        } elseif ($request->progress > 0 && $action->status === 'open') {
+            $action->update(['status' => 'in_progress']);
         }
 
 

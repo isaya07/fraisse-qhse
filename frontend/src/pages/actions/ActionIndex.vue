@@ -184,7 +184,7 @@
         <div
           v-for="status in statusOptions"
           :key="status.value"
-          class="flex-shrink-0 w-80 flex flex-col bg-surface-50 dark:bg-surface-800 rounded-lg h-full border border-surface-200 dark:border-surface-700"
+          class="shrink-0 w-80 flex flex-col bg-surface-50 dark:bg-surface-800 rounded-lg h-full border border-surface-200 dark:border-surface-700"
         >
           <!-- Column Header -->
           <div
@@ -249,7 +249,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Avatar from 'primevue/avatar'
-import { format } from 'date-fns'
+import type { User } from '@/stores/app'
 
 const router = useRouter()
 const actionStore = useActionStore()
@@ -366,8 +366,8 @@ const getDueDateColorClass = (dateString: string | undefined, status: string | u
   return 'text-color'
 }
 
-const getInitials = (user: any) => {
-  if (!user) return '?'
+const getInitials = (user: User | undefined | null) => {
+  if (!user || !user.first_name || !user.last_name) return '?'
   return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
 }
 

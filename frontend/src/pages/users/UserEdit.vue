@@ -171,6 +171,7 @@ const roleOptions = [
   { label: 'Manager', value: 'manager' },
   { label: 'Utilisateur', value: 'user' },
   { label: 'Observateur', value: 'viewer' },
+  { label: 'Salarié (Employé)', value: 'employee' },
 ]
 
 const initialValues = ref({
@@ -190,7 +191,7 @@ const schema = z
     email: z.string().email("Format d'email invalide"),
     first_name: z.string().min(2, 'Le prénom est requis'),
     last_name: z.string().min(2, 'Le nom est requis'),
-    role: z.enum(['admin', 'manager', 'user', 'viewer']),
+    role: z.enum(['admin', 'manager', 'user', 'viewer', 'employee']),
     is_active: z.boolean().optional(),
     password: z.string().optional(),
   })
