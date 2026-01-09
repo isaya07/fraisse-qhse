@@ -66,9 +66,18 @@ class IndicatorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $indicator = Indicator::with(['creator', 'manager', 'actions', 'indicatorCategory', 'values.creator'])->findOrFail($id);
+        $indicator = \App\Models\Indicator::with([
+            'indicatorCategory',
+            'manager',
+            'creator',
+            'actions',
+            'values',
+            'permissions' => function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            }
+        ])->findOrFail($id);
 
         $this->authorize('view', $indicator);
 
@@ -129,7 +138,7 @@ class IndicatorController extends Controller
         $value = $indicator->values()->create([
             'value' => $validated['value'],
             'date' => $validated['date'],
-            'comment' => $validated['comment'],
+            'comment' => $validated['comment'] ?? null,
             'created_by' => auth()->id(),
         ]);
 

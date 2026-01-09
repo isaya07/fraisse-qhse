@@ -8,10 +8,27 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Http\Requests\StoreUserRequest;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     use AuthorizesRequests;
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreUserRequest $request)
+    {
+        $this->authorize('create', User::class);
+
+        $validated = $request->validated();
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
+
+        return response()->json($user, 201);
+    }
 
     /**
      * Display a listing of the resource.
@@ -26,9 +43,9 @@ class UserController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
             });
         }
 
@@ -43,7 +60,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::select('id', 'username', 'email', 'first_name', 'last_name', 'role', 'is_active', 'created_at', 'updated_at')
-                    ->findOrFail($id);
+            ->findOrFail($id);
 
         $this->authorize('view', $user);
 

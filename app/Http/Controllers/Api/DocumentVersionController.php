@@ -75,6 +75,7 @@ class DocumentVersionController extends Controller
             'filepath' => $filepath,
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
+            'status' => 'draft',
         ]);
 
         // Notifier le créateur

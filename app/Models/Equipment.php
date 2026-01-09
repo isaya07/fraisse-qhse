@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasPermissions;
 
 class Equipment extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPermissions;
 
     protected $fillable = [
         'category_id',
@@ -30,6 +31,17 @@ class Equipment extends Model
         'manufacture_date' => 'date',
         'expiration_date' => 'date',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        return [
+            'view' => \Illuminate\Support\Facades\Gate::allows('view', $this),
+            'update' => \Illuminate\Support\Facades\Gate::allows('update', $this),
+            'delete' => \Illuminate\Support\Facades\Gate::allows('delete', $this),
+        ];
+    }
 
     public function category()
     {

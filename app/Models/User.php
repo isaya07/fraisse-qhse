@@ -88,4 +88,11 @@ class User extends Authenticatable
             'equipment_id' // Local key on EquipmentAssignment table...
         )->whereNull('equipment_assignments.returned_at');
     }
+    /**
+     * Get the documents attached to the user.
+     */
+    public function documents()
+    {
+        return $this->belongsToMany(Document::class, 'document_user');
+    }
 }

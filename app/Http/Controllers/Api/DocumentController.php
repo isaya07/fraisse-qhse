@@ -31,7 +31,15 @@ class DocumentController extends Controller
     {
         $this->authorize('viewAny', Document::class);
 
-        $query = Document::with(['creator', 'approver', 'category'])
+        $userId = auth()->id();
+        $query = Document::with([
+            'creator',
+            'approver',
+            'category',
+            'permissions' => function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            }
+        ])
             ->select('id', 'title', 'filename', 'filepath', 'version', 'category_id', 'status', 'created_by', 'approved_by', 'published_date', 'expires_date', 'created_at', 'updated_at', 'document_folder_id');
 
         if ($request->has('search') && $request->search) {
@@ -152,7 +160,18 @@ class DocumentController extends Controller
      */
     public function show($id)
     {
-        $document = Document::with(['creator', 'approver', 'category', 'actions'])->findOrFail($id);
+        $userId = auth()->id();
+        $document = Document::with([
+            'creator',
+            'approver',
+            'category',
+            'actions',
+            'reviews',
+            'reviews.reviewer',
+            'permissions' => function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            }
+        ])->findOrFail($id);
 
         $this->authorize('view', $document);
 
@@ -293,6 +312,13 @@ class DocumentController extends Controller
             'published_date' => now(),
         ]);
 
+        // Record Review
+        $document->reviews()->create([
+            'user_id' => $request->user()->id,
+            'status' => 'approved',
+            'comment' => $request->input('comment'), // Optional comment
+        ]);
+
         // Notify creator
         if ($document->created_by) {
             \App\Models\Notification::create([
@@ -319,6 +345,13 @@ class DocumentController extends Controller
         }
 
         $document->update(['status' => 'rejected']);
+
+        // Record Review
+        $document->reviews()->create([
+            'user_id' => $request->user()->id,
+            'status' => 'rejected',
+            'comment' => $request->input('comment'), // Optional comment
+        ]);
 
         // Notify creator
         if ($document->created_by) {

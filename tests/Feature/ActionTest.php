@@ -85,4 +85,111 @@ class ActionTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseMissing('actions', ['id' => $action->id]);
     }
+
+    public function test_assignee_can_update_action()
+    {
+        $creator = User::factory()->create();
+        $assignee = User::factory()->create();
+        $action = Action::factory()->create([
+            'created_by' => $creator->id,
+            'assigned_to' => $assignee->id
+        ]);
+
+        $updateData = ['status' => 'in_progress'];
+
+        $response = $this->actingAs($assignee)->putJson("/api/actions/{$action->id}", $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment(['status' => 'in_progress']);
+    }
+
+    public function test_action_progress_updates_status_automatically()
+    {
+        $user = User::factory()->create();
+        $action = Action::factory()->create([
+            'created_by' => $user->id,
+            'status' => 'open',
+            'progress' => 0
+        ]);
+
+        // Update progress to 50%
+        $response = $this->actingAs($user)->postJson("/api/actions/{$action->id}/update-progress", ['progress' => 50]);
+        $response->assertStatus(200);
+        $this->assertEquals('in_progress', $action->refresh()->status);
+
+        // Update progress to 100%
+        $response = $this->actingAs($user)->postJson("/api/actions/{$action->id}/update-progress", ['progress' => 100]);
+        $response->assertStatus(200);
+        $action->refresh();
+        $this->assertEquals('completed', $action->status);
+        $this->assertNotNull($action->completed_date);
+    }
+
+    public function test_attach_and_detach_documents_to_action()
+    {
+        $user = User::factory()->create();
+        $action = Action::factory()->create(['created_by' => $user->id]);
+        $document = \App\Models\Document::factory()->create(['created_by' => $user->id]);
+
+        // Attach
+        $response = $this->actingAs($user)->postJson("/api/actions/{$action->id}/documents", [
+            'document_id' => $document->id
+        ]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('action_documents', [
+            'action_id' => $action->id,
+            'document_id' => $document->id
+        ]);
+
+        // Detach
+        $response = $this->actingAs($user)->deleteJson("/api/actions/{$action->id}/documents/{$document->id}");
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('action_documents', [
+            'action_id' => $action->id,
+            'document_id' => $document->id
+        ]);
+    }
+
+    public function test_attach_and_detach_indicators_to_action()
+    {
+        $user = User::factory()->create();
+        $action = Action::factory()->create(['created_by' => $user->id]);
+        $indicator = \App\Models\Indicator::factory()->create(['created_by' => $user->id]);
+
+        // Attach
+        $response = $this->actingAs($user)->postJson("/api/actions/{$action->id}/indicators", [
+            'indicator_id' => $indicator->id
+        ]);
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('action_indicators', [
+            'action_id' => $action->id,
+            'indicator_id' => $indicator->id
+        ]);
+
+        // Detach
+        $response = $this->actingAs($user)->deleteJson("/api/actions/{$action->id}/indicators/{$indicator->id}");
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('action_indicators', [
+            'action_id' => $action->id,
+            'indicator_id' => $indicator->id
+        ]);
+    }
+
+    public function test_users_can_add_comments_to_action()
+    {
+        $user = User::factory()->create();
+        $action = Action::factory()->create(['created_by' => $user->id]);
+
+        $commentData = ['content' => 'This is a test comment'];
+
+        $response = $this->actingAs($user)->postJson("/api/actions/{$action->id}/comments", $commentData);
+
+        $response->assertStatus(201)
+            ->assertJsonFragment(['content' => 'This is a test comment']);
+
+        $this->assertDatabaseHas('comments', [
+            'action_id' => $action->id,
+            'content' => 'This is a test comment'
+        ]);
+    }
 }

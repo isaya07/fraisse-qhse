@@ -21,6 +21,11 @@ class ActionController extends Controller
         $this->authorize('viewAny', Action::class);
 
         $query = Action::with(['creator', 'assignee', 'documents', 'indicators', 'actionType'])
+            ->with([
+                'permissions' => function ($q) use ($request) {
+                    $q->where('user_id', $request->user()->id);
+                }
+            ])
             ->select('id', 'title', 'action_type_id', 'priority', 'status', 'assigned_to', 'created_by', 'due_date', 'completed_date', 'progress', 'related_to', 'related_id', 'created_at', 'updated_at');
 
         if ($request->has('search') && $request->search) {
@@ -66,9 +71,15 @@ class ActionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $action = Action::with(['creator', 'assignee', 'documents', 'indicators', 'actionType', 'comments.user'])->findOrFail($id);
+        $action = Action::with(['creator', 'assignee', 'documents', 'indicators', 'actionType', 'comments.user'])
+            ->with([
+                'permissions' => function ($q) use ($request) {
+                    $q->where('user_id', $request->user()->id);
+                }
+            ])
+            ->findOrFail($id);
 
         $this->authorize('view', $action);
 
@@ -170,6 +181,8 @@ class ActionController extends Controller
             $action->update(['status' => 'completed', 'completed_date' => now()]);
         } elseif ($request->progress < 100 && $action->status === 'completed') {
             $action->update(['status' => 'in_progress', 'completed_date' => null]);
+        } elseif ($request->progress > 0 && $action->status === 'open') {
+            $action->update(['status' => 'in_progress']);
         }
 
 

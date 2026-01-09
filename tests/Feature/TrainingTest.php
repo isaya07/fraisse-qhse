@@ -103,4 +103,125 @@ class TrainingTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseMissing('trainings', ['id' => $training->id]);
     }
+
+    public function test_creator_can_update_own_training_session()
+    {
+        $user = User::factory()->create();
+        $category = TrainingCategory::factory()->create();
+        $training = Training::factory()->create(['training_category_id' => $category->id]);
+
+        // Creating session via API to ensure permissions are granted
+        $sessionData = [
+            'training_id' => $training->id,
+            'start_date' => now()->addDays(20)->format('Y-m-d H:i:s'),
+            'end_date' => now()->addDays(21)->format('Y-m-d H:i:s'),
+            'location' => 'Original Location',
+            'status' => 'planned',
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/training-sessions', $sessionData);
+        $sessionId = $response->json('data.id');
+
+        $updateData = ['location' => 'New Location'];
+        $response = $this->actingAs($user)->putJson("/api/training-sessions/{$sessionId}", $updateData);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.location', 'New Location');
+    }
+
+    public function test_users_cannot_update_others_training_sessions()
+    {
+        $creator = User::factory()->create(['role' => 'user']); // Ensure not admin
+        $otherUser = User::factory()->create(['role' => 'user']);
+
+        $category = TrainingCategory::factory()->create();
+        $training = Training::factory()->create(['training_category_id' => $category->id]);
+
+        // Creator makes session
+        $response = $this->actingAs($creator)->postJson('/api/training-sessions', [
+            'training_id' => $training->id,
+            'start_date' => now()->addDays(10)->format('Y-m-d H:i:s'),
+            'end_date' => now()->addDays(11)->format('Y-m-d H:i:s'),
+            'location' => 'Creator Room',
+            'status' => 'planned',
+        ]);
+        $sessionId = $response->json('data.id');
+
+        // Other user tries to update
+        $response = $this->actingAs($otherUser)->putJson("/api/training-sessions/{$sessionId}", [
+            'location' => 'Hacked Room'
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_managing_training_participation()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $participant = User::factory()->create();
+        $category = TrainingCategory::factory()->create();
+        $training = Training::factory()->create(['training_category_id' => $category->id]);
+        $session = TrainingSession::factory()->create(['training_id' => $training->id]);
+
+        // Add participation
+        $response = $this->actingAs($admin)->postJson('/api/training-participations', [
+            'training_session_id' => $session->id,
+            'user_id' => $participant->id,
+            'status' => 'registered'
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.user_id', $participant->id);
+
+        // Remove participation
+        $participationId = $response->json('data.id');
+        $response = $this->actingAs($admin)->deleteJson("/api/training-participations/{$participationId}");
+
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('training_participations', ['id' => $participationId]);
+    }
+
+    public function test_attach_and_detach_documents_to_session()
+    {
+        $user = User::factory()->create();
+        $category = TrainingCategory::factory()->create();
+        $training = Training::factory()->create(['training_category_id' => $category->id]);
+
+        // Create session as user (so they have update permission)
+        $response = $this->actingAs($user)->postJson('/api/training-sessions', [
+            'training_id' => $training->id,
+            'start_date' => now()->addDays(5)->format('Y-m-d H:i:s'),
+            'end_date' => now()->addDays(6)->format('Y-m-d H:i:s'),
+            'location' => 'Doc Room',
+            'status' => 'planned',
+        ]);
+        $sessionId = $response->json('data.id');
+
+        // Create document (as same user)
+        $document = \App\Models\Document::factory()->create([
+            'created_by' => $user->id,
+            'status' => 'draft',
+            'version' => '1.0'
+        ]);
+
+        // Attach
+        $response = $this->actingAs($user)->postJson("/api/training-sessions/{$sessionId}/documents", [
+            'document_id' => $document->id
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('training_session_documents', [
+            'training_session_id' => $sessionId,
+            'document_id' => $document->id
+        ]);
+
+        // Detach
+        $response = $this->actingAs($user)->deleteJson("/api/training-sessions/{$sessionId}/documents/{$document->id}");
+
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('training_session_documents', [
+            'training_session_id' => $sessionId,
+            'document_id' => $document->id
+        ]);
+    }
 }

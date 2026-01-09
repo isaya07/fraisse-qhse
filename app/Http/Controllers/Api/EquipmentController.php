@@ -8,11 +8,24 @@ use App\Models\EquipmentAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class EquipmentController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
-        $query = Equipment::with(['category', 'currentAssignment.user']);
+        $user = $request->user();
+        $this->authorize('viewAny', Equipment::class);
+
+        $query = Equipment::with([
+            'category',
+            'currentAssignment.user',
+            'permissions' => function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            }
+        ]);
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -36,6 +49,8 @@ class EquipmentController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Equipment::class);
+
         $validated = $request->validate([
             'category_id' => 'required|exists:equipment_categories,id',
             'serial_number' => 'required|string|unique:equipment,serial_number',
@@ -62,14 +77,27 @@ class EquipmentController extends Controller
 
     public function show(Equipment $equipment)
     {
+        $this->authorize('view', $equipment);
+
         return response()->json([
             'success' => true,
-            'data' => $equipment->load(['category', 'currentAssignment.user', 'maintenanceLogs', 'assignments.user', 'documents'])
+            'data' => $equipment->load([
+                'category',
+                'currentAssignment.user',
+                'maintenanceLogs',
+                'assignments.user',
+                'documents',
+                'permissions' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }
+            ])
         ]);
     }
 
     public function update(Request $request, Equipment $equipment)
     {
+        $this->authorize('update', $equipment);
+
         $validated = $request->validate([
             'category_id' => 'sometimes|exists:equipment_categories,id',
             'serial_number' => 'sometimes|string|unique:equipment,serial_number,' . $equipment->id,
@@ -96,6 +124,8 @@ class EquipmentController extends Controller
 
     public function destroy(Equipment $equipment)
     {
+        $this->authorize('delete', $equipment);
+
         $equipment->delete();
 
         return response()->json([
@@ -106,6 +136,8 @@ class EquipmentController extends Controller
 
     public function assign(Request $request, Equipment $equipment)
     {
+        $this->authorize('update', $equipment);
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'assigned_at' => 'required|date',
@@ -141,6 +173,8 @@ class EquipmentController extends Controller
 
     public function returnEquipment(Request $request, Equipment $equipment)
     {
+        $this->authorize('update', $equipment);
+
         $validated = $request->validate([
             'returned_at' => 'required|date',
             'notes' => 'nullable|string',
@@ -178,6 +212,7 @@ class EquipmentController extends Controller
     public function attachDocument(Request $request, $id)
     {
         $equipment = Equipment::findOrFail($id);
+        $this->authorize('update', $equipment);
 
         $request->validate([
             'document_id' => 'required|exists:documents,id'
@@ -198,6 +233,8 @@ class EquipmentController extends Controller
     public function detachDocument($id, $documentId)
     {
         $equipment = Equipment::findOrFail($id);
+        $this->authorize('update', $equipment);
+
         $equipment->documents()->detach($documentId);
 
         return response()->json([

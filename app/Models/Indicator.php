@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Indicator extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasPermissions;
 
     protected $fillable = [
         'name',
@@ -33,6 +33,23 @@ class Indicator extends Model
         'threshold_max' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return [];
+        }
+
+        return [
+            'view' => $user->can('view', $this),
+            'update' => $user->can('update', $this),
+            'delete' => $user->can('delete', $this),
+        ];
+    }
 
     // Relations
     public function indicatorCategory()
@@ -65,8 +82,12 @@ class Indicator extends Model
      */
     public function updateTrend()
     {
-        // Get the last two values ordered by date
-        $values = $this->values()->orderBy('date', 'desc')->take(2)->get();
+        // Bypass relationship caching to ensure we get the latest values
+        $values = \App\Models\IndicatorValue::where('indicator_id', $this->id)
+            ->orderBy('date', 'desc')
+            ->orderBy('id', 'desc')
+            ->take(2)
+            ->get();
 
         if ($values->count() < 2) {
             if ($values->count() === 0) {
@@ -76,15 +97,17 @@ class Indicator extends Model
             return;
         }
 
-        $current = $values[0];
-        $previous = $values[1];
+        $current = (float) $values[0]->value;
+        $previous = (float) $values[1]->value;
+
+        // fwrite(STDERR, "Indicator {$this->id} current: {$current}, previous: {$previous}\n");
 
         $direction = 'neutral';
 
-        if ($current->value > $previous->value) {
-            $direction = 'positive'; // Hausse (Up)
-        } elseif ($current->value < $previous->value) {
-            $direction = 'negative'; // Baisse (Down)
+        if ($current > $previous) {
+            $direction = 'positive';
+        } elseif ($current < $previous) {
+            $direction = 'negative';
         }
 
         $this->trend_direction = $direction;

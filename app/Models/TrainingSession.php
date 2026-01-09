@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TrainingSession extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasPermissions;
 
     protected $fillable = [
         'training_id',
@@ -25,6 +25,22 @@ class TrainingSession extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return [];
+        }
+
+        return [
+            'view' => $user->can('view', $this),
+            'update' => $user->can('update', $this),
+            'delete' => $user->can('delete', $this),
+        ];
+    }
 
     public function training()
     {

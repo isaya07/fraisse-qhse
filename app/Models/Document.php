@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasPermissions;
 
 class Document extends Model
 {
-    use HasFactory;
+    use HasFactory, HasPermissions;
 
     protected $fillable = [
         'title',
@@ -31,6 +32,18 @@ class Document extends Model
         'expires_date' => 'date',
         'file_size' => 'integer',
     ];
+
+    protected $appends = ['can'];
+
+    public function getCanAttribute()
+    {
+        $user = request()->user();
+        return [
+            'view' => $user ? $user->can('view', $this) : false,
+            'update' => $user ? $user->can('update', $this) : false,
+            'delete' => $user ? $user->can('delete', $this) : false,
+        ];
+    }
 
     // Relations
     public function creator()
@@ -56,6 +69,11 @@ class Document extends Model
     public function equipment()
     {
         return $this->belongsToMany(Equipment::class, 'document_equipment');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(DocumentReview::class)->orderBy('created_at', 'desc');
     }
 
     public function category()

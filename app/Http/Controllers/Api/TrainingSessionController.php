@@ -5,11 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class TrainingSessionController extends Controller
 {
-    public function index()
+    use AuthorizesRequests;
+
+    public function index(Request $request)
     {
-        $sessions = \App\Models\TrainingSession::with(['training', 'organization', 'participations', 'documents'])->get();
+        $this->authorize('viewAny', \App\Models\TrainingSession::class);
+
+        $sessions = \App\Models\TrainingSession::with([
+            'training',
+            'organization',
+            'participations.user',
+            'documents',
+            'permissions' => function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            }
+        ])->get();
         return response()->json([
             'success' => true,
             'data' => $sessions
@@ -18,6 +32,8 @@ class TrainingSessionController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', \App\Models\TrainingSession::class);
+
         $validated = $request->validate([
             'training_id' => 'required|exists:trainings,id',
             'training_organization_id' => 'nullable|exists:training_organizations,id',
@@ -31,6 +47,10 @@ class TrainingSessionController extends Controller
         ]);
 
         $session = \App\Models\TrainingSession::create($validated);
+
+        // Grant admin access to the creator
+        $session->grantAccess($request->user(), 'admin');
+
         $session->load(['training', 'organization']);
 
         return response()->json([
@@ -39,9 +59,20 @@ class TrainingSessionController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $session = \App\Models\TrainingSession::with(['training', 'organization', 'participations.user', 'documents'])->findOrFail($id);
+        $session = \App\Models\TrainingSession::with([
+            'training',
+            'organization',
+            'participations.user',
+            'documents',
+            'permissions' => function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            }
+        ])->findOrFail($id);
+
+        $this->authorize('view', $session);
+
         return response()->json([
             'success' => true,
             'data' => $session
@@ -51,6 +82,8 @@ class TrainingSessionController extends Controller
     public function update(Request $request, $id)
     {
         $session = \App\Models\TrainingSession::findOrFail($id);
+
+        $this->authorize('update', $session);
 
         $validated = $request->validate([
             'training_id' => 'sometimes|required|exists:trainings,id',
@@ -76,11 +109,46 @@ class TrainingSessionController extends Controller
     public function destroy($id)
     {
         $session = \App\Models\TrainingSession::findOrFail($id);
+
+        $this->authorize('delete', $session);
+
         $session->delete();
 
         return response()->json([
             'success' => true,
             'message' => 'Session deleted successfully'
+        ]);
+    }
+
+    public function attachDocument(Request $request, $id)
+    {
+        $session = \App\Models\TrainingSession::findOrFail($id);
+        $this->authorize('update', $session);
+
+        $validated = $request->validate([
+            'document_id' => 'required|exists:documents,id'
+        ]);
+
+        $session->documents()->syncWithoutDetaching([$validated['document_id']]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document attached successfully',
+            'data' => $session->documents
+        ]);
+    }
+
+    public function detachDocument($id, $documentId)
+    {
+        $session = \App\Models\TrainingSession::findOrFail($id);
+        $this->authorize('update', $session);
+
+        $session->documents()->detach($documentId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document detached successfully',
+            'data' => $session->documents
         ]);
     }
 }
